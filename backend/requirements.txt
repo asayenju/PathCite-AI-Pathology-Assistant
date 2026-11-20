@@ -1,3 +1,10 @@
 fastapi
 uvicorn[standard]
 pytest
+torch
+torchvision
+timm
+pillow
+python-multipart
+pydantic-settings
+httpx
