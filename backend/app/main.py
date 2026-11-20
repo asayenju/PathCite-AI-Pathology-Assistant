@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
+from app.errors import register_error_handlers
 from app.model import load_model, pick_device
 
 
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="PathCite API", lifespan=lifespan)
+register_error_handlers(app)
 
 
 @app.get("/health")

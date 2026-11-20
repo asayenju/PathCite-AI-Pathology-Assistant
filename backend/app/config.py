@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     model_path: Path = DEFAULT_MODEL_PATH
     uncertain_threshold: float = 0.7
     max_upload_mb: int = 10
+    max_image_pixels: int = 25_000_000  # ~5000x5000; guards against decompression bombs
 
 
 def get_settings() -> Settings:
