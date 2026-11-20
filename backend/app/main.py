@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
+from starlette.formparsers import MultiPartParser
 
 from app.config import get_settings
 from app.errors import ApiError, register_error_handlers
@@ -21,6 +22,9 @@ def _model_version(path) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
+    # Starlette spools uploads over 1 MB to a temp file on disk by default. Keep the
+    # whole (size-capped) upload in memory so patient images are never written to disk.
+    MultiPartParser.spool_max_size = settings.max_upload_mb * 1024 * 1024 + 1
     device = pick_device()
     app.state.settings = settings
     app.state.device = device

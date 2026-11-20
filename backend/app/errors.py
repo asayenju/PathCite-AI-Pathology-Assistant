@@ -1,6 +1,10 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
+logger = logging.getLogger("pathcite")
 
 
 class ApiError(Exception):
@@ -17,6 +21,14 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError):
         return JSONResponse({"detail": exc.detail, "code": exc.code}, status_code=exc.status_code)
+
+    @app.exception_handler(Exception)
+    async def _unexpected(_: Request, exc: Exception):
+        # Log the exception type only: messages/tracebacks must never carry image content to clients.
+        logger.error("Unhandled error: %s", type(exc).__name__)
+        return JSONResponse(
+            {"detail": "Internal server error", "code": "internal_error"}, status_code=500
+        )
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError):
