@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ACCEPTED_TYPES } from '@/lib/api'
 import { SLIDE_MIME } from '@/lib/slide'
 import type { Status } from '@/composables/usePredict'
 
-defineProps<{
+const props = defineProps<{
   status: Status
   previewUrl: string | null
   /** Set for bundled slides only: their pixel size is known, so a true scale bar can be drawn. */
@@ -17,16 +17,45 @@ const emit = defineEmits<{ slide: [code: string]; file: [file: File]; clear: [] 
 const SCALE_BAR_UM = 25
 const SCALE_BAR_PERCENT = (SCALE_BAR_UM / 0.5 / 224) * 100
 
+const OCCUPIED_NOTICE = 'Clear the stage before adding another image.'
+
 const over = ref(false)
 const fullPatch = ref(false)
+const notice = ref('')
 const picker = ref<HTMLInputElement | null>(null)
+
+/** While an image is in place, files from the computer can't be added: clear the stage first. */
+const occupied = computed(() => props.previewUrl !== null)
+
+function carriesFiles(event: DragEvent) {
+  const types = Array.from(event.dataTransfer?.types ?? [])
+  return types.includes('Files') && !types.includes(SLIDE_MIME)
+}
+
+function onDragOver(event: DragEvent) {
+  // Don't light up the ring for a drop that will be refused; the drop itself explains why.
+  over.value = !(occupied.value && carriesFiles(event))
+}
 
 function onDrop(event: DragEvent) {
   over.value = false
   const code = event.dataTransfer?.getData(SLIDE_MIME)
-  if (code) return emit('slide', code)
+  if (code) {
+    notice.value = ''
+    return emit('slide', code)
+  }
   const file = event.dataTransfer?.files?.[0]
-  if (file) emit('file', file)
+  if (!file) return
+  if (occupied.value) {
+    notice.value = OCCUPIED_NOTICE
+    return
+  }
+  emit('file', file)
+}
+
+function clearStage() {
+  notice.value = ''
+  emit('clear')
 }
 
 function onPick(event: Event) {
@@ -52,18 +81,26 @@ function onPick(event: Event) {
         <path d="M50 0v2.4M50 97.6V100M0 50h2.4M97.6 50H100" stroke="currentColor" stroke-width="0.5" fill="none" />
       </svg>
 
-      <button
-        type="button"
-        class="relative block aspect-square w-full cursor-pointer overflow-hidden bg-glass transition-[border-radius,box-shadow] duration-300 [&>*]:pointer-events-none"
+      <!-- Empty: a button that opens the file picker. Occupied: no picker, so it is a plain group. -->
+      <component
+        :is="occupied ? 'div' : 'button'"
+        :type="occupied ? undefined : 'button'"
+        :role="occupied ? 'group' : undefined"
+        class="relative block aspect-square w-full overflow-hidden bg-glass transition-[border-radius,box-shadow] duration-300 [&>*]:pointer-events-none"
         :class="[
+          occupied ? 'cursor-default' : 'cursor-pointer',
           fullPatch ? 'rounded-glass' : 'rounded-full',
           over ? 'shadow-[0_0_0_6px_var(--color-ink)]' : 'shadow-[0_0_0_2px_var(--color-ink)]',
           status === 'loading' && 'ring-pulse',
         ]"
-        aria-label="Stage. Drop a slide or an image here, or press Enter to choose a file."
-        @click="picker?.click()"
-        @dragenter.prevent="over = true"
-        @dragover.prevent="over = true"
+        :aria-label="
+          occupied
+            ? 'Stage. A slide is in place. Clear the stage to add another image.'
+            : 'Stage. Drop a slide or an image here, or press Enter to choose a file.'
+        "
+        @click="!occupied && picker?.click()"
+        @dragenter.prevent="onDragOver"
+        @dragover.prevent="onDragOver"
         @dragleave="over = false"
         @drop.prevent="onDrop"
       >
@@ -93,7 +130,7 @@ function onPick(event: Event) {
           <span class="tnum text-xs font-medium [text-shadow:0_1px_3px_rgb(0_0_0/0.7)]">{{ SCALE_BAR_UM }} µm</span>
           <span class="h-0.5 w-full bg-glass shadow-[0_1px_3px_rgb(0_0_0/0.6)]" />
         </span>
-      </button>
+      </component>
 
       <input ref="picker" type="file" :accept="ACCEPTED_TYPES.join(',')" class="hidden" @change="onPick" />
     </div>
@@ -103,10 +140,11 @@ function onPick(event: Event) {
         <button type="button" class="underline underline-offset-4 hover:text-quiet" @click="fullPatch = !fullPatch">
           {{ fullPatch ? 'Show circular field' : 'Show full patch' }}
         </button>
-        <button type="button" class="underline underline-offset-4 hover:text-quiet" @click="emit('clear')">
+        <button type="button" class="underline underline-offset-4 hover:text-quiet" @click="clearStage">
           Clear stage
         </button>
       </template>
     </div>
+    <p v-if="notice" role="status" class="mt-1 text-center text-sm">{{ notice }}</p>
   </section>
 </template>

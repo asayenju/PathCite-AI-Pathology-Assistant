@@ -28,6 +28,7 @@ npm test            # unit tests (API client, class list, bundled samples)
 ## Notes
 
 - Sample slides are in `public/samples/` (`samples.json` lists them). They are JPEG renderings from the NCT-CRC-HE-100K test split (Kather et al., CC-BY-4.0): 224x224 px at 0.5 µm/px, which is why the stage can draw a true 25 µm scale bar for them.
+- The STR and TUM slides are not the first image of their class: the first ones were both misread (as MUC), so each was replaced by the next image the model reads correctly. Treat the nine slides as a demo, not a sample of accuracy: STR is the model's weakest class (6 of the first 20 STR images read correctly).
 - Score ruler: the tick at 0.70 is the backend's default `UNCERTAIN_THRESHOLD`. The `uncertain` flag in the response decides the colour, so a different server setting still behaves correctly; only the tick position would be off.
 - `src/lib/classes.ts` must keep the same order as `backend/app/classes.py` (a test checks this).
 - shadcn-vue components in `src/components/ui/` were added with CLI v2.4.3: the latest CLI crashes on Node 20.

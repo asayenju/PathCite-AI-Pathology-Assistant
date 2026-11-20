@@ -41,12 +41,12 @@
     {
       "code": "STR",
       "file": "samples/STR.jpg",
-      "sourceRow": 5546
+      "sourceRow": 5549
     },
     {
       "code": "TUM",
       "file": "samples/TUM.jpg",
-      "sourceRow": 5967
+      "sourceRow": 5969
     }
   ]
 }
