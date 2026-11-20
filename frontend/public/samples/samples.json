@@ -1,0 +1,52 @@
+{
+  "dataset": "chehablab/NCT-CRC-HE-100K (test split, CRC-VAL-HE-7K)",
+  "credit": "Kather et al., NCT-CRC-HE-100K / CRC-VAL-HE-7K, CC-BY-4.0",
+  "pixelSizeUm": 0.5,
+  "samples": [
+    {
+      "code": "ADI",
+      "file": "samples/ADI.jpg",
+      "sourceRow": 20
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK.jpg",
+      "sourceRow": 1358
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB.jpg",
+      "sourceRow": 2205
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM.jpg",
+      "sourceRow": 2544
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC.jpg",
+      "sourceRow": 3178
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS.jpg",
+      "sourceRow": 4213
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM.jpg",
+      "sourceRow": 4805
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR.jpg",
+      "sourceRow": 5546
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM.jpg",
+      "sourceRow": 5967
+    }
+  ]
+}

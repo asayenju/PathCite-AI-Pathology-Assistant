@@ -1,0 +1,129 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/instrument-sans/wdth.css";
+
+/*
+ * PathCite design tokens: a microscope bench.
+ * Hematoxylin and eosin are the two stains in H&E; here they are the ink and the one signal colour.
+ * Text never relies on eosin or amber alone (contrast): they mark state, ink carries the words.
+ */
+@theme inline {
+  --color-bench: #e9edf1;
+  --color-glass: #f8fafb;
+  --color-ink: #2d2a5c;
+  --color-eosin: #d9406f;
+  --color-frost: #cbd3dc;
+  --color-amber: #b7791f;
+  --color-quiet: #565478; /* secondary text, 6:1 on bench */
+
+  /* shadcn-vue semantic tokens mapped onto the palette */
+  --color-background: var(--color-bench);
+  --color-foreground: var(--color-ink);
+  --color-card: var(--color-glass);
+  --color-card-foreground: var(--color-ink);
+  --color-popover: var(--color-glass);
+  --color-popover-foreground: var(--color-ink);
+  --color-primary: var(--color-ink);
+  --color-primary-foreground: var(--color-glass);
+  --color-secondary: var(--color-frost);
+  --color-secondary-foreground: var(--color-ink);
+  --color-muted: var(--color-frost);
+  --color-muted-foreground: var(--color-quiet);
+  --color-accent: var(--color-frost);
+  --color-accent-foreground: var(--color-ink);
+  --color-destructive: var(--color-eosin);
+  --color-border: var(--color-frost);
+  --color-input: var(--color-frost);
+  --color-ring: var(--color-ink);
+
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --radius-glass: 2px; /* slides are glass: almost square corners */
+}
+
+@layer base {
+  html {
+    background: var(--color-bench);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Condensed width of the variable font: slide labels and the tissue name. */
+  .cond {
+    font-stretch: 75%;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * The one animated moment: when a slide lands on the stage the field of view pulls into focus.
+   */
+  .focus-pull {
+    animation: focus-pull 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .reading-in {
+    animation: reading-in 400ms ease-out 450ms both;
+  }
+
+  .ring-pulse {
+    animation: ring-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes focus-pull {
+  from {
+    filter: blur(8px);
+    transform: scale(1.04);
+  }
+  to {
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes reading-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ring-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ink) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-pull,
+  .reading-in,
+  .ring-pulse {
+    animation: none;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
