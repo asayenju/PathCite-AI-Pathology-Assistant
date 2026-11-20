@@ -2,51 +2,367 @@
   "dataset": "chehablab/NCT-CRC-HE-100K (test split, CRC-VAL-HE-7K)",
   "credit": "Kather et al., NCT-CRC-HE-100K / CRC-VAL-HE-7K, CC-BY-4.0",
   "pixelSizeUm": 0.5,
+  "perClass": 8,
   "samples": [
     {
       "code": "ADI",
-      "file": "samples/ADI.jpg",
+      "file": "samples/ADI/20.jpg",
       "sourceRow": 20
     },
     {
+      "code": "ADI",
+      "file": "samples/ADI/21.jpg",
+      "sourceRow": 21
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/22.jpg",
+      "sourceRow": 22
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/23.jpg",
+      "sourceRow": 23
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/24.jpg",
+      "sourceRow": 24
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/25.jpg",
+      "sourceRow": 25
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/26.jpg",
+      "sourceRow": 26
+    },
+    {
+      "code": "ADI",
+      "file": "samples/ADI/27.jpg",
+      "sourceRow": 27
+    },
+    {
       "code": "BACK",
-      "file": "samples/BACK.jpg",
+      "file": "samples/BACK/1358.jpg",
       "sourceRow": 1358
     },
     {
+      "code": "BACK",
+      "file": "samples/BACK/1359.jpg",
+      "sourceRow": 1359
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1360.jpg",
+      "sourceRow": 1360
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1361.jpg",
+      "sourceRow": 1361
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1362.jpg",
+      "sourceRow": 1362
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1363.jpg",
+      "sourceRow": 1363
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1364.jpg",
+      "sourceRow": 1364
+    },
+    {
+      "code": "BACK",
+      "file": "samples/BACK/1365.jpg",
+      "sourceRow": 1365
+    },
+    {
       "code": "DEB",
-      "file": "samples/DEB.jpg",
+      "file": "samples/DEB/2205.jpg",
       "sourceRow": 2205
     },
     {
+      "code": "DEB",
+      "file": "samples/DEB/2206.jpg",
+      "sourceRow": 2206
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2207.jpg",
+      "sourceRow": 2207
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2208.jpg",
+      "sourceRow": 2208
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2209.jpg",
+      "sourceRow": 2209
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2210.jpg",
+      "sourceRow": 2210
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2211.jpg",
+      "sourceRow": 2211
+    },
+    {
+      "code": "DEB",
+      "file": "samples/DEB/2212.jpg",
+      "sourceRow": 2212
+    },
+    {
       "code": "LYM",
-      "file": "samples/LYM.jpg",
+      "file": "samples/LYM/2544.jpg",
       "sourceRow": 2544
     },
     {
+      "code": "LYM",
+      "file": "samples/LYM/2545.jpg",
+      "sourceRow": 2545
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2546.jpg",
+      "sourceRow": 2546
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2547.jpg",
+      "sourceRow": 2547
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2548.jpg",
+      "sourceRow": 2548
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2549.jpg",
+      "sourceRow": 2549
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2550.jpg",
+      "sourceRow": 2550
+    },
+    {
+      "code": "LYM",
+      "file": "samples/LYM/2551.jpg",
+      "sourceRow": 2551
+    },
+    {
       "code": "MUC",
-      "file": "samples/MUC.jpg",
+      "file": "samples/MUC/3178.jpg",
       "sourceRow": 3178
     },
     {
+      "code": "MUC",
+      "file": "samples/MUC/3179.jpg",
+      "sourceRow": 3179
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3180.jpg",
+      "sourceRow": 3180
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3181.jpg",
+      "sourceRow": 3181
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3182.jpg",
+      "sourceRow": 3182
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3183.jpg",
+      "sourceRow": 3183
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3184.jpg",
+      "sourceRow": 3184
+    },
+    {
+      "code": "MUC",
+      "file": "samples/MUC/3185.jpg",
+      "sourceRow": 3185
+    },
+    {
       "code": "MUS",
-      "file": "samples/MUS.jpg",
+      "file": "samples/MUS/4213.jpg",
       "sourceRow": 4213
     },
     {
+      "code": "MUS",
+      "file": "samples/MUS/4214.jpg",
+      "sourceRow": 4214
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4215.jpg",
+      "sourceRow": 4215
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4216.jpg",
+      "sourceRow": 4216
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4217.jpg",
+      "sourceRow": 4217
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4218.jpg",
+      "sourceRow": 4218
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4219.jpg",
+      "sourceRow": 4219
+    },
+    {
+      "code": "MUS",
+      "file": "samples/MUS/4220.jpg",
+      "sourceRow": 4220
+    },
+    {
       "code": "NORM",
-      "file": "samples/NORM.jpg",
+      "file": "samples/NORM/4805.jpg",
       "sourceRow": 4805
     },
     {
+      "code": "NORM",
+      "file": "samples/NORM/4806.jpg",
+      "sourceRow": 4806
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4807.jpg",
+      "sourceRow": 4807
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4808.jpg",
+      "sourceRow": 4808
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4809.jpg",
+      "sourceRow": 4809
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4810.jpg",
+      "sourceRow": 4810
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4811.jpg",
+      "sourceRow": 4811
+    },
+    {
+      "code": "NORM",
+      "file": "samples/NORM/4812.jpg",
+      "sourceRow": 4812
+    },
+    {
       "code": "STR",
-      "file": "samples/STR.jpg",
+      "file": "samples/STR/5546.jpg",
+      "sourceRow": 5546
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5547.jpg",
+      "sourceRow": 5547
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5548.jpg",
+      "sourceRow": 5548
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5549.jpg",
       "sourceRow": 5549
     },
     {
+      "code": "STR",
+      "file": "samples/STR/5550.jpg",
+      "sourceRow": 5550
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5551.jpg",
+      "sourceRow": 5551
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5552.jpg",
+      "sourceRow": 5552
+    },
+    {
+      "code": "STR",
+      "file": "samples/STR/5553.jpg",
+      "sourceRow": 5553
+    },
+    {
       "code": "TUM",
-      "file": "samples/TUM.jpg",
+      "file": "samples/TUM/5967.jpg",
+      "sourceRow": 5967
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5968.jpg",
+      "sourceRow": 5968
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5969.jpg",
       "sourceRow": 5969
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5970.jpg",
+      "sourceRow": 5970
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5971.jpg",
+      "sourceRow": 5971
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5972.jpg",
+      "sourceRow": 5972
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5973.jpg",
+      "sourceRow": 5973
+    },
+    {
+      "code": "TUM",
+      "file": "samples/TUM/5974.jpg",
+      "sourceRow": 5974
     }
   ]
 }
