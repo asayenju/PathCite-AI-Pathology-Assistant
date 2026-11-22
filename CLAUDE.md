@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_finetuned.pt`) classifying 224×224 colorectal H&E patches into 9 NCT-CRC tissue classes. Not a medical device; the UI and API both carry that disclaimer, keep it.
+Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_finetuned_v2.pt`) classifying 224×224 colorectal H&E patches into 9 NCT-CRC tissue classes. Not a medical device; the UI and API both carry that disclaimer, keep it.
 
 - `backend/`: FastAPI (`GET /health`, `POST /predict`). See `backend/README.md` for the API and error table.
 - `frontend/`: Vue 3 + TS + Tailwind v4 + shadcn-vue. See `frontend/README.md`.
@@ -40,7 +40,7 @@ npm run build        # type-check + production build
 
 ## Gotchas
 
-- The model has no "not tissue" class and its softmax is uncalibrated. It scored ~82% on NCT-CRC renderings but ~8% on the Kather `dpdl-benchmark` set (domain shift). Don't present confidence as probability of correctness; the UI calls it "model score".
+- The model has no "not tissue" class and its softmax is uncalibrated. The current weights are v2 (colour jitter + label smoothing; the earlier baseline is in git history). Notebook results: 95.9% on half of the external NCT-CRC test set, 94% on the 72 bundled JPEG samples, but only 65% on the Kather `dpdl-benchmark` set (domain shift in stain colour and tile scale; the baseline got 15% there, and ~8% in the old API smoke test). A temperature fitted on in-domain data makes v2 overconfident on Kather, so none is applied. Don't present confidence as probability of correctness; the UI calls it "model score".
 - Plain `shadcn-vue@latest` crashes on Node 20; components in `src/components/ui/` were added with CLI 2.4.3. TS 6: no `baseUrl`, use `paths` only.
 - `backend/.cache/` (HF smoke images), `.venv/`, `reports/` are gitignored.
 - Not built yet: Azure storage, auth, batch upload, dark mode, confidence calibration / OOD detection.

@@ -38,7 +38,7 @@ def test_predict_shape_and_consistency(client):
     assert body["confidence"] == pytest.approx(max(probs.values()))
     assert body["tissue"] == CLASS_NAMES[body["label"]]
     assert probs[body["tissue"]] == body["confidence"]
-    assert body["model_version"].startswith("resnet18_finetuned.pt@")
+    assert body["model_version"].startswith("resnet18_finetuned_v2.pt@")
     assert "not a diagnosis" in body["notice"]
 
 

@@ -1,7 +1,7 @@
 # PRD: Tissue Classification API
 
 ## What
-`POST /predict` accepts one H&E histology patch image and returns the predicted tissue type and the model's confidence. The service wraps the fine-tuned ResNet18 (`model/resnet18_finetuned.pt`, 9 NCT-CRC tissue classes). Backend only.
+`POST /predict` accepts one H&E histology patch image and returns the predicted tissue type and the model's confidence. The service wraps the fine-tuned ResNet18 (`model/resnet18_finetuned_v2.pt`, 9 NCT-CRC tissue classes). Backend only.
 
 Response: `{label, tissue, confidence, uncertain, probabilities, warnings, model_version}`.
 `GET /health` also reports `model_loaded`.

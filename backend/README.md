@@ -1,6 +1,6 @@
 # PathCite backend
 
-FastAPI service that classifies the tissue type of a colorectal H&E patch with the fine-tuned ResNet18 in `../model/resnet18_finetuned.pt`.
+FastAPI service that classifies the tissue type of a colorectal H&E patch with the fine-tuned ResNet18 in `../model/resnet18_finetuned_v2.pt`.
 
 > **Research use only. Not a medical device and not a diagnosis.** `confidence` is the model's raw softmax score, not the probability of being correct. The model has no "not tissue" class: any image gets one of 9 labels, so check `uncertain` and `warnings`.
 
@@ -35,7 +35,7 @@ curl -F file=@patch.png http://localhost:8000/predict
   "uncertain": false,
   "probabilities": {"ADI": 0.0, "BACK": 0.0, "DEB": 0.0, "LYM": 0.0, "MUC": 0.0, "MUS": 0.0, "NORM": 0.0, "STR": 0.03, "TUM": 0.97},
   "warnings": [],
-  "model_version": "resnet18_finetuned.pt@657f5d2a",
+  "model_version": "resnet18_finetuned_v2.pt@b1850cdb",
   "notice": "Research use only. Not a medical device and not a diagnosis."
 }
 ```
@@ -59,7 +59,7 @@ Always JSON: `{"detail": "...", "code": "..."}`.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `MODEL_PATH` | `../model/resnet18_finetuned.pt` | weights file; startup fails if missing or mismatched |
+| `MODEL_PATH` | `../model/resnet18_finetuned_v2.pt` | weights file; startup fails if missing or mismatched |
 | `UNCERTAIN_THRESHOLD` | `0.7` | confidence below this sets `uncertain` |
 | `MAX_UPLOAD_MB` | `10` | max upload size |
 | `MAX_IMAGE_PIXELS` | `25000000` | max width x height, guards against decompression bombs |

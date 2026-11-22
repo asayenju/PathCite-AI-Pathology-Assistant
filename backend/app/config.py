@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "resnet18_finetuned.pt"
+DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[2] / "model" / "resnet18_finetuned_v2.pt"
 
 
 class Settings(BaseSettings):

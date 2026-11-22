@@ -21,7 +21,7 @@ These are the first two slides of each class, unfiltered, so the misses are real
 ## What has been built so far
 
 ### Model (`model/`)
-- A timm `resnet18`, fine-tuned on NCT-CRC colorectal H&E patches. Weights are in `resnet18_finetuned.pt`; the training notebook is `CancerCheckResnetFinetune.ipynb`.
+- A timm `resnet18`, fine-tuned on NCT-CRC colorectal H&E patches. Weights are in `model/resnet18_finetuned_v2.pt` (colour augmentation + label smoothing); the training notebook is `CancerCheckResnetFinetune.ipynb`.
 - Class order: 0 ADI, 1 BACK, 2 DEB, 3 LYM, 4 MUC, 5 MUS, 6 NORM, 7 STR, 8 TUM. The mapping was verified against the dataset.
 - Notebook external test: accuracy 0.954, macro-F1 0.936, STR recall 0.639.
 - Preprocessing is `Resize((224,224))`, ToTensor, ImageNet mean/std.
