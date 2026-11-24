@@ -1,5 +1,5 @@
 import { PredictError, messageFor, postFile } from '@/lib/api'
-import type { TranscriptImport, TranscriptSource } from '@/types'
+import type { Role, TranscriptImport, TranscriptSource } from '@/types'
 
 /** Mirrors the backend's default MAX_TRANSCRIPT_MB (20). */
 export const MAX_TRANSCRIPT_BYTES = 20 * 1024 * 1024
@@ -51,4 +51,29 @@ export async function importTranscript(file: File, signal?: AbortSignal): Promis
   const invalid = validateTranscriptFile(file)
   if (invalid) throw invalid
   return postFile<TranscriptImport>('/transcripts/import', file, signal, transcriptMessageFor)
+}
+
+/**
+ * Words below this speech-to-text confidence are underlined in the review. Mirrors the backend's default
+ * ASR_LOW_CONFIDENCE (0.6); the backend setting is authoritative for the import warnings.
+ */
+export const LOW_CONFIDENCE = 0.6
+
+export const ROLES: readonly Role[] = ['doctor', 'patient', 'other']
+
+export const ROLE_LABELS: Record<Role, string> = { doctor: 'Doctor', patient: 'Patient', other: 'Other' }
+
+export function roleLabel(role: Role | null): string {
+  return role ? ROLE_LABELS[role] : 'Unassigned'
+}
+
+/** Seconds as m:ss (e.g. 125 -> "2:05"); null gives the fallback. */
+export function formatClock(seconds: number | null, fallback = '—'): string {
+  if (seconds === null || !Number.isFinite(seconds)) return fallback
+  const total = Math.max(0, Math.round(seconds))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}
+
+export function isLowConfidence(confidence: number | null): boolean {
+  return confidence !== null && confidence < LOW_CONFIDENCE
 }

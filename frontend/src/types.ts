@@ -64,3 +64,8 @@ export interface TranscriptImport {
   warnings: string[]
   notice: string
 }
+
+/** A turn after roles are confirmed: the input for later steps (e.g. fact checking). */
+export interface RoledTurn extends TranscriptTurn {
+  role: Role | null
+}

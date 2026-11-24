@@ -105,3 +105,116 @@ describe('useTranscriptImport', () => {
     expect(t.fileName.value).toBe('second.json')
   })
 })
+
+const speaker = (id: string, suggested_role: 'doctor' | 'patient' | 'other' | null) => ({
+  id,
+  source_label: id.toLowerCase(),
+  word_count: 10,
+  talk_time_s: 30,
+  preview: [],
+  suggested_role,
+})
+const turn = (id: string, spk: string) => ({
+  id,
+  speaker: spk,
+  start: 0,
+  end: 1,
+  text: 'x',
+  is_final: true,
+  words: [],
+  min_confidence: null,
+})
+const twoSpeakers = {
+  ...body,
+  speakers: [speaker('S1', 'doctor'), speaker('S2', 'patient'), speaker('S3', null)],
+  turns: [turn('t0001', 'S1'), turn('t0002', 'S2'), turn('t0003', 'S3')],
+}
+
+async function imported(payload: object = twoSpeakers) {
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(payload))))
+  const t = useTranscriptImport()
+  await t.readFile(json())
+  return t
+}
+
+describe('useTranscriptImport roles', () => {
+  it('seeds roles from the suggestions', async () => {
+    const t = await imported()
+    expect(t.roles.value).toEqual({ S1: 'doctor', S2: 'patient', S3: null })
+    expect(t.canConfirm.value).toBe(true)
+  })
+
+  it('setRole changes one speaker', async () => {
+    const t = await imported()
+    t.setRole('S3', 'other')
+    expect(t.roles.value).toEqual({ S1: 'doctor', S2: 'patient', S3: 'other' })
+  })
+
+  it('canConfirm needs at least one doctor and allows several', async () => {
+    const t = await imported()
+    t.setRole('S1', 'patient')
+    expect(t.canConfirm.value).toBe(false)
+    t.setRole('S2', 'doctor')
+    expect(t.canConfirm.value).toBe(true)
+    t.setRole('S1', 'doctor')
+    expect(t.canConfirm.value).toBe(true)
+    t.confirm()
+    expect(t.status.value).toBe('confirmed')
+  })
+
+  it('confirm is blocked without a doctor', async () => {
+    const t = await imported()
+    t.setRole('S1', null)
+    t.confirm()
+    expect(t.status.value).toBe('review')
+    expect(t.confirmedTranscript.value).toBeNull()
+  })
+
+  it('confirmedTranscript is null until confirmed, then carries roles', async () => {
+    const t = await imported()
+    expect(t.confirmedTranscript.value).toBeNull()
+    t.confirm()
+    expect(t.confirmedTranscript.value!.map((x) => [x.id, x.role])).toEqual([
+      ['t0001', 'doctor'],
+      ['t0002', 'patient'],
+      ['t0003', null],
+    ])
+    expect(t.confirmedTranscript.value![0]!.text).toBe('x')
+  })
+
+  it('editRoles goes back to review and allows changes again', async () => {
+    const t = await imported()
+    t.confirm()
+    t.setRole('S1', 'other') // ignored while confirmed
+    expect(t.roles.value.S1).toBe('doctor')
+    t.editRoles()
+    expect(t.status.value).toBe('review')
+    expect(t.confirmedTranscript.value).toBeNull()
+    t.setRole('S3', 'doctor')
+    expect(t.roles.value.S3).toBe('doctor')
+  })
+
+  it('reset clears roles', async () => {
+    const t = await imported()
+    t.confirm()
+    t.reset()
+    expect(t.roles.value).toEqual({})
+    expect(t.canConfirm.value).toBe(false)
+    expect(t.confirmedTranscript.value).toBeNull()
+  })
+
+  it('a new import reseeds roles', async () => {
+    const t = await imported()
+    t.setRole('S2', 'doctor')
+    t.confirm()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        new Response(JSON.stringify({ ...body, speakers: [speaker('S1', 'patient'), speaker('S2', 'doctor')] })),
+      ),
+    )
+    await t.readFile(json('next.json'))
+    expect(t.status.value).toBe('review')
+    expect(t.roles.value).toEqual({ S1: 'patient', S2: 'doctor' })
+  })
+})

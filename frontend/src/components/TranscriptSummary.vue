@@ -2,23 +2,15 @@
 import { computed } from 'vue'
 import { CircleAlert } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { SOURCE_NAMES } from '@/lib/transcripts'
+import { SOURCE_NAMES, formatClock } from '@/lib/transcripts'
 import type { TranscriptImport } from '@/types'
 
 const props = defineProps<{ transcript: TranscriptImport; fileName: string | null }>()
 
-function formatDuration(seconds: number | null): string {
-  if (seconds === null) return 'Unknown'
-  const total = Math.round(seconds)
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
 const facts = computed(() => [
   { label: 'Source', value: SOURCE_NAMES[props.transcript.source] ?? props.transcript.source },
   { label: 'Language', value: props.transcript.language ?? 'Not given' },
-  { label: 'Duration', value: formatDuration(props.transcript.duration_s) },
+  { label: 'Duration', value: formatClock(props.transcript.duration_s, 'Unknown') },
   { label: 'Speakers', value: String(props.transcript.speakers.length) },
   { label: 'Turns', value: String(props.transcript.turns.length) },
 ])
