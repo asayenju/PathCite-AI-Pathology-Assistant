@@ -33,3 +33,12 @@ Low-confidence words (for ASR-error reporting): `adenocarcinoma` 0.41, `sigmoid`
 `mismatch` 0.58. AWS fixtures carry a fake `jobName` containing `SYNTHETIC-PATIENT-NAME`;
 the importer must never echo it. Empty and non-UTF-8 uploads and oversized files are built
 inside the tests, not stored here.
+
+## Sample conversations
+
+`scenarios.py` holds nine more scripted conversations (one per pathology scenario, rotating
+vendors) with an answer key per doctor statement. `generate.py` also renders them to
+`frontend/public/transcripts/<folder>/<id>.json` plus `index.json` (the UI's sample panel) and
+writes the keys to `backend/evals/factcheck/keys/` (see `backend/evals/factcheck/README.md`).
+Each scenario has its own low-confidence word map and timing seed. Synthetic and AI-written;
+`tests/test_transcript_samples.py` checks they are up to date and import cleanly.

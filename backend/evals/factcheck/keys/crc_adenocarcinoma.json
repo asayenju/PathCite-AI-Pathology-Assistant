@@ -1,0 +1,41 @@
+{
+ "id": "crc_adenocarcinoma",
+ "title": "Colorectal adenocarcinoma results",
+ "folder": "GI",
+ "vendor": "deepgram",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "a cancer that starts in the gland cells lining the colon",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Adenocarcinoma is a cancer that starts in the gland-forming cells that line the colon.",
+   "source_hint": "CAP colon and rectum protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Because it's moderately differentiated, that tells us it hasn't spread.",
+   "verdict": "inaccurate",
+   "issue": "Confuses grade with stage: differentiation says nothing about whether the cancer has spread.",
+   "correct": "Differentiation is the grade, how abnormal the cells look. Whether it has spread is the stage, judged from the depth of invasion, the lymph nodes and imaging.",
+   "source_hint": "AJCC 8th colorectal; CAP colon and rectum protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "a CT scan of your chest, abdomen and pelvis to stage it",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Staging of colon cancer includes CT of the chest, abdomen and pelvis.",
+   "source_hint": "NCCN colon cancer guidelines",
+   "speaker": "doctor"
+  },
+  {
+   "span": "We'll also test the tumor for mismatch repair proteins.",
+   "verdict": "incomplete",
+   "issue": "Doesn't say why the test is done.",
+   "correct": "Mismatch repair (MMR) or MSI testing screens for Lynch syndrome, an inherited condition, and can guide treatment such as immunotherapy.",
+   "source_hint": "CAP colorectal biomarker template",
+   "speaker": "doctor"
+  }
+ ]
+}

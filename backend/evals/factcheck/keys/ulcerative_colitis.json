@@ -1,0 +1,33 @@
+{
+ "id": "ulcerative_colitis",
+ "title": "Ulcerative colitis biopsy",
+ "folder": "GI",
+ "vendor": "whisperx",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Chronic active colitis with this pattern on biopsy is consistent with ulcerative colitis.",
+   "source_hint": "Pathology report; ACG ulcerative colitis guideline",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Ulcerative colitis mostly affects your small intestine.",
+   "verdict": "inaccurate",
+   "issue": "Wrong location: ulcerative colitis affects the colon and rectum.",
+   "correct": "Ulcerative colitis affects the colon and rectum, continuously from the rectum upward. The small intestine is typically spared; Crohn's disease is the one that can affect any part of the GI tract.",
+   "source_hint": "ACG ulcerative colitis guideline",
+   "speaker": "doctor"
+  },
+  {
+   "span": "There was no dysplasia in the samples.",
+   "verdict": "incomplete",
+   "issue": "Doesn't mention the future cancer risk or the need for surveillance.",
+   "correct": "Long-standing ulcerative colitis increases colorectal cancer risk, so regular surveillance colonoscopy is recommended, usually starting about 8 years after symptoms begin.",
+   "source_hint": "ACG ulcerative colitis guideline; SCENIC consensus",
+   "speaker": "doctor"
+  }
+ ]
+}

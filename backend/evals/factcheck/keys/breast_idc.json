@@ -1,0 +1,33 @@
+{
+ "id": "breast_idc",
+ "title": "Invasive ductal carcinoma, ER and PR positive, HER2 negative",
+ "folder": "Breast",
+ "vendor": "openai_diarized",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Invasive carcinoma has grown beyond the duct into the surrounding breast tissue.",
+   "source_hint": "CAP invasive breast carcinoma protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Because it's HER2 negative, hormone-blocking pills won't work for you.",
+   "verdict": "inaccurate",
+   "issue": "Mixes up HER2 with hormone receptors: hormone therapy depends on ER and PR, not HER2.",
+   "correct": "Whether hormone therapy helps depends on ER and PR. ER and PR positive means endocrine therapy is likely to help. HER2 negative means HER2-targeted drugs such as trastuzumab aren't used.",
+   "source_hint": "ASCO/CAP ER/PgR and HER2 testing guidelines",
+   "speaker": "doctor"
+  },
+  {
+   "span": "It's a grade 2 tumor.",
+   "verdict": "incomplete",
+   "issue": "The grade is stated but not explained.",
+   "correct": "The Nottingham grade, 1 to 3, describes how abnormal the cells look and how fast they are likely to grow. It is not the stage.",
+   "source_hint": "CAP invasive breast carcinoma protocol (Nottingham grade)",
+   "speaker": "doctor"
+  }
+ ]
+}

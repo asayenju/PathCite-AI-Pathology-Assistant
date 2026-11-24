@@ -1,0 +1,139 @@
+{
+ "task": "transcribe",
+ "duration": 70.02,
+ "text": "Hi, thanks for coming in. Is it okay if your sister stays for this? Yes, please. I want her here. Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma. Um, okay. What does invasive mean? That sounds scary. Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue. Okay. The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative. I don't know what any of that means, honestly. Because it's HER2 negative, hormone-blocking pills won't work for you. Oh. Okay. It's a grade 2 tumor. Is that good or bad? It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment. Will I need chemo? That depends on a few more results, and we'll go through all of it at that visit. Okay. Thank you.",
+ "segments": [
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_000",
+   "start": 0.3,
+   "end": 5.22,
+   "text": "Hi, thanks for coming in. Is it okay if your sister stays for this?",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_001",
+   "start": 5.82,
+   "end": 8.11,
+   "text": "Yes, please. I want her here.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_002",
+   "start": 8.71,
+   "end": 14.68,
+   "text": "Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_003",
+   "start": 15.28,
+   "end": 19.15,
+   "text": "Um, okay. What does invasive mean? That sounds scary.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_004",
+   "start": 19.75,
+   "end": 26.12,
+   "text": "Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_005",
+   "start": 26.72,
+   "end": 27.02,
+   "text": "Okay.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_006",
+   "start": 27.62,
+   "end": 36.31,
+   "text": "The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_007",
+   "start": 36.91,
+   "end": 40.13,
+   "text": "I don't know what any of that means, honestly.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_008",
+   "start": 40.73,
+   "end": 45.15,
+   "text": "Because it's HER2 negative, hormone-blocking pills won't work for you.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_009",
+   "start": 45.75,
+   "end": 46.51,
+   "text": "Oh. Okay.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_010",
+   "start": 47.11,
+   "end": 48.57,
+   "text": "It's a grade 2 tumor.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_011",
+   "start": 49.17,
+   "end": 50.61,
+   "text": "Is that good or bad?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_012",
+   "start": 51.21,
+   "end": 59.6,
+   "text": "It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_013",
+   "start": 60.2,
+   "end": 61.42,
+   "text": "Will I need chemo?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_014",
+   "start": 62.02,
+   "end": 67.73,
+   "text": "That depends on a few more results, and we'll go through all of it at that visit.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_015",
+   "start": 68.33,
+   "end": 69.52,
+   "text": "Okay. Thank you.",
+   "speaker": "B"
+  }
+ ],
+ "usage": {
+  "type": "duration",
+  "seconds": 70
+ }
+}

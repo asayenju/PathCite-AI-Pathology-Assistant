@@ -8,6 +8,9 @@ docs/PRD-transcript-import.md.
 Shapes follow the vendors' public docs as of 2026-11 and are NOT real vendor output.
 Treat them as our reading of the docs; swap in real outputs when available (issue #19).
 
+It also renders the sample conversations in scenarios.py to frontend/public/transcripts/
+(plus index.json) and their answer keys to backend/evals/factcheck/keys/.
+
 Deterministic: `python tests/fixtures/transcripts/generate.py` rewrites the same bytes.
 """
 
@@ -16,9 +19,20 @@ from __future__ import annotations
 import json
 import random
 import re
+import zlib
 from pathlib import Path
 
+try:  # imported as tests.fixtures.transcripts.generate
+    from . import scenarios
+except ImportError:  # run as a script
+    import scenarios  # type: ignore[no-redef]
+
 OUT = Path(__file__).resolve().parent
+REPO = OUT.parents[3]
+SAMPLES_DIR = Path("frontend/public/transcripts")  # relative to REPO; served by Vite
+KEYS_DIR = Path("backend/evals/factcheck/keys")  # relative to REPO; never shipped to the UI
+SAMPLES_NOTICE = "Synthetic, AI-written sample conversations. Not real patients. Not medical advice."
+KEYS_NOTICE = "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22)."
 
 # (speaker index, text). 0 = doctor, 1 = patient. Includes back-to-back doctor lines
 # (turn merging), a digit (WhisperX can't align it) and low-confidence medical terms.
@@ -54,8 +68,11 @@ def _tokens(text: str) -> list[tuple[str, str]]:
     return [PUNCT.match(t).groups() for t in text.split()]  # type: ignore[union-attr]
 
 
-def timed_dialogue(dialogue=DIALOGUE, seed: int = 42):
-    """[(speaker, text, start, end, [(word, punct, start, end, confidence)])]"""
+def timed_dialogue(dialogue=DIALOGUE, seed: int = 42, low_confidence: dict[str, float] | None = None):
+    """[(speaker, text, start, end, [(word, punct, start, end, confidence)])]
+
+    low_confidence maps lowercased bare words to a fixed score (default: LOW_CONFIDENCE)."""
+    low = LOW_CONFIDENCE if low_confidence is None else low_confidence
     rng = random.Random(seed)
     t = 0.3
     turns = []
@@ -64,7 +81,7 @@ def timed_dialogue(dialogue=DIALOGUE, seed: int = 42):
         start = t
         for word, punct in _tokens(text):
             dur = round(0.12 + 0.045 * len(word), 2)
-            conf = LOW_CONFIDENCE.get(word.lower(), round(rng.uniform(0.86, 0.995), 3))
+            conf = low.get(word.lower(), round(rng.uniform(0.86, 0.995), 3))
             words.append((word, punct, round(t, 2), round(t + dur, 2), conf))
             t += dur + (0.25 if punct else 0.04)
         end = words[-1][3]
@@ -163,7 +180,7 @@ def _aws_items(turns, *, speaker_labels: bool, with_ids: bool):
     return items
 
 
-def aws(turns, *, layout="audio_segments", medical=False):
+def aws(turns, *, layout="audio_segments", medical=False, job_name="SYNTHETIC-PATIENT-NAME-colonoscopy-results"):
     """layout: audio_segments (current) | items (speaker_label on items, no audio_segments)
     | legacy (speakers only in speaker_labels.segments) | channels (channel identification)."""
     full = " ".join(t[1] for t in turns)
@@ -224,7 +241,7 @@ def aws(turns, *, layout="audio_segments", medical=False):
 
     doc = {
         # Real job names are user-chosen and often contain patient names: the importer must drop them.
-        "jobName": "SYNTHETIC-PATIENT-NAME-colonoscopy-results",
+        "jobName": job_name,
         "accountId": "123456789012",
         "status": "COMPLETED",
         "results": results,
@@ -383,13 +400,86 @@ def build() -> dict[str, object]:
     }
 
 
+# ---------------------------------------------------------------- sample conversations
+
+
+def render_scenario(sc: "scenarios.Scenario") -> dict:
+    """The scenario as its vendor's JSON. Seed is derived from the id so each sample differs."""
+    turns = timed_dialogue(sc.dialogue, seed=zlib.crc32(sc.id.encode()), low_confidence=sc.low_confidence)
+    if sc.vendor == "deepgram":
+        return deepgram(turns)
+    if sc.vendor == "aws_medical":
+        return aws(turns, layout="audio_segments", medical=True, job_name=f"SYNTHETIC-PATIENT-NAME-{sc.id}")
+    if sc.vendor == "whisperx":
+        return whisperx(turns)
+    if sc.vendor == "openai_diarized":
+        return openai_diarized(turns)
+    raise ValueError(f"unknown vendor {sc.vendor!r}")
+
+
+def _folder_slug(name: str) -> str:
+    return dict(scenarios.FOLDERS)[name]
+
+
+def sample_path(sc: "scenarios.Scenario") -> str:
+    """Path of the sample relative to frontend/public (what the frontend fetches)."""
+    return f"transcripts/{_folder_slug(sc.folder)}/{sc.id}.json"
+
+
+def answer_key(sc: "scenarios.Scenario") -> dict:
+    return {
+        "id": sc.id,
+        "title": sc.title,
+        "folder": sc.folder,
+        "vendor": sc.vendor,
+        "notice": KEYS_NOTICE,
+        "keys": [
+            {
+                "span": k.span,
+                "verdict": k.verdict,
+                "issue": k.issue,
+                "correct": k.correct,
+                "source_hint": k.source_hint,
+                "speaker": "doctor",
+            }
+            for k in sc.keys
+        ],
+    }
+
+
+def build_samples() -> dict[str, object]:
+    """{path relative to the repo root: JSON document} for the sample transcripts, the
+    manifest and the answer keys."""
+    out: dict[str, object] = {}
+    folders = []
+    for name, slug in scenarios.FOLDERS:
+        items = []
+        for sc in (s for s in scenarios.SCENARIOS if s.folder == name):
+            out[f"frontend/public/{sample_path(sc)}"] = render_scenario(sc)
+            out[(KEYS_DIR / f"{sc.id}.json").as_posix()] = answer_key(sc)
+            items.append({"id": sc.id, "title": sc.title, "vendor": sc.vendor, "file": sample_path(sc)})
+        folders.append({"name": name, "slug": slug, "items": items})
+    out[(SAMPLES_DIR / "index.json").as_posix()] = {"notice": SAMPLES_NOTICE, "folders": folders}
+    return out
+
+
+def dump(doc: object) -> str:
+    return json.dumps(doc, indent=1, ensure_ascii=False) + "\n"
+
+
 def main() -> None:
     for name, doc in build().items():
-        (OUT / name).write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        (OUT / name).write_text(dump(doc), encoding="utf-8")
     # Truncated JSON: valid prefix, cut mid-document.
     full = json.dumps(build()["deepgram_utterances.json"], indent=1)
     (OUT / "truncated.json").write_text(full[: len(full) // 2], encoding="utf-8")
     print(f"wrote {len(build()) + 1} fixtures to {OUT}")
+    samples = build_samples()
+    for rel, doc in samples.items():
+        path = REPO / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(dump(doc), encoding="utf-8")
+    print(f"wrote {len(samples)} sample transcripts, manifest and answer keys under {REPO}")
 
 
 if __name__ == "__main__":

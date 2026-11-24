@@ -1,0 +1,33 @@
+{
+ "id": "dlbcl",
+ "title": "Diffuse large B-cell lymphoma",
+ "folder": "Skin & blood",
+ "vendor": "whisperx",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "Diffuse large B-cell lymphoma is a fast-growing lymphoma, but it's often curable with treatment",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Diffuse large B-cell lymphoma is an aggressive, fast-growing lymphoma that is often curable with standard treatment.",
+   "source_hint": "NCCN B-cell lymphomas",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Lymphoma only lives in the lymph nodes, so the rest of your body is fine.",
+   "verdict": "inaccurate",
+   "issue": "Lymphoma can involve organs outside the lymph nodes; staging hasn't been done yet.",
+   "correct": "Lymphoma can involve organs outside the lymph nodes, such as the spleen, bone marrow or gut. Staging, usually with a PET-CT scan, shows where it is.",
+   "source_hint": "NCCN B-cell lymphomas; Lugano classification",
+   "speaker": "doctor"
+  },
+  {
+   "span": "The treatment is usually chemotherapy.",
+   "verdict": "incomplete",
+   "issue": "Incomplete regimen and no mention of staging first.",
+   "correct": "Standard first treatment combines chemotherapy with the antibody rituximab, for example R-CHOP, after staging with PET-CT.",
+   "source_hint": "NCCN B-cell lymphomas",
+   "speaker": "doctor"
+  }
+ ]
+}
