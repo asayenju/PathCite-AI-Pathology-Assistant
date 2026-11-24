@@ -32,4 +32,5 @@ npm test            # unit tests (API client, class list, bundled samples)
 - Score ruler: the tick at 0.70 is the backend's default `UNCERTAIN_THRESHOLD`. The `uncertain` flag in the response decides the colour, so a different server setting still behaves correctly; only the tick position would be off.
 - `src/lib/classes.ts` must keep the same order as `backend/app/classes.py` (a test checks this).
 - shadcn-vue components in `src/components/ui/` were added with CLI v2.4.3: the latest CLI crashes on Node 20.
+- Transcripts tab: drop or pick a diarized transcript JSON (Deepgram, AWS Transcribe, WhisperX, OpenAI diarized; up to 20 MB). It is posted to `/transcripts/import` and shown as a read-only summary. The client (`src/lib/transcripts.ts`) refuses empty, oversized and non-JSON files before uploading. The transcript lives only in memory (`composables/useTranscriptImport.ts`); nothing is written to web storage. Both tabs stay mounted, so switching keeps each view's state.
 - Not built yet: Azure storage for slides, auth, batch upload, dark mode.

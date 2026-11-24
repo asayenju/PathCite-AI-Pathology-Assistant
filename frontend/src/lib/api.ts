@@ -7,6 +7,7 @@ export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 export const UNCERTAIN_THRESHOLD = 0.7
 export const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/tiff']
 
+/** A request to the backend failed. `code` is the backend's error code, or `network` / `unknown`. */
 export class PredictError extends Error {
   readonly code: string
 
@@ -28,10 +29,59 @@ const MESSAGES: Record<string, string> = {
   model_unavailable: 'The model is not loaded on the server. Check the backend logs.',
   internal_error: 'The server hit an error. Try again.',
   network: "Can't reach the backend. Start it with uvicorn on port 8000.",
+  // Transcript import (POST /transcripts/import). Size and empty-file messages for transcripts live in
+  // lib/transcripts.ts, so the image wording above stays correct.
+  invalid_json: "The file isn't valid JSON. Export the transcript again as JSON and retry.",
+  unsupported_transcript_format:
+    'This transcript format is not supported. Use JSON from Deepgram, AWS Transcribe, WhisperX or OpenAI (diarized).',
+  undiarized_transcript: 'This transcript has no speaker labels. Re-run it with speaker diarization turned on.',
+  empty_transcript: 'This transcript has no words in it. Check that the audio was transcribed, then export again.',
 }
+
+/** Every backend error code with a message, for tests. */
+export const MESSAGE_CODES = Object.keys(MESSAGES)
 
 export function messageFor(code: string, fallback?: string): string {
   return MESSAGES[code] ?? fallback ?? 'Something went wrong. Try again.'
+}
+
+type Describe = (code: string, fallback?: string) => string
+
+/**
+ * POST one file as multipart field `file` and parse the JSON reply.
+ * Fetch failures and non-JSON 5xx become `network`; `{detail, code}` errors are mapped with `describe`.
+ * Aborts are rethrown untouched.
+ */
+export async function postFile<T>(
+  path: string,
+  file: File,
+  signal: AbortSignal | undefined,
+  describe: Describe = messageFor,
+): Promise<T> {
+  const body = new FormData()
+  body.append('file', file)
+
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE}${path}`, { method: 'POST', body, signal })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    throw new PredictError('network', describe('network'))
+  }
+
+  if (response.ok) return (await response.json()) as T
+
+  let payload: { code?: string; detail?: string } | null = null
+  try {
+    payload = await response.json()
+  } catch {
+    // Not JSON: e.g. the dev proxy answering for a backend that is down.
+  }
+  if (!payload?.code) {
+    if (response.status >= 500) throw new PredictError('network', describe('network'))
+    throw new PredictError('unknown', `Request failed (${response.status}).`)
+  }
+  throw new PredictError(payload.code, describe(payload.code, payload.detail))
 }
 
 /** Cheap checks before uploading. The server stays the authority. */
@@ -47,29 +97,5 @@ export function validateFile(file: File): PredictError | null {
 export async function predict(file: File, signal?: AbortSignal): Promise<PredictResponse> {
   const invalid = validateFile(file)
   if (invalid) throw invalid
-
-  const body = new FormData()
-  body.append('file', file)
-
-  let response: Response
-  try {
-    response = await fetch(`${API_BASE}/predict`, { method: 'POST', body, signal })
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') throw error
-    throw new PredictError('network', messageFor('network'))
-  }
-
-  if (response.ok) return (await response.json()) as PredictResponse
-
-  let payload: { code?: string; detail?: string } | null = null
-  try {
-    payload = await response.json()
-  } catch {
-    // Not JSON: e.g. the dev proxy answering for a backend that is down.
-  }
-  if (!payload?.code) {
-    if (response.status >= 500) throw new PredictError('network', messageFor('network'))
-    throw new PredictError('unknown', `Request failed (${response.status}).`)
-  }
-  throw new PredictError(payload.code, messageFor(payload.code, payload.detail))
+  return postFile<PredictResponse>('/predict', file, signal)
 }
