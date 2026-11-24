@@ -55,3 +55,42 @@ describe('App view switch', () => {
     wrapper.unmount()
   })
 })
+
+describe('App sample transcripts', () => {
+  const manifest = {
+    notice: 'Synthetic, AI-written sample conversations.',
+    folders: [{ name: 'GI', slug: 'gi', items: [{ id: 'a', title: 'A visit', vendor: 'whisperx', file: 'transcripts/gi/a.json' }] }],
+  }
+
+  it('shows the sample folders beside the drop zone when the manifest loads', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        new Response(JSON.stringify(url === '/transcripts/index.json' ? manifest : { samples: [] })),
+      ),
+    )
+    const wrapper = await mountApp()
+    await tab(wrapper, 'Transcripts').trigger('click')
+    expect(wrapper.get('#panel-transcripts [data-testid="transcript-folders"]').text()).toContain('A visit')
+    expect(wrapper.get('[aria-label^="Drop zone."]').isVisible()).toBe(true)
+    expect(wrapper.get('header').text()).toContain('Research model. Not a diagnosis.')
+    wrapper.unmount()
+  })
+
+  it('hides the sample folders when the manifest fails, and the slides still load', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url === '/transcripts/index.json'
+          ? Promise.reject(new TypeError('offline'))
+          : new Response(JSON.stringify({ samples: [] })),
+      ),
+    )
+    const wrapper = await mountApp()
+    await tab(wrapper, 'Transcripts').trigger('click')
+    expect(wrapper.find('[data-testid="transcript-folders"]').exists()).toBe(false)
+    expect(wrapper.get('[aria-label^="Drop zone."]').isVisible()).toBe(true)
+    wrapper.unmount()
+  })
+})
+

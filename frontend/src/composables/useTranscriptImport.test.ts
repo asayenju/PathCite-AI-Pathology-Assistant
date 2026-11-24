@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useTranscriptImport } from './useTranscriptImport'
+import { SAMPLE_LOAD_ERROR } from '@/lib/transcriptSamples'
 import { transcriptMessageFor } from '@/lib/transcripts'
 
 const json = (name = 'visit.json') => new File(['{}'], name, { type: 'application/json' })
@@ -218,3 +219,47 @@ describe('useTranscriptImport roles', () => {
     expect(t.roles.value).toEqual({ S1: 'patient', S2: 'doctor' })
   })
 })
+
+describe('useTranscriptImport samples', () => {
+  const sample = { id: 'crc', title: 'Colorectal', vendor: 'deepgram', file: 'transcripts/gi/crc.json' }
+
+  it('a user file dropped while a sample is still fetching wins, and clears the sample marker', async () => {
+    const pending = deferredFetch()
+    const t = useTranscriptImport()
+    const first = t.readSample(sample)
+    expect(t.status.value).toBe('loading')
+    expect(t.fileName.value).toBe('crc.json')
+    expect(t.sample.value).toEqual(sample)
+    expect(pending[0]!.signal).toBeDefined()
+
+    const second = t.readFile(json('mine.json'))
+    expect(pending[0]!.signal.aborted).toBe(true)
+    expect(t.sample.value).toBeNull()
+    await first
+    expect(t.status.value).toBe('loading') // the aborted sample fetch must not flip state to error
+
+    pending[1]!.resolve(new Response(JSON.stringify(body)))
+    await second
+    expect(t.status.value).toBe('review')
+    expect(t.fileName.value).toBe('mine.json')
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+  })
+
+  it('a failed sample fetch is an error with the sample message', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new TypeError('offline'))))
+    const t = useTranscriptImport()
+    await t.readSample(sample)
+    expect(t.status.value).toBe('error')
+    expect(t.errorMessage.value).toBe(SAMPLE_LOAD_ERROR)
+  })
+
+  it('reset clears the sample marker', async () => {
+    deferredFetch()
+    const t = useTranscriptImport()
+    void t.readSample(sample)
+    t.reset()
+    expect(t.sample.value).toBeNull()
+    expect(t.status.value).toBe('idle')
+  })
+})
+

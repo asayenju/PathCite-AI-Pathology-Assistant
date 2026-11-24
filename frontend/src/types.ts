@@ -69,3 +69,25 @@ export interface TranscriptImport {
 export interface RoledTurn extends TranscriptTurn {
   role: Role | null
 }
+
+/** One bundled sample transcript (public/transcripts/index.json). Synthetic, not a real patient. */
+export interface TranscriptSample {
+  id: string
+  title: string
+  /** e.g. deepgram, aws_medical, whisperx, openai_diarized. */
+  vendor: string
+  /** Path relative to public/, e.g. transcripts/gi/crc_adenocarcinoma.json. Unique. */
+  file: string
+}
+
+export interface TranscriptSampleFolder {
+  name: string
+  slug: string
+  items: TranscriptSample[]
+}
+
+/** public/transcripts/index.json, written by backend/tests/fixtures/transcripts/generate.py. */
+export interface TranscriptManifest {
+  notice: string
+  folders: TranscriptSampleFolder[]
+}

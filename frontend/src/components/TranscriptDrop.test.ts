@@ -1,8 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TranscriptDrop from './TranscriptDrop.vue'
+import { SAMPLE_LOAD_ERROR, TRANSCRIPT_MIME } from '@/lib/transcriptSamples'
 import { transcriptMessageFor } from '@/lib/transcripts'
-import type { TranscriptImport } from '@/types'
+import type { TranscriptImport, TranscriptManifest } from '@/types'
 
 const imported: TranscriptImport = {
   source: 'aws_transcribe',
@@ -120,6 +121,195 @@ describe('TranscriptDrop', () => {
     await wrapper.get('#role-S2').setValue('other')
     await confirmButton(wrapper).trigger('click')
     await wrapper.findAll('button').find((b) => b.text() === 'Edit roles')!.trigger('click')
+    await wrapper.findAll('button').find((b) => b.text() === 'Clear transcript')!.trigger('click')
+    expect(setItem).not.toHaveBeenCalled()
+    setItem.mockRestore()
+  })
+})
+
+describe('TranscriptDrop with sample transcripts', () => {
+  const manifest: TranscriptManifest = {
+    notice: 'Synthetic, AI-written sample conversations.',
+    folders: [
+      {
+        name: 'GI',
+        slug: 'gi',
+        items: [
+          { id: 'crc', title: 'Colorectal results', vendor: 'deepgram', file: 'transcripts/gi/crc.json' },
+          { id: 'polyp', title: 'Benign polyp', vendor: 'whisperx', file: 'transcripts/gi/polyp.json' },
+        ],
+      },
+    ],
+  }
+  const sampleBody: Record<string, string> = {
+    '/transcripts/gi/crc.json': '{"sample":"crc"}',
+    '/transcripts/gi/polyp.json': '{"sample":"polyp"}',
+  }
+  /** polyp's import suggests the opposite roles, so a reset is visible. */
+  const polypImport: TranscriptImport = {
+    ...imported,
+    source: 'whisperx',
+    speakers: [
+      { ...imported.speakers[0]!, suggested_role: 'patient' },
+      { ...imported.speakers[1]!, suggested_role: 'doctor' },
+    ],
+  }
+
+  /** Routes by URL: sample files are served from public/, the import endpoint answers per uploaded sample. */
+  function routeFetch({ sampleStatus = 200 } = {}) {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/transcripts/import') {
+        const file = (init!.body as FormData).get('file') as File
+        const text = await file.text()
+        return new Response(JSON.stringify(text.includes('polyp') ? polypImport : imported))
+      }
+      if (url in sampleBody) {
+        // A Response-like object: jsdom's File only accepts jsdom's Blob, not the one Node's Response.blob() makes.
+        const ok = sampleStatus === 200
+        return { ok, status: sampleStatus, blob: async () => new Blob([ok ? sampleBody[url]! : 'nope']) } as Response
+      }
+      throw new TypeError(`unexpected fetch ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  const mountWith = () => mount(TranscriptDrop, { props: { manifest } })
+  const sampleButton = (w: ReturnType<typeof mountWith>, index: number) => w.findAll('#tfolder-gi button')[index]!
+  const sampleDrop = (file: string) => ({
+    dataTransfer: { types: [TRANSCRIPT_MIME], files: [], getData: (type: string) => (type === TRANSCRIPT_MIME ? file : '') },
+  })
+
+  /** The upload sent to the import endpoint: same path, name and bytes as a user's file would take. */
+  async function uploads(fetchMock: ReturnType<typeof routeFetch>) {
+    const posts = fetchMock.mock.calls.filter(([url]) => url === '/api/transcripts/import')
+    return Promise.all(
+      posts.map(async ([, init]) => {
+        const file = (init!.body as FormData).get('file') as File
+        return { name: file.name, type: file.type, text: await file.text() }
+      }),
+    )
+  }
+
+  it('hides the sample panel without a manifest, and the drop zone still works', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mount(TranscriptDrop)
+    expect(wrapper.find('[data-testid="transcript-folders"]').exists()).toBe(false)
+    await zone(wrapper).trigger('drop', drop(new File(['{}'], 'visit.json', { type: 'application/json' })))
+    await flushPromises()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('[data-testid="transcript-summary"]').exists()).toBe(true)
+  })
+
+  it('imports a clicked sample: fetches its file, then posts it like an upload', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mountWith()
+    expect(wrapper.text()).toContain(manifest.notice)
+    await sampleButton(wrapper, 0).trigger('click')
+    await flushPromises()
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/transcripts/gi/crc.json', '/api/transcripts/import'])
+    expect(await uploads(fetchMock)).toEqual([{ name: 'crc.json', type: 'application/json', text: sampleBody['/transcripts/gi/crc.json'] }])
+    expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('crc.json')
+    expect(wrapper.get('[data-testid="sample-notice"]').text()).toContain('Synthetic sample: Colorectal results')
+    expect(sampleButton(wrapper, 0).attributes('aria-pressed')).toBe('true')
+  })
+
+  it('imports a sample dropped on the drop zone with the custom type', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mountWith()
+    await zone(wrapper).trigger('drop', sampleDrop('transcripts/gi/polyp.json'))
+    await flushPromises()
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/transcripts/gi/polyp.json', '/api/transcripts/import'])
+    expect((await uploads(fetchMock))[0]!.text).toBe(sampleBody['/transcripts/gi/polyp.json'])
+    expect(wrapper.find('[data-testid="transcript-summary"]').exists()).toBe(true)
+  })
+
+  it('ignores a dropped path that is not in the manifest', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mountWith()
+    await zone(wrapper).trigger('drop', sampleDrop('transcripts/gi/other.json'))
+    await flushPromises()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('replaces a confirmed transcript with a clicked sample and resets the roles', async () => {
+    routeFetch()
+    const wrapper = mountWith()
+    await sampleButton(wrapper, 0).trigger('click')
+    await flushPromises()
+    expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('doctor')
+    await wrapper.get('#role-S2').setValue('other')
+    await confirmButton(wrapper).trigger('click')
+    expect(wrapper.text()).toContain('Roles confirmed.')
+
+    await sampleButton(wrapper, 1).trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('Roles confirmed.')
+    expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('polyp.json')
+    expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('patient')
+    expect((wrapper.get('#role-S2').element as HTMLSelectElement).value).toBe('doctor')
+    expect(sampleButton(wrapper, 1).attributes('aria-pressed')).toBe('true')
+    expect(sampleButton(wrapper, 0).attributes('aria-pressed')).toBe('false')
+  })
+
+  it('replaces a transcript in review with a sample dropped on it', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mountWith()
+    await zone(wrapper).trigger('drop', drop(new File(['{}'], 'visit.json', { type: 'application/json' })))
+    await flushPromises()
+    await wrapper.get('#role-S1').setValue('other')
+
+    const review = wrapper.get('[data-testid="transcript-review"]')
+    await review.trigger('dragover', sampleDrop('transcripts/gi/polyp.json'))
+    await review.trigger('drop', sampleDrop('transcripts/gi/polyp.json'))
+    await flushPromises()
+    expect(fetchMock.mock.calls.map(([url]) => url)).toContain('/transcripts/gi/polyp.json')
+    expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('polyp.json')
+    expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('patient')
+  })
+
+  it('leaves a transcript in review alone when a plain file is dropped on it', async () => {
+    const fetchMock = routeFetch()
+    const wrapper = mountWith()
+    await zone(wrapper).trigger('drop', drop(new File(['{}'], 'visit.json', { type: 'application/json' })))
+    await flushPromises()
+    await wrapper.get('[data-testid="transcript-review"]').trigger('drop', drop(new File(['{}'], 'other.json')))
+    await flushPromises()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('visit.json')
+  })
+
+  it('replaces an error with a sample', async () => {
+    routeFetch()
+    const wrapper = mountWith()
+    await zone(wrapper).trigger('drop', drop(new File(['x'], 'slide.png', { type: 'image/png' })))
+    await flushPromises()
+    expect(wrapper.text()).toContain(transcriptMessageFor('unsupported_transcript_format'))
+    await sampleButton(wrapper, 0).trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="transcript-summary"]').exists()).toBe(true)
+  })
+
+  it('shows a clear error when the sample file cannot be fetched, without posting', async () => {
+    const fetchMock = routeFetch({ sampleStatus: 404 })
+    const wrapper = mountWith()
+    await sampleButton(wrapper, 0).trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain(SAMPLE_LOAD_ERROR)
+    expect(SAMPLE_LOAD_ERROR).toBe("Couldn't load the sample transcript. Try again.")
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/transcripts/gi/crc.json'])
+  })
+
+  it('never touches web storage through samples, roles, confirm and clear', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+    routeFetch()
+    const wrapper = mountWith()
+    await sampleButton(wrapper, 0).trigger('click')
+    await flushPromises()
+    await confirmButton(wrapper).trigger('click')
+    await sampleButton(wrapper, 1).trigger('click')
+    await flushPromises()
     await wrapper.findAll('button').find((b) => b.text() === 'Clear transcript')!.trigger('click')
     expect(setItem).not.toHaveBeenCalled()
     setItem.mockRestore()

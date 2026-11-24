@@ -7,7 +7,8 @@ import TranscriptDrop from '@/components/TranscriptDrop.vue'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePredict } from '@/composables/usePredict'
 import { sampleUrl } from '@/lib/slide'
-import type { Sample } from '@/types'
+import { loadTranscriptManifest } from '@/lib/transcriptSamples'
+import type { Sample, TranscriptManifest } from '@/types'
 
 type View = 'slides' | 'transcripts'
 const VIEWS: { id: View; label: string }[] = [
@@ -28,9 +29,12 @@ function onTabKey(event: KeyboardEvent, index: number) {
 }
 
 const samples = ref<Sample[]>([])
+/** Bundled synthetic transcripts. Null (panel hidden) if the manifest is missing or malformed. */
+const transcriptManifest = ref<TranscriptManifest | null>(null)
 const { status, previewUrl, sample, result, errorMessage, readFile, readSample, reset } = usePredict()
 
 onMounted(async () => {
+  loadTranscriptManifest().then((manifest) => (transcriptManifest.value = manifest))
   try {
     const response = await fetch(sampleUrl('samples/samples.json'))
     samples.value = (await response.json()).samples
@@ -128,7 +132,7 @@ function onSlideDropped(file: string) {
           PathCite reads the speakers and turns so you can check them. The file is read in memory and is not saved.
         </p>
         <div class="pt-4 lg:pt-10">
-          <TranscriptDrop />
+          <TranscriptDrop :manifest="transcriptManifest" />
         </div>
       </div>
 
