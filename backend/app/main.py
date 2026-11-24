@@ -13,6 +13,7 @@ from app.images import load_image, read_upload
 from app.model import ModelMissingError, load_model, pick_device
 from app.predict import build_response, predict_probs
 from app.schemas import PredictResponse
+from app.transcripts.router import router as transcripts_router
 
 logger = logging.getLogger("pathcite")
 
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PathCite API", lifespan=lifespan)
 register_error_handlers(app)
+app.include_router(transcripts_router)
 
 
 @app.get("/health")

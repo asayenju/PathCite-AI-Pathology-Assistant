@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     max_upload_mb: int = 10
     max_image_pixels: int = 25_000_000  # ~5000x5000; guards against decompression bombs
     max_transcript_mb: int = 20
+    asr_low_confidence: float = 0.6  # words below this are low-confidence
 
 
 def get_settings() -> Settings:
