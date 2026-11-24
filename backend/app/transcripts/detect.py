@@ -8,6 +8,8 @@ import json
 from typing import Any
 
 from app.errors import ApiError
+from app.transcripts._json import as_dict as _dict
+from app.transcripts._json import dicts as _dicts
 from app.transcripts.schemas import Source
 
 SUPPORTED = "Deepgram, AWS Transcribe (Medical) or diarized Whisper (WhisperX, OpenAI diarized_json)"
@@ -25,18 +27,6 @@ def parse_json(data: bytes) -> Any:
         return json.loads(data.decode("utf-8-sig"))
     except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):
         raise ApiError(422, "invalid_json", "The file is not valid UTF-8 JSON") from None
-
-
-def _dict(x: Any) -> dict:
-    return x if isinstance(x, dict) else {}
-
-
-def _list(x: Any) -> list:
-    return x if isinstance(x, list) else []
-
-
-def _dicts(x: Any) -> list[dict]:
-    return [i for i in _list(x) if isinstance(i, dict)]
 
 
 def detect_format(doc: Any) -> Source:
