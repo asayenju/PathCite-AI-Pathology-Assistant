@@ -1,0 +1,83 @@
+{
+ "notice": "Synthetic, AI-written sample conversations. Not real patients. Not medical advice.",
+ "folders": [
+  {
+   "name": "GI",
+   "slug": "gi",
+   "items": [
+    {
+     "id": "crc_adenocarcinoma",
+     "title": "Colorectal adenocarcinoma results",
+     "vendor": "deepgram",
+     "file": "transcripts/gi/crc_adenocarcinoma.json"
+    },
+    {
+     "id": "tubular_adenoma",
+     "title": "Benign tubular adenoma polyp",
+     "vendor": "aws_medical",
+     "file": "transcripts/gi/tubular_adenoma.json"
+    },
+    {
+     "id": "ulcerative_colitis",
+     "title": "Ulcerative colitis biopsy",
+     "vendor": "whisperx",
+     "file": "transcripts/gi/ulcerative_colitis.json"
+    }
+   ]
+  },
+  {
+   "name": "Breast",
+   "slug": "breast",
+   "items": [
+    {
+     "id": "breast_idc",
+     "title": "Invasive ductal carcinoma, ER and PR positive, HER2 negative",
+     "vendor": "openai_diarized",
+     "file": "transcripts/breast/breast_idc.json"
+    },
+    {
+     "id": "fibroadenoma",
+     "title": "Fibroadenoma",
+     "vendor": "deepgram",
+     "file": "transcripts/breast/fibroadenoma.json"
+    }
+   ]
+  },
+  {
+   "name": "Skin & blood",
+   "slug": "skin-blood",
+   "items": [
+    {
+     "id": "melanoma",
+     "title": "Melanoma, Breslow 1.2 mm",
+     "vendor": "aws_medical",
+     "file": "transcripts/skin-blood/melanoma.json"
+    },
+    {
+     "id": "dlbcl",
+     "title": "Diffuse large B-cell lymphoma",
+     "vendor": "whisperx",
+     "file": "transcripts/skin-blood/dlbcl.json"
+    }
+   ]
+  },
+  {
+   "name": "Prostate & thyroid",
+   "slug": "prostate-thyroid",
+   "items": [
+    {
+     "id": "prostate_gg2",
+     "title": "Prostate biopsy, Gleason 3+4=7",
+     "vendor": "openai_diarized",
+     "file": "transcripts/prostate-thyroid/prostate_gg2.json"
+    },
+    {
+     "id": "thyroid_bethesda4",
+     "title": "Thyroid FNA, Bethesda IV",
+     "vendor": "deepgram",
+     "file": "transcripts/prostate-thyroid/thyroid_bethesda4.json"
+    }
+   ]
+  }
+ ]
+}

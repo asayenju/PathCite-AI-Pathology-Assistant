@@ -1,0 +1,33 @@
+{
+ "id": "melanoma",
+ "title": "Melanoma, Breslow 1.2 mm",
+ "folder": "Skin & blood",
+ "vendor": "aws_medical",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "a cancer of the pigment-making cells in the skin",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Melanoma is a cancer of melanocytes, the pigment-producing cells of the skin.",
+   "source_hint": "CAP cutaneous melanoma protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "The Breslow thickness was 1.2 millimeters, which is how wide the spot was.",
+   "verdict": "inaccurate",
+   "issue": "Breslow thickness is depth, not width.",
+   "correct": "Breslow thickness is how deep the melanoma grew into the skin, measured in millimeters. It is the main factor in the T stage.",
+   "source_hint": "CAP cutaneous melanoma protocol; AJCC 8th melanoma",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Next we'll remove a wider area of skin around the scar.",
+   "verdict": "incomplete",
+   "issue": "Misses lymph node evaluation and the margin size.",
+   "correct": "For a melanoma thicker than 0.8 mm a sentinel lymph node biopsy is usually discussed. Wide excision margins are typically 1 to 2 cm for this thickness.",
+   "source_hint": "NCCN cutaneous melanoma",
+   "speaker": "doctor"
+  }
+ ]
+}

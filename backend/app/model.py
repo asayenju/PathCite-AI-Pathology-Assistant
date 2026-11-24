@@ -10,6 +10,10 @@ class ModelLoadError(RuntimeError):
     pass
 
 
+class ModelMissingError(ModelLoadError):
+    """The weights file does not exist. The app can still run without /predict."""
+
+
 def pick_device() -> torch.device:
     if torch.cuda.is_available():
         return torch.device("cuda")
@@ -22,7 +26,7 @@ def load_model(path: Path, device: torch.device | None = None) -> torch.nn.Modul
     """Load the fine-tuned timm resnet18 (9 classes). Raises ModelLoadError on any problem."""
     path = Path(path)
     if not path.is_file():
-        raise ModelLoadError(f"Model weights not found at {path}")
+        raise ModelMissingError(f"Model weights not found at {path}")
     device = device or pick_device()
     model = timm.create_model("resnet18", pretrained=False, num_classes=len(CLASS_NAMES))
     try:

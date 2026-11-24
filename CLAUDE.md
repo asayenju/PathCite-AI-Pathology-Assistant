@@ -9,6 +9,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `backend/`: FastAPI (`GET /health`, `POST /predict`). See `backend/README.md` for the API and error table.
 - `frontend/`: Vue 3 + TS + Tailwind v4 + shadcn-vue. See `frontend/README.md`.
 - `docs/PRD.md`: backend PRD.
+- `docs/PRD-transcript-import.md`: doctor–patient transcript import (step 1 of the RAG fact checker; issues labelled `transcript-import`).
 
 ## Commands
 
@@ -31,7 +32,7 @@ npm run build        # type-check + production build
 ## Architecture notes
 
 - **Class order is a contract.** `backend/app/classes.py::CLASS_NAMES` (ADI, BACK, DEB, LYM, MUC, MUS, NORM, STR, TUM = indices 0–8) must match `frontend/src/lib/classes.ts`; a frontend test parses the Python file to enforce it. The order was verified against the dataset, so don't reorder.
-- **Backend request path:** `main.py` (lifespan loads the model fail-fast and computes `model_version` as `name@sha256[:8]`) → `images.read_upload`/`load_image` (format sniffed from content, pixel cap, EXIF, first TIFF frame, alpha flattened to white, RGB) → `predict.predict_probs` in a threadpool → `build_response`. Preprocessing must stay `Resize((224,224))` + ImageNet normalize to match training (`test_preprocessing_parity.py`).
+- **Backend request path:** `main.py` (lifespan loads the model and computes `model_version` as `name@sha256[:8]`; a missing weights file runs the app degraded with `/predict` 503, a mismatched one still fails startup) → `images.read_upload`/`load_image` (format sniffed from content, pixel cap, EXIF, first TIFF frame, alpha flattened to white, RGB) → `predict.predict_probs` in a threadpool → `build_response`. Preprocessing must stay `Resize((224,224))` + ImageNet normalize to match training (`test_preprocessing_parity.py`).
 - **Errors** are always `{detail, code}` (`errors.py`); the frontend `lib/api.ts::messageFor` maps on `code`, and maps network failures to a "start uvicorn" message.
 - **Privacy:** uploads are never written to disk or logged. The lifespan raises `MultiPartParser.spool_max_size` above the upload limit so Starlette doesn't spool to temp files (there's a test); unexpected errors log only the exception type.
 - **`uncertain`** is decided server-side (`confidence < UNCERTAIN_THRESHOLD`, default 0.7). The frontend only draws the 0.70 tick; colour/state follows the response flag.

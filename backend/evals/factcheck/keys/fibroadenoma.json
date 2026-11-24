@@ -1,0 +1,33 @@
+{
+ "id": "fibroadenoma",
+ "title": "Fibroadenoma",
+ "folder": "Breast",
+ "vendor": "deepgram",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "a benign, non-cancerous lump made of glandular and connective tissue, and it's common in younger women",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "A fibroadenoma is a benign lump made of glandular and connective tissue, most common in younger women.",
+   "source_hint": "WHO classification of breast tumours; CAP breast biopsy reporting",
+   "speaker": "doctor"
+  },
+  {
+   "span": "We'll just keep an eye on it.",
+   "verdict": "incomplete",
+   "issue": "No follow-up plan is given.",
+   "correct": "Follow-up usually means a clinical exam and/or ultrasound in a few months to check the size, and coming back sooner if it grows or changes.",
+   "source_hint": "NCCN breast cancer screening and diagnosis",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Fibroadenomas usually turn into cancer, so we have to remove it",
+   "verdict": "inaccurate",
+   "issue": "Overstates the risk: simple fibroadenomas very rarely become cancer.",
+   "correct": "Simple fibroadenomas very rarely become cancer. Most don't need removal and can be monitored; removal is considered if it grows, is large or causes symptoms.",
+   "source_hint": "NCCN breast cancer screening and diagnosis; WHO classification of breast tumours",
+   "speaker": "doctor"
+  }
+ ]
+}

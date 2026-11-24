@@ -1,0 +1,2576 @@
+{
+ "metadata": {
+  "transaction_key": "deprecated",
+  "request_id": "00000000-0000-4000-8000-SYNTHETIC0001",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created": "2026-11-24T00:00:00.000Z",
+  "duration": 73.25,
+  "channels": 2,
+  "models": [
+   "synthetic-model-uuid"
+  ],
+  "model_info": {
+   "synthetic-model-uuid": {
+    "name": "nova-3-medical",
+    "version": "synthetic",
+    "arch": "nova-3"
+   }
+  }
+ },
+ "results": {
+  "channels": [
+   {
+    "alternatives": [
+     {
+      "transcript": "Hi, thanks for coming in. Do you want to sit down? That's completely understandable. So, we got the biopsy results back from your colonoscopy. The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma. That's a type of cancer that starts in the gland cells lining the colon. The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it. Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs. The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal. Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins. We'll meet with surgery and oncology together and go over the options with you.",
+      "confidence": 0.914,
+      "words": [
+       {
+        "word": "hi",
+        "start": 0.3,
+        "end": 0.51,
+        "confidence": 0.946,
+        "punctuated_word": "Hi,"
+       },
+       {
+        "word": "thanks",
+        "start": 0.76,
+        "end": 1.15,
+        "confidence": 0.863,
+        "punctuated_word": "thanks"
+       },
+       {
+        "word": "for",
+        "start": 1.19,
+        "end": 1.45,
+        "confidence": 0.897,
+        "punctuated_word": "for"
+       },
+       {
+        "word": "coming",
+        "start": 1.49,
+        "end": 1.88,
+        "confidence": 0.89,
+        "punctuated_word": "coming"
+       },
+       {
+        "word": "in",
+        "start": 1.92,
+        "end": 2.13,
+        "confidence": 0.959,
+        "punctuated_word": "in."
+       },
+       {
+        "word": "do",
+        "start": 2.38,
+        "end": 2.59,
+        "confidence": 0.951,
+        "punctuated_word": "Do"
+       },
+       {
+        "word": "you",
+        "start": 2.63,
+        "end": 2.89,
+        "confidence": 0.98,
+        "punctuated_word": "you"
+       },
+       {
+        "word": "want",
+        "start": 2.93,
+        "end": 3.23,
+        "confidence": 0.872,
+        "punctuated_word": "want"
+       },
+       {
+        "word": "to",
+        "start": 3.27,
+        "end": 3.48,
+        "confidence": 0.917,
+        "punctuated_word": "to"
+       },
+       {
+        "word": "sit",
+        "start": 3.52,
+        "end": 3.78,
+        "confidence": 0.864,
+        "punctuated_word": "sit"
+       },
+       {
+        "word": "down",
+        "start": 3.82,
+        "end": 4.12,
+        "confidence": 0.89,
+        "punctuated_word": "down?"
+       },
+       {
+        "word": "that's",
+        "start": 8.65,
+        "end": 9.04,
+        "confidence": 0.861,
+        "punctuated_word": "That's"
+       },
+       {
+        "word": "completely",
+        "start": 9.08,
+        "end": 9.65,
+        "confidence": 0.969,
+        "punctuated_word": "completely"
+       },
+       {
+        "word": "understandable",
+        "start": 9.69,
+        "end": 10.44,
+        "confidence": 0.954,
+        "punctuated_word": "understandable."
+       },
+       {
+        "word": "so",
+        "start": 10.69,
+        "end": 10.9,
+        "confidence": 0.906,
+        "punctuated_word": "So,"
+       },
+       {
+        "word": "we",
+        "start": 11.15,
+        "end": 11.36,
+        "confidence": 0.881,
+        "punctuated_word": "we"
+       },
+       {
+        "word": "got",
+        "start": 11.4,
+        "end": 11.66,
+        "confidence": 0.989,
+        "punctuated_word": "got"
+       },
+       {
+        "word": "the",
+        "start": 11.7,
+        "end": 11.96,
+        "confidence": 0.905,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "biopsy",
+        "start": 12.0,
+        "end": 12.39,
+        "confidence": 0.873,
+        "punctuated_word": "biopsy"
+       },
+       {
+        "word": "results",
+        "start": 12.43,
+        "end": 12.86,
+        "confidence": 0.873,
+        "punctuated_word": "results"
+       },
+       {
+        "word": "back",
+        "start": 12.9,
+        "end": 13.2,
+        "confidence": 0.974,
+        "punctuated_word": "back"
+       },
+       {
+        "word": "from",
+        "start": 13.24,
+        "end": 13.54,
+        "confidence": 0.942,
+        "punctuated_word": "from"
+       },
+       {
+        "word": "your",
+        "start": 13.58,
+        "end": 13.88,
+        "confidence": 0.969,
+        "punctuated_word": "your"
+       },
+       {
+        "word": "colonoscopy",
+        "start": 13.92,
+        "end": 14.53,
+        "confidence": 0.959,
+        "punctuated_word": "colonoscopy."
+       },
+       {
+        "word": "the",
+        "start": 16.03,
+        "end": 16.29,
+        "confidence": 0.991,
+        "punctuated_word": "The"
+       },
+       {
+        "word": "sample",
+        "start": 16.33,
+        "end": 16.72,
+        "confidence": 0.911,
+        "punctuated_word": "sample"
+       },
+       {
+        "word": "from",
+        "start": 16.76,
+        "end": 17.06,
+        "confidence": 0.935,
+        "punctuated_word": "from"
+       },
+       {
+        "word": "the",
+        "start": 17.1,
+        "end": 17.36,
+        "confidence": 0.972,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "growth",
+        "start": 17.4,
+        "end": 17.79,
+        "confidence": 0.944,
+        "punctuated_word": "growth"
+       },
+       {
+        "word": "in",
+        "start": 17.83,
+        "end": 18.04,
+        "confidence": 0.976,
+        "punctuated_word": "in"
+       },
+       {
+        "word": "your",
+        "start": 18.08,
+        "end": 18.38,
+        "confidence": 0.938,
+        "punctuated_word": "your"
+       },
+       {
+        "word": "sigmoid",
+        "start": 18.42,
+        "end": 18.85,
+        "confidence": 0.55,
+        "punctuated_word": "sigmoid"
+       },
+       {
+        "word": "colon",
+        "start": 18.89,
+        "end": 19.23,
+        "confidence": 0.866,
+        "punctuated_word": "colon"
+       },
+       {
+        "word": "showed",
+        "start": 19.27,
+        "end": 19.66,
+        "confidence": 0.891,
+        "punctuated_word": "showed"
+       },
+       {
+        "word": "what",
+        "start": 19.7,
+        "end": 20.0,
+        "confidence": 0.899,
+        "punctuated_word": "what"
+       },
+       {
+        "word": "we",
+        "start": 20.04,
+        "end": 20.25,
+        "confidence": 0.871,
+        "punctuated_word": "we"
+       },
+       {
+        "word": "call",
+        "start": 20.29,
+        "end": 20.59,
+        "confidence": 0.891,
+        "punctuated_word": "call"
+       },
+       {
+        "word": "an",
+        "start": 20.63,
+        "end": 20.84,
+        "confidence": 0.874,
+        "punctuated_word": "an"
+       },
+       {
+        "word": "adenocarcinoma",
+        "start": 20.88,
+        "end": 21.63,
+        "confidence": 0.41,
+        "punctuated_word": "adenocarcinoma."
+       },
+       {
+        "word": "that's",
+        "start": 22.23,
+        "end": 22.62,
+        "confidence": 0.946,
+        "punctuated_word": "That's"
+       },
+       {
+        "word": "a",
+        "start": 22.66,
+        "end": 22.82,
+        "confidence": 0.909,
+        "punctuated_word": "a"
+       },
+       {
+        "word": "type",
+        "start": 22.86,
+        "end": 23.16,
+        "confidence": 0.91,
+        "punctuated_word": "type"
+       },
+       {
+        "word": "of",
+        "start": 23.2,
+        "end": 23.41,
+        "confidence": 0.888,
+        "punctuated_word": "of"
+       },
+       {
+        "word": "cancer",
+        "start": 23.45,
+        "end": 23.84,
+        "confidence": 0.896,
+        "punctuated_word": "cancer"
+       },
+       {
+        "word": "that",
+        "start": 23.88,
+        "end": 24.18,
+        "confidence": 0.986,
+        "punctuated_word": "that"
+       },
+       {
+        "word": "starts",
+        "start": 24.22,
+        "end": 24.61,
+        "confidence": 0.947,
+        "punctuated_word": "starts"
+       },
+       {
+        "word": "in",
+        "start": 24.65,
+        "end": 24.86,
+        "confidence": 0.942,
+        "punctuated_word": "in"
+       },
+       {
+        "word": "the",
+        "start": 24.9,
+        "end": 25.16,
+        "confidence": 0.883,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "gland",
+        "start": 25.2,
+        "end": 25.54,
+        "confidence": 0.958,
+        "punctuated_word": "gland"
+       },
+       {
+        "word": "cells",
+        "start": 25.58,
+        "end": 25.92,
+        "confidence": 0.882,
+        "punctuated_word": "cells"
+       },
+       {
+        "word": "lining",
+        "start": 25.96,
+        "end": 26.35,
+        "confidence": 0.911,
+        "punctuated_word": "lining"
+       },
+       {
+        "word": "the",
+        "start": 26.39,
+        "end": 26.65,
+        "confidence": 0.994,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "colon",
+        "start": 26.69,
+        "end": 27.03,
+        "confidence": 0.946,
+        "punctuated_word": "colon."
+       },
+       {
+        "word": "the",
+        "start": 30.18,
+        "end": 30.44,
+        "confidence": 0.903,
+        "punctuated_word": "The"
+       },
+       {
+        "word": "biopsy",
+        "start": 30.48,
+        "end": 30.87,
+        "confidence": 0.896,
+        "punctuated_word": "biopsy"
+       },
+       {
+        "word": "alone",
+        "start": 30.91,
+        "end": 31.25,
+        "confidence": 0.888,
+        "punctuated_word": "alone"
+       },
+       {
+        "word": "can't",
+        "start": 31.29,
+        "end": 31.63,
+        "confidence": 0.987,
+        "punctuated_word": "can't"
+       },
+       {
+        "word": "tell",
+        "start": 31.67,
+        "end": 31.97,
+        "confidence": 0.978,
+        "punctuated_word": "tell"
+       },
+       {
+        "word": "us",
+        "start": 32.01,
+        "end": 32.22,
+        "confidence": 0.902,
+        "punctuated_word": "us"
+       },
+       {
+        "word": "that",
+        "start": 32.26,
+        "end": 32.56,
+        "confidence": 0.948,
+        "punctuated_word": "that."
+       },
+       {
+        "word": "we'll",
+        "start": 32.81,
+        "end": 33.15,
+        "confidence": 0.913,
+        "punctuated_word": "We'll"
+       },
+       {
+        "word": "do",
+        "start": 33.19,
+        "end": 33.4,
+        "confidence": 0.983,
+        "punctuated_word": "do"
+       },
+       {
+        "word": "a",
+        "start": 33.44,
+        "end": 33.6,
+        "confidence": 0.922,
+        "punctuated_word": "a"
+       },
+       {
+        "word": "ct",
+        "start": 33.64,
+        "end": 33.85,
+        "confidence": 0.896,
+        "punctuated_word": "CT"
+       },
+       {
+        "word": "scan",
+        "start": 33.89,
+        "end": 34.19,
+        "confidence": 0.893,
+        "punctuated_word": "scan"
+       },
+       {
+        "word": "of",
+        "start": 34.23,
+        "end": 34.44,
+        "confidence": 0.936,
+        "punctuated_word": "of"
+       },
+       {
+        "word": "your",
+        "start": 34.48,
+        "end": 34.78,
+        "confidence": 0.895,
+        "punctuated_word": "your"
+       },
+       {
+        "word": "chest",
+        "start": 34.82,
+        "end": 35.16,
+        "confidence": 0.939,
+        "punctuated_word": "chest,"
+       },
+       {
+        "word": "abdomen",
+        "start": 35.41,
+        "end": 35.84,
+        "confidence": 0.981,
+        "punctuated_word": "abdomen"
+       },
+       {
+        "word": "and",
+        "start": 35.88,
+        "end": 36.14,
+        "confidence": 0.914,
+        "punctuated_word": "and"
+       },
+       {
+        "word": "pelvis",
+        "start": 36.18,
+        "end": 36.57,
+        "confidence": 0.89,
+        "punctuated_word": "pelvis"
+       },
+       {
+        "word": "to",
+        "start": 36.61,
+        "end": 36.82,
+        "confidence": 0.995,
+        "punctuated_word": "to"
+       },
+       {
+        "word": "stage",
+        "start": 36.86,
+        "end": 37.2,
+        "confidence": 0.929,
+        "punctuated_word": "stage"
+       },
+       {
+        "word": "it",
+        "start": 37.24,
+        "end": 37.45,
+        "confidence": 0.872,
+        "punctuated_word": "it."
+       },
+       {
+        "word": "staging",
+        "start": 40.01,
+        "end": 40.44,
+        "confidence": 0.917,
+        "punctuated_word": "Staging"
+       },
+       {
+        "word": "tells",
+        "start": 40.48,
+        "end": 40.82,
+        "confidence": 0.869,
+        "punctuated_word": "tells"
+       },
+       {
+        "word": "us",
+        "start": 40.86,
+        "end": 41.07,
+        "confidence": 0.912,
+        "punctuated_word": "us"
+       },
+       {
+        "word": "how",
+        "start": 41.11,
+        "end": 41.37,
+        "confidence": 0.994,
+        "punctuated_word": "how"
+       },
+       {
+        "word": "deep",
+        "start": 41.41,
+        "end": 41.71,
+        "confidence": 0.931,
+        "punctuated_word": "deep"
+       },
+       {
+        "word": "the",
+        "start": 41.75,
+        "end": 42.01,
+        "confidence": 0.991,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "tumor",
+        "start": 42.05,
+        "end": 42.39,
+        "confidence": 0.976,
+        "punctuated_word": "tumor"
+       },
+       {
+        "word": "goes",
+        "start": 42.43,
+        "end": 42.73,
+        "confidence": 0.862,
+        "punctuated_word": "goes"
+       },
+       {
+        "word": "and",
+        "start": 42.77,
+        "end": 43.03,
+        "confidence": 0.957,
+        "punctuated_word": "and"
+       },
+       {
+        "word": "whether",
+        "start": 43.07,
+        "end": 43.5,
+        "confidence": 0.952,
+        "punctuated_word": "whether"
+       },
+       {
+        "word": "it's",
+        "start": 43.54,
+        "end": 43.84,
+        "confidence": 0.932,
+        "punctuated_word": "it's"
+       },
+       {
+        "word": "in",
+        "start": 43.88,
+        "end": 44.09,
+        "confidence": 0.896,
+        "punctuated_word": "in"
+       },
+       {
+        "word": "the",
+        "start": 44.13,
+        "end": 44.39,
+        "confidence": 0.947,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "lymph",
+        "start": 44.43,
+        "end": 44.77,
+        "confidence": 0.875,
+        "punctuated_word": "lymph"
+       },
+       {
+        "word": "nodes",
+        "start": 44.81,
+        "end": 45.15,
+        "confidence": 0.919,
+        "punctuated_word": "nodes"
+       },
+       {
+        "word": "or",
+        "start": 45.19,
+        "end": 45.4,
+        "confidence": 0.921,
+        "punctuated_word": "or"
+       },
+       {
+        "word": "other",
+        "start": 45.44,
+        "end": 45.78,
+        "confidence": 0.989,
+        "punctuated_word": "other"
+       },
+       {
+        "word": "organs",
+        "start": 45.82,
+        "end": 46.21,
+        "confidence": 0.978,
+        "punctuated_word": "organs."
+       },
+       {
+        "word": "the",
+        "start": 46.81,
+        "end": 47.07,
+        "confidence": 0.896,
+        "punctuated_word": "The"
+       },
+       {
+        "word": "pathologist",
+        "start": 47.11,
+        "end": 47.72,
+        "confidence": 0.928,
+        "punctuated_word": "pathologist"
+       },
+       {
+        "word": "also",
+        "start": 47.76,
+        "end": 48.06,
+        "confidence": 0.884,
+        "punctuated_word": "also"
+       },
+       {
+        "word": "described",
+        "start": 48.1,
+        "end": 48.62,
+        "confidence": 0.983,
+        "punctuated_word": "described"
+       },
+       {
+        "word": "it",
+        "start": 48.66,
+        "end": 48.87,
+        "confidence": 0.978,
+        "punctuated_word": "it"
+       },
+       {
+        "word": "as",
+        "start": 48.91,
+        "end": 49.12,
+        "confidence": 0.9,
+        "punctuated_word": "as"
+       },
+       {
+        "word": "moderately",
+        "start": 49.16,
+        "end": 49.73,
+        "confidence": 0.946,
+        "punctuated_word": "moderately"
+       },
+       {
+        "word": "differentiated",
+        "start": 49.77,
+        "end": 50.52,
+        "confidence": 0.942,
+        "punctuated_word": "differentiated,"
+       },
+       {
+        "word": "which",
+        "start": 50.77,
+        "end": 51.11,
+        "confidence": 0.881,
+        "punctuated_word": "which"
+       },
+       {
+        "word": "means",
+        "start": 51.15,
+        "end": 51.49,
+        "confidence": 0.963,
+        "punctuated_word": "means"
+       },
+       {
+        "word": "the",
+        "start": 51.53,
+        "end": 51.79,
+        "confidence": 0.933,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "cells",
+        "start": 51.83,
+        "end": 52.17,
+        "confidence": 0.965,
+        "punctuated_word": "cells"
+       },
+       {
+        "word": "look",
+        "start": 52.21,
+        "end": 52.51,
+        "confidence": 0.932,
+        "punctuated_word": "look"
+       },
+       {
+        "word": "somewhat",
+        "start": 52.55,
+        "end": 53.03,
+        "confidence": 0.86,
+        "punctuated_word": "somewhat"
+       },
+       {
+        "word": "abnormal",
+        "start": 53.07,
+        "end": 53.55,
+        "confidence": 0.904,
+        "punctuated_word": "abnormal."
+       },
+       {
+        "word": "yes",
+        "start": 57.73,
+        "end": 57.99,
+        "confidence": 0.872,
+        "punctuated_word": "Yes,"
+       },
+       {
+        "word": "about",
+        "start": 58.24,
+        "end": 58.58,
+        "confidence": 0.926,
+        "punctuated_word": "about"
+       },
+       {
+        "word": "2",
+        "start": 58.62,
+        "end": 58.78,
+        "confidence": 0.869,
+        "punctuated_word": "2"
+       },
+       {
+        "word": "centimeters",
+        "start": 58.82,
+        "end": 59.43,
+        "confidence": 0.963,
+        "punctuated_word": "centimeters"
+       },
+       {
+        "word": "on",
+        "start": 59.47,
+        "end": 59.68,
+        "confidence": 0.963,
+        "punctuated_word": "on"
+       },
+       {
+        "word": "the",
+        "start": 59.72,
+        "end": 59.98,
+        "confidence": 0.877,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "scope",
+        "start": 60.02,
+        "end": 60.36,
+        "confidence": 0.924,
+        "punctuated_word": "scope."
+       },
+       {
+        "word": "we'll",
+        "start": 60.61,
+        "end": 60.95,
+        "confidence": 0.934,
+        "punctuated_word": "We'll"
+       },
+       {
+        "word": "also",
+        "start": 60.99,
+        "end": 61.29,
+        "confidence": 0.896,
+        "punctuated_word": "also"
+       },
+       {
+        "word": "test",
+        "start": 61.33,
+        "end": 61.63,
+        "confidence": 0.978,
+        "punctuated_word": "test"
+       },
+       {
+        "word": "the",
+        "start": 61.67,
+        "end": 61.93,
+        "confidence": 0.917,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "tumor",
+        "start": 61.97,
+        "end": 62.31,
+        "confidence": 0.889,
+        "punctuated_word": "tumor"
+       },
+       {
+        "word": "for",
+        "start": 62.35,
+        "end": 62.61,
+        "confidence": 0.933,
+        "punctuated_word": "for"
+       },
+       {
+        "word": "mismatch",
+        "start": 62.65,
+        "end": 63.13,
+        "confidence": 0.58,
+        "punctuated_word": "mismatch"
+       },
+       {
+        "word": "repair",
+        "start": 63.17,
+        "end": 63.56,
+        "confidence": 0.887,
+        "punctuated_word": "repair"
+       },
+       {
+        "word": "proteins",
+        "start": 63.6,
+        "end": 64.08,
+        "confidence": 0.902,
+        "punctuated_word": "proteins."
+       },
+       {
+        "word": "we'll",
+        "start": 67.62,
+        "end": 67.96,
+        "confidence": 0.906,
+        "punctuated_word": "We'll"
+       },
+       {
+        "word": "meet",
+        "start": 68.0,
+        "end": 68.3,
+        "confidence": 0.939,
+        "punctuated_word": "meet"
+       },
+       {
+        "word": "with",
+        "start": 68.34,
+        "end": 68.64,
+        "confidence": 0.891,
+        "punctuated_word": "with"
+       },
+       {
+        "word": "surgery",
+        "start": 68.68,
+        "end": 69.11,
+        "confidence": 0.89,
+        "punctuated_word": "surgery"
+       },
+       {
+        "word": "and",
+        "start": 69.15,
+        "end": 69.41,
+        "confidence": 0.87,
+        "punctuated_word": "and"
+       },
+       {
+        "word": "oncology",
+        "start": 69.45,
+        "end": 69.93,
+        "confidence": 0.945,
+        "punctuated_word": "oncology"
+       },
+       {
+        "word": "together",
+        "start": 69.97,
+        "end": 70.45,
+        "confidence": 0.891,
+        "punctuated_word": "together"
+       },
+       {
+        "word": "and",
+        "start": 70.49,
+        "end": 70.75,
+        "confidence": 0.982,
+        "punctuated_word": "and"
+       },
+       {
+        "word": "go",
+        "start": 70.79,
+        "end": 71.0,
+        "confidence": 0.976,
+        "punctuated_word": "go"
+       },
+       {
+        "word": "over",
+        "start": 71.04,
+        "end": 71.34,
+        "confidence": 0.87,
+        "punctuated_word": "over"
+       },
+       {
+        "word": "the",
+        "start": 71.38,
+        "end": 71.64,
+        "confidence": 0.892,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "options",
+        "start": 71.68,
+        "end": 72.11,
+        "confidence": 0.95,
+        "punctuated_word": "options"
+       },
+       {
+        "word": "with",
+        "start": 72.15,
+        "end": 72.45,
+        "confidence": 0.889,
+        "punctuated_word": "with"
+       },
+       {
+        "word": "you",
+        "start": 72.49,
+        "end": 72.75,
+        "confidence": 0.878,
+        "punctuated_word": "you."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "alternatives": [
+     {
+      "transcript": "Thanks. I've been pretty nervous about the results. Okay. Is it bad? Has it spread? What does stage mean? Um, and the growth was about 2 centimeters? Okay. What happens after the scan?",
+      "confidence": 0.928,
+      "words": [
+       {
+        "word": "thanks",
+        "start": 4.72,
+        "end": 5.11,
+        "confidence": 0.928,
+        "punctuated_word": "Thanks."
+       },
+       {
+        "word": "i've",
+        "start": 5.36,
+        "end": 5.66,
+        "confidence": 0.864,
+        "punctuated_word": "I've"
+       },
+       {
+        "word": "been",
+        "start": 5.7,
+        "end": 6.0,
+        "confidence": 0.887,
+        "punctuated_word": "been"
+       },
+       {
+        "word": "pretty",
+        "start": 6.04,
+        "end": 6.43,
+        "confidence": 0.948,
+        "punctuated_word": "pretty"
+       },
+       {
+        "word": "nervous",
+        "start": 6.47,
+        "end": 6.9,
+        "confidence": 0.934,
+        "punctuated_word": "nervous"
+       },
+       {
+        "word": "about",
+        "start": 6.94,
+        "end": 7.28,
+        "confidence": 0.89,
+        "punctuated_word": "about"
+       },
+       {
+        "word": "the",
+        "start": 7.32,
+        "end": 7.58,
+        "confidence": 0.94,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "results",
+        "start": 7.62,
+        "end": 8.05,
+        "confidence": 0.969,
+        "punctuated_word": "results."
+       },
+       {
+        "word": "okay",
+        "start": 15.13,
+        "end": 15.43,
+        "confidence": 0.932,
+        "punctuated_word": "Okay."
+       },
+       {
+        "word": "is",
+        "start": 27.63,
+        "end": 27.84,
+        "confidence": 0.935,
+        "punctuated_word": "Is"
+       },
+       {
+        "word": "it",
+        "start": 27.88,
+        "end": 28.09,
+        "confidence": 0.952,
+        "punctuated_word": "it"
+       },
+       {
+        "word": "bad",
+        "start": 28.13,
+        "end": 28.39,
+        "confidence": 0.974,
+        "punctuated_word": "bad?"
+       },
+       {
+        "word": "has",
+        "start": 28.64,
+        "end": 28.9,
+        "confidence": 0.965,
+        "punctuated_word": "Has"
+       },
+       {
+        "word": "it",
+        "start": 28.94,
+        "end": 29.15,
+        "confidence": 0.891,
+        "punctuated_word": "it"
+       },
+       {
+        "word": "spread",
+        "start": 29.19,
+        "end": 29.58,
+        "confidence": 0.864,
+        "punctuated_word": "spread?"
+       },
+       {
+        "word": "what",
+        "start": 38.05,
+        "end": 38.35,
+        "confidence": 0.866,
+        "punctuated_word": "What"
+       },
+       {
+        "word": "does",
+        "start": 38.39,
+        "end": 38.69,
+        "confidence": 0.875,
+        "punctuated_word": "does"
+       },
+       {
+        "word": "stage",
+        "start": 38.73,
+        "end": 39.07,
+        "confidence": 0.945,
+        "punctuated_word": "stage"
+       },
+       {
+        "word": "mean",
+        "start": 39.11,
+        "end": 39.41,
+        "confidence": 0.967,
+        "punctuated_word": "mean?"
+       },
+       {
+        "word": "um",
+        "start": 54.15,
+        "end": 54.36,
+        "confidence": 0.863,
+        "punctuated_word": "Um,"
+       },
+       {
+        "word": "and",
+        "start": 54.61,
+        "end": 54.87,
+        "confidence": 0.985,
+        "punctuated_word": "and"
+       },
+       {
+        "word": "the",
+        "start": 54.91,
+        "end": 55.17,
+        "confidence": 0.979,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "growth",
+        "start": 55.21,
+        "end": 55.6,
+        "confidence": 0.972,
+        "punctuated_word": "growth"
+       },
+       {
+        "word": "was",
+        "start": 55.64,
+        "end": 55.9,
+        "confidence": 0.902,
+        "punctuated_word": "was"
+       },
+       {
+        "word": "about",
+        "start": 55.94,
+        "end": 56.28,
+        "confidence": 0.868,
+        "punctuated_word": "about"
+       },
+       {
+        "word": "2",
+        "start": 56.32,
+        "end": 56.48,
+        "confidence": 0.979,
+        "punctuated_word": "2"
+       },
+       {
+        "word": "centimeters",
+        "start": 56.52,
+        "end": 57.13,
+        "confidence": 0.988,
+        "punctuated_word": "centimeters?"
+       },
+       {
+        "word": "okay",
+        "start": 64.68,
+        "end": 64.98,
+        "confidence": 0.994,
+        "punctuated_word": "Okay."
+       },
+       {
+        "word": "what",
+        "start": 65.23,
+        "end": 65.53,
+        "confidence": 0.948,
+        "punctuated_word": "What"
+       },
+       {
+        "word": "happens",
+        "start": 65.57,
+        "end": 66.0,
+        "confidence": 0.919,
+        "punctuated_word": "happens"
+       },
+       {
+        "word": "after",
+        "start": 66.04,
+        "end": 66.38,
+        "confidence": 0.93,
+        "punctuated_word": "after"
+       },
+       {
+        "word": "the",
+        "start": 66.42,
+        "end": 66.68,
+        "confidence": 0.876,
+        "punctuated_word": "the"
+       },
+       {
+        "word": "scan",
+        "start": 66.72,
+        "end": 67.02,
+        "confidence": 0.89,
+        "punctuated_word": "scan?"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "utterances": [
+   {
+    "start": 0.3,
+    "end": 4.12,
+    "confidence": 0.912,
+    "channel": 0,
+    "transcript": "Hi, thanks for coming in. Do you want to sit down?",
+    "words": [
+     {
+      "word": "hi",
+      "start": 0.3,
+      "end": 0.51,
+      "confidence": 0.946,
+      "punctuated_word": "Hi,"
+     },
+     {
+      "word": "thanks",
+      "start": 0.76,
+      "end": 1.15,
+      "confidence": 0.863,
+      "punctuated_word": "thanks"
+     },
+     {
+      "word": "for",
+      "start": 1.19,
+      "end": 1.45,
+      "confidence": 0.897,
+      "punctuated_word": "for"
+     },
+     {
+      "word": "coming",
+      "start": 1.49,
+      "end": 1.88,
+      "confidence": 0.89,
+      "punctuated_word": "coming"
+     },
+     {
+      "word": "in",
+      "start": 1.92,
+      "end": 2.13,
+      "confidence": 0.959,
+      "punctuated_word": "in."
+     },
+     {
+      "word": "do",
+      "start": 2.38,
+      "end": 2.59,
+      "confidence": 0.951,
+      "punctuated_word": "Do"
+     },
+     {
+      "word": "you",
+      "start": 2.63,
+      "end": 2.89,
+      "confidence": 0.98,
+      "punctuated_word": "you"
+     },
+     {
+      "word": "want",
+      "start": 2.93,
+      "end": 3.23,
+      "confidence": 0.872,
+      "punctuated_word": "want"
+     },
+     {
+      "word": "to",
+      "start": 3.27,
+      "end": 3.48,
+      "confidence": 0.917,
+      "punctuated_word": "to"
+     },
+     {
+      "word": "sit",
+      "start": 3.52,
+      "end": 3.78,
+      "confidence": 0.864,
+      "punctuated_word": "sit"
+     },
+     {
+      "word": "down",
+      "start": 3.82,
+      "end": 4.12,
+      "confidence": 0.89,
+      "punctuated_word": "down?"
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000000"
+   },
+   {
+    "start": 4.72,
+    "end": 8.05,
+    "confidence": 0.92,
+    "channel": 1,
+    "transcript": "Thanks. I've been pretty nervous about the results.",
+    "words": [
+     {
+      "word": "thanks",
+      "start": 4.72,
+      "end": 5.11,
+      "confidence": 0.928,
+      "punctuated_word": "Thanks."
+     },
+     {
+      "word": "i've",
+      "start": 5.36,
+      "end": 5.66,
+      "confidence": 0.864,
+      "punctuated_word": "I've"
+     },
+     {
+      "word": "been",
+      "start": 5.7,
+      "end": 6.0,
+      "confidence": 0.887,
+      "punctuated_word": "been"
+     },
+     {
+      "word": "pretty",
+      "start": 6.04,
+      "end": 6.43,
+      "confidence": 0.948,
+      "punctuated_word": "pretty"
+     },
+     {
+      "word": "nervous",
+      "start": 6.47,
+      "end": 6.9,
+      "confidence": 0.934,
+      "punctuated_word": "nervous"
+     },
+     {
+      "word": "about",
+      "start": 6.94,
+      "end": 7.28,
+      "confidence": 0.89,
+      "punctuated_word": "about"
+     },
+     {
+      "word": "the",
+      "start": 7.32,
+      "end": 7.58,
+      "confidence": 0.94,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "results",
+      "start": 7.62,
+      "end": 8.05,
+      "confidence": 0.969,
+      "punctuated_word": "results."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000001"
+   },
+   {
+    "start": 8.65,
+    "end": 14.53,
+    "confidence": 0.927,
+    "channel": 0,
+    "transcript": "That's completely understandable. So, we got the biopsy results back from your colonoscopy.",
+    "words": [
+     {
+      "word": "that's",
+      "start": 8.65,
+      "end": 9.04,
+      "confidence": 0.861,
+      "punctuated_word": "That's"
+     },
+     {
+      "word": "completely",
+      "start": 9.08,
+      "end": 9.65,
+      "confidence": 0.969,
+      "punctuated_word": "completely"
+     },
+     {
+      "word": "understandable",
+      "start": 9.69,
+      "end": 10.44,
+      "confidence": 0.954,
+      "punctuated_word": "understandable."
+     },
+     {
+      "word": "so",
+      "start": 10.69,
+      "end": 10.9,
+      "confidence": 0.906,
+      "punctuated_word": "So,"
+     },
+     {
+      "word": "we",
+      "start": 11.15,
+      "end": 11.36,
+      "confidence": 0.881,
+      "punctuated_word": "we"
+     },
+     {
+      "word": "got",
+      "start": 11.4,
+      "end": 11.66,
+      "confidence": 0.989,
+      "punctuated_word": "got"
+     },
+     {
+      "word": "the",
+      "start": 11.7,
+      "end": 11.96,
+      "confidence": 0.905,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "biopsy",
+      "start": 12.0,
+      "end": 12.39,
+      "confidence": 0.873,
+      "punctuated_word": "biopsy"
+     },
+     {
+      "word": "results",
+      "start": 12.43,
+      "end": 12.86,
+      "confidence": 0.873,
+      "punctuated_word": "results"
+     },
+     {
+      "word": "back",
+      "start": 12.9,
+      "end": 13.2,
+      "confidence": 0.974,
+      "punctuated_word": "back"
+     },
+     {
+      "word": "from",
+      "start": 13.24,
+      "end": 13.54,
+      "confidence": 0.942,
+      "punctuated_word": "from"
+     },
+     {
+      "word": "your",
+      "start": 13.58,
+      "end": 13.88,
+      "confidence": 0.969,
+      "punctuated_word": "your"
+     },
+     {
+      "word": "colonoscopy",
+      "start": 13.92,
+      "end": 14.53,
+      "confidence": 0.959,
+      "punctuated_word": "colonoscopy."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000002"
+   },
+   {
+    "start": 15.13,
+    "end": 15.43,
+    "confidence": 0.932,
+    "channel": 1,
+    "transcript": "Okay.",
+    "words": [
+     {
+      "word": "okay",
+      "start": 15.13,
+      "end": 15.43,
+      "confidence": 0.932,
+      "punctuated_word": "Okay."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000003"
+   },
+   {
+    "start": 16.03,
+    "end": 21.63,
+    "confidence": 0.861,
+    "channel": 0,
+    "transcript": "The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma.",
+    "words": [
+     {
+      "word": "the",
+      "start": 16.03,
+      "end": 16.29,
+      "confidence": 0.991,
+      "punctuated_word": "The"
+     },
+     {
+      "word": "sample",
+      "start": 16.33,
+      "end": 16.72,
+      "confidence": 0.911,
+      "punctuated_word": "sample"
+     },
+     {
+      "word": "from",
+      "start": 16.76,
+      "end": 17.06,
+      "confidence": 0.935,
+      "punctuated_word": "from"
+     },
+     {
+      "word": "the",
+      "start": 17.1,
+      "end": 17.36,
+      "confidence": 0.972,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "growth",
+      "start": 17.4,
+      "end": 17.79,
+      "confidence": 0.944,
+      "punctuated_word": "growth"
+     },
+     {
+      "word": "in",
+      "start": 17.83,
+      "end": 18.04,
+      "confidence": 0.976,
+      "punctuated_word": "in"
+     },
+     {
+      "word": "your",
+      "start": 18.08,
+      "end": 18.38,
+      "confidence": 0.938,
+      "punctuated_word": "your"
+     },
+     {
+      "word": "sigmoid",
+      "start": 18.42,
+      "end": 18.85,
+      "confidence": 0.55,
+      "punctuated_word": "sigmoid"
+     },
+     {
+      "word": "colon",
+      "start": 18.89,
+      "end": 19.23,
+      "confidence": 0.866,
+      "punctuated_word": "colon"
+     },
+     {
+      "word": "showed",
+      "start": 19.27,
+      "end": 19.66,
+      "confidence": 0.891,
+      "punctuated_word": "showed"
+     },
+     {
+      "word": "what",
+      "start": 19.7,
+      "end": 20.0,
+      "confidence": 0.899,
+      "punctuated_word": "what"
+     },
+     {
+      "word": "we",
+      "start": 20.04,
+      "end": 20.25,
+      "confidence": 0.871,
+      "punctuated_word": "we"
+     },
+     {
+      "word": "call",
+      "start": 20.29,
+      "end": 20.59,
+      "confidence": 0.891,
+      "punctuated_word": "call"
+     },
+     {
+      "word": "an",
+      "start": 20.63,
+      "end": 20.84,
+      "confidence": 0.874,
+      "punctuated_word": "an"
+     },
+     {
+      "word": "adenocarcinoma",
+      "start": 20.88,
+      "end": 21.63,
+      "confidence": 0.41,
+      "punctuated_word": "adenocarcinoma."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000004"
+   },
+   {
+    "start": 22.23,
+    "end": 27.03,
+    "confidence": 0.928,
+    "channel": 0,
+    "transcript": "That's a type of cancer that starts in the gland cells lining the colon.",
+    "words": [
+     {
+      "word": "that's",
+      "start": 22.23,
+      "end": 22.62,
+      "confidence": 0.946,
+      "punctuated_word": "That's"
+     },
+     {
+      "word": "a",
+      "start": 22.66,
+      "end": 22.82,
+      "confidence": 0.909,
+      "punctuated_word": "a"
+     },
+     {
+      "word": "type",
+      "start": 22.86,
+      "end": 23.16,
+      "confidence": 0.91,
+      "punctuated_word": "type"
+     },
+     {
+      "word": "of",
+      "start": 23.2,
+      "end": 23.41,
+      "confidence": 0.888,
+      "punctuated_word": "of"
+     },
+     {
+      "word": "cancer",
+      "start": 23.45,
+      "end": 23.84,
+      "confidence": 0.896,
+      "punctuated_word": "cancer"
+     },
+     {
+      "word": "that",
+      "start": 23.88,
+      "end": 24.18,
+      "confidence": 0.986,
+      "punctuated_word": "that"
+     },
+     {
+      "word": "starts",
+      "start": 24.22,
+      "end": 24.61,
+      "confidence": 0.947,
+      "punctuated_word": "starts"
+     },
+     {
+      "word": "in",
+      "start": 24.65,
+      "end": 24.86,
+      "confidence": 0.942,
+      "punctuated_word": "in"
+     },
+     {
+      "word": "the",
+      "start": 24.9,
+      "end": 25.16,
+      "confidence": 0.883,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "gland",
+      "start": 25.2,
+      "end": 25.54,
+      "confidence": 0.958,
+      "punctuated_word": "gland"
+     },
+     {
+      "word": "cells",
+      "start": 25.58,
+      "end": 25.92,
+      "confidence": 0.882,
+      "punctuated_word": "cells"
+     },
+     {
+      "word": "lining",
+      "start": 25.96,
+      "end": 26.35,
+      "confidence": 0.911,
+      "punctuated_word": "lining"
+     },
+     {
+      "word": "the",
+      "start": 26.39,
+      "end": 26.65,
+      "confidence": 0.994,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "colon",
+      "start": 26.69,
+      "end": 27.03,
+      "confidence": 0.946,
+      "punctuated_word": "colon."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000005"
+   },
+   {
+    "start": 27.63,
+    "end": 29.58,
+    "confidence": 0.93,
+    "channel": 1,
+    "transcript": "Is it bad? Has it spread?",
+    "words": [
+     {
+      "word": "is",
+      "start": 27.63,
+      "end": 27.84,
+      "confidence": 0.935,
+      "punctuated_word": "Is"
+     },
+     {
+      "word": "it",
+      "start": 27.88,
+      "end": 28.09,
+      "confidence": 0.952,
+      "punctuated_word": "it"
+     },
+     {
+      "word": "bad",
+      "start": 28.13,
+      "end": 28.39,
+      "confidence": 0.974,
+      "punctuated_word": "bad?"
+     },
+     {
+      "word": "has",
+      "start": 28.64,
+      "end": 28.9,
+      "confidence": 0.965,
+      "punctuated_word": "Has"
+     },
+     {
+      "word": "it",
+      "start": 28.94,
+      "end": 29.15,
+      "confidence": 0.891,
+      "punctuated_word": "it"
+     },
+     {
+      "word": "spread",
+      "start": 29.19,
+      "end": 29.58,
+      "confidence": 0.864,
+      "punctuated_word": "spread?"
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000006"
+   },
+   {
+    "start": 30.18,
+    "end": 37.45,
+    "confidence": 0.927,
+    "channel": 0,
+    "transcript": "The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it.",
+    "words": [
+     {
+      "word": "the",
+      "start": 30.18,
+      "end": 30.44,
+      "confidence": 0.903,
+      "punctuated_word": "The"
+     },
+     {
+      "word": "biopsy",
+      "start": 30.48,
+      "end": 30.87,
+      "confidence": 0.896,
+      "punctuated_word": "biopsy"
+     },
+     {
+      "word": "alone",
+      "start": 30.91,
+      "end": 31.25,
+      "confidence": 0.888,
+      "punctuated_word": "alone"
+     },
+     {
+      "word": "can't",
+      "start": 31.29,
+      "end": 31.63,
+      "confidence": 0.987,
+      "punctuated_word": "can't"
+     },
+     {
+      "word": "tell",
+      "start": 31.67,
+      "end": 31.97,
+      "confidence": 0.978,
+      "punctuated_word": "tell"
+     },
+     {
+      "word": "us",
+      "start": 32.01,
+      "end": 32.22,
+      "confidence": 0.902,
+      "punctuated_word": "us"
+     },
+     {
+      "word": "that",
+      "start": 32.26,
+      "end": 32.56,
+      "confidence": 0.948,
+      "punctuated_word": "that."
+     },
+     {
+      "word": "we'll",
+      "start": 32.81,
+      "end": 33.15,
+      "confidence": 0.913,
+      "punctuated_word": "We'll"
+     },
+     {
+      "word": "do",
+      "start": 33.19,
+      "end": 33.4,
+      "confidence": 0.983,
+      "punctuated_word": "do"
+     },
+     {
+      "word": "a",
+      "start": 33.44,
+      "end": 33.6,
+      "confidence": 0.922,
+      "punctuated_word": "a"
+     },
+     {
+      "word": "ct",
+      "start": 33.64,
+      "end": 33.85,
+      "confidence": 0.896,
+      "punctuated_word": "CT"
+     },
+     {
+      "word": "scan",
+      "start": 33.89,
+      "end": 34.19,
+      "confidence": 0.893,
+      "punctuated_word": "scan"
+     },
+     {
+      "word": "of",
+      "start": 34.23,
+      "end": 34.44,
+      "confidence": 0.936,
+      "punctuated_word": "of"
+     },
+     {
+      "word": "your",
+      "start": 34.48,
+      "end": 34.78,
+      "confidence": 0.895,
+      "punctuated_word": "your"
+     },
+     {
+      "word": "chest",
+      "start": 34.82,
+      "end": 35.16,
+      "confidence": 0.939,
+      "punctuated_word": "chest,"
+     },
+     {
+      "word": "abdomen",
+      "start": 35.41,
+      "end": 35.84,
+      "confidence": 0.981,
+      "punctuated_word": "abdomen"
+     },
+     {
+      "word": "and",
+      "start": 35.88,
+      "end": 36.14,
+      "confidence": 0.914,
+      "punctuated_word": "and"
+     },
+     {
+      "word": "pelvis",
+      "start": 36.18,
+      "end": 36.57,
+      "confidence": 0.89,
+      "punctuated_word": "pelvis"
+     },
+     {
+      "word": "to",
+      "start": 36.61,
+      "end": 36.82,
+      "confidence": 0.995,
+      "punctuated_word": "to"
+     },
+     {
+      "word": "stage",
+      "start": 36.86,
+      "end": 37.2,
+      "confidence": 0.929,
+      "punctuated_word": "stage"
+     },
+     {
+      "word": "it",
+      "start": 37.24,
+      "end": 37.45,
+      "confidence": 0.872,
+      "punctuated_word": "it."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000007"
+   },
+   {
+    "start": 38.05,
+    "end": 39.41,
+    "confidence": 0.913,
+    "channel": 1,
+    "transcript": "What does stage mean?",
+    "words": [
+     {
+      "word": "what",
+      "start": 38.05,
+      "end": 38.35,
+      "confidence": 0.866,
+      "punctuated_word": "What"
+     },
+     {
+      "word": "does",
+      "start": 38.39,
+      "end": 38.69,
+      "confidence": 0.875,
+      "punctuated_word": "does"
+     },
+     {
+      "word": "stage",
+      "start": 38.73,
+      "end": 39.07,
+      "confidence": 0.945,
+      "punctuated_word": "stage"
+     },
+     {
+      "word": "mean",
+      "start": 39.11,
+      "end": 39.41,
+      "confidence": 0.967,
+      "punctuated_word": "mean?"
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000008"
+   },
+   {
+    "start": 40.01,
+    "end": 46.21,
+    "confidence": 0.934,
+    "channel": 0,
+    "transcript": "Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs.",
+    "words": [
+     {
+      "word": "staging",
+      "start": 40.01,
+      "end": 40.44,
+      "confidence": 0.917,
+      "punctuated_word": "Staging"
+     },
+     {
+      "word": "tells",
+      "start": 40.48,
+      "end": 40.82,
+      "confidence": 0.869,
+      "punctuated_word": "tells"
+     },
+     {
+      "word": "us",
+      "start": 40.86,
+      "end": 41.07,
+      "confidence": 0.912,
+      "punctuated_word": "us"
+     },
+     {
+      "word": "how",
+      "start": 41.11,
+      "end": 41.37,
+      "confidence": 0.994,
+      "punctuated_word": "how"
+     },
+     {
+      "word": "deep",
+      "start": 41.41,
+      "end": 41.71,
+      "confidence": 0.931,
+      "punctuated_word": "deep"
+     },
+     {
+      "word": "the",
+      "start": 41.75,
+      "end": 42.01,
+      "confidence": 0.991,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "tumor",
+      "start": 42.05,
+      "end": 42.39,
+      "confidence": 0.976,
+      "punctuated_word": "tumor"
+     },
+     {
+      "word": "goes",
+      "start": 42.43,
+      "end": 42.73,
+      "confidence": 0.862,
+      "punctuated_word": "goes"
+     },
+     {
+      "word": "and",
+      "start": 42.77,
+      "end": 43.03,
+      "confidence": 0.957,
+      "punctuated_word": "and"
+     },
+     {
+      "word": "whether",
+      "start": 43.07,
+      "end": 43.5,
+      "confidence": 0.952,
+      "punctuated_word": "whether"
+     },
+     {
+      "word": "it's",
+      "start": 43.54,
+      "end": 43.84,
+      "confidence": 0.932,
+      "punctuated_word": "it's"
+     },
+     {
+      "word": "in",
+      "start": 43.88,
+      "end": 44.09,
+      "confidence": 0.896,
+      "punctuated_word": "in"
+     },
+     {
+      "word": "the",
+      "start": 44.13,
+      "end": 44.39,
+      "confidence": 0.947,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "lymph",
+      "start": 44.43,
+      "end": 44.77,
+      "confidence": 0.875,
+      "punctuated_word": "lymph"
+     },
+     {
+      "word": "nodes",
+      "start": 44.81,
+      "end": 45.15,
+      "confidence": 0.919,
+      "punctuated_word": "nodes"
+     },
+     {
+      "word": "or",
+      "start": 45.19,
+      "end": 45.4,
+      "confidence": 0.921,
+      "punctuated_word": "or"
+     },
+     {
+      "word": "other",
+      "start": 45.44,
+      "end": 45.78,
+      "confidence": 0.989,
+      "punctuated_word": "other"
+     },
+     {
+      "word": "organs",
+      "start": 45.82,
+      "end": 46.21,
+      "confidence": 0.978,
+      "punctuated_word": "organs."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000009"
+   },
+   {
+    "start": 46.81,
+    "end": 53.55,
+    "confidence": 0.926,
+    "channel": 0,
+    "transcript": "The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal.",
+    "words": [
+     {
+      "word": "the",
+      "start": 46.81,
+      "end": 47.07,
+      "confidence": 0.896,
+      "punctuated_word": "The"
+     },
+     {
+      "word": "pathologist",
+      "start": 47.11,
+      "end": 47.72,
+      "confidence": 0.928,
+      "punctuated_word": "pathologist"
+     },
+     {
+      "word": "also",
+      "start": 47.76,
+      "end": 48.06,
+      "confidence": 0.884,
+      "punctuated_word": "also"
+     },
+     {
+      "word": "described",
+      "start": 48.1,
+      "end": 48.62,
+      "confidence": 0.983,
+      "punctuated_word": "described"
+     },
+     {
+      "word": "it",
+      "start": 48.66,
+      "end": 48.87,
+      "confidence": 0.978,
+      "punctuated_word": "it"
+     },
+     {
+      "word": "as",
+      "start": 48.91,
+      "end": 49.12,
+      "confidence": 0.9,
+      "punctuated_word": "as"
+     },
+     {
+      "word": "moderately",
+      "start": 49.16,
+      "end": 49.73,
+      "confidence": 0.946,
+      "punctuated_word": "moderately"
+     },
+     {
+      "word": "differentiated",
+      "start": 49.77,
+      "end": 50.52,
+      "confidence": 0.942,
+      "punctuated_word": "differentiated,"
+     },
+     {
+      "word": "which",
+      "start": 50.77,
+      "end": 51.11,
+      "confidence": 0.881,
+      "punctuated_word": "which"
+     },
+     {
+      "word": "means",
+      "start": 51.15,
+      "end": 51.49,
+      "confidence": 0.963,
+      "punctuated_word": "means"
+     },
+     {
+      "word": "the",
+      "start": 51.53,
+      "end": 51.79,
+      "confidence": 0.933,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "cells",
+      "start": 51.83,
+      "end": 52.17,
+      "confidence": 0.965,
+      "punctuated_word": "cells"
+     },
+     {
+      "word": "look",
+      "start": 52.21,
+      "end": 52.51,
+      "confidence": 0.932,
+      "punctuated_word": "look"
+     },
+     {
+      "word": "somewhat",
+      "start": 52.55,
+      "end": 53.03,
+      "confidence": 0.86,
+      "punctuated_word": "somewhat"
+     },
+     {
+      "word": "abnormal",
+      "start": 53.07,
+      "end": 53.55,
+      "confidence": 0.904,
+      "punctuated_word": "abnormal."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000010"
+   },
+   {
+    "start": 54.15,
+    "end": 57.13,
+    "confidence": 0.942,
+    "channel": 1,
+    "transcript": "Um, and the growth was about 2 centimeters?",
+    "words": [
+     {
+      "word": "um",
+      "start": 54.15,
+      "end": 54.36,
+      "confidence": 0.863,
+      "punctuated_word": "Um,"
+     },
+     {
+      "word": "and",
+      "start": 54.61,
+      "end": 54.87,
+      "confidence": 0.985,
+      "punctuated_word": "and"
+     },
+     {
+      "word": "the",
+      "start": 54.91,
+      "end": 55.17,
+      "confidence": 0.979,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "growth",
+      "start": 55.21,
+      "end": 55.6,
+      "confidence": 0.972,
+      "punctuated_word": "growth"
+     },
+     {
+      "word": "was",
+      "start": 55.64,
+      "end": 55.9,
+      "confidence": 0.902,
+      "punctuated_word": "was"
+     },
+     {
+      "word": "about",
+      "start": 55.94,
+      "end": 56.28,
+      "confidence": 0.868,
+      "punctuated_word": "about"
+     },
+     {
+      "word": "2",
+      "start": 56.32,
+      "end": 56.48,
+      "confidence": 0.979,
+      "punctuated_word": "2"
+     },
+     {
+      "word": "centimeters",
+      "start": 56.52,
+      "end": 57.13,
+      "confidence": 0.988,
+      "punctuated_word": "centimeters?"
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000011"
+   },
+   {
+    "start": 57.73,
+    "end": 64.08,
+    "confidence": 0.894,
+    "channel": 0,
+    "transcript": "Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins.",
+    "words": [
+     {
+      "word": "yes",
+      "start": 57.73,
+      "end": 57.99,
+      "confidence": 0.872,
+      "punctuated_word": "Yes,"
+     },
+     {
+      "word": "about",
+      "start": 58.24,
+      "end": 58.58,
+      "confidence": 0.926,
+      "punctuated_word": "about"
+     },
+     {
+      "word": "2",
+      "start": 58.62,
+      "end": 58.78,
+      "confidence": 0.869,
+      "punctuated_word": "2"
+     },
+     {
+      "word": "centimeters",
+      "start": 58.82,
+      "end": 59.43,
+      "confidence": 0.963,
+      "punctuated_word": "centimeters"
+     },
+     {
+      "word": "on",
+      "start": 59.47,
+      "end": 59.68,
+      "confidence": 0.963,
+      "punctuated_word": "on"
+     },
+     {
+      "word": "the",
+      "start": 59.72,
+      "end": 59.98,
+      "confidence": 0.877,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "scope",
+      "start": 60.02,
+      "end": 60.36,
+      "confidence": 0.924,
+      "punctuated_word": "scope."
+     },
+     {
+      "word": "we'll",
+      "start": 60.61,
+      "end": 60.95,
+      "confidence": 0.934,
+      "punctuated_word": "We'll"
+     },
+     {
+      "word": "also",
+      "start": 60.99,
+      "end": 61.29,
+      "confidence": 0.896,
+      "punctuated_word": "also"
+     },
+     {
+      "word": "test",
+      "start": 61.33,
+      "end": 61.63,
+      "confidence": 0.978,
+      "punctuated_word": "test"
+     },
+     {
+      "word": "the",
+      "start": 61.67,
+      "end": 61.93,
+      "confidence": 0.917,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "tumor",
+      "start": 61.97,
+      "end": 62.31,
+      "confidence": 0.889,
+      "punctuated_word": "tumor"
+     },
+     {
+      "word": "for",
+      "start": 62.35,
+      "end": 62.61,
+      "confidence": 0.933,
+      "punctuated_word": "for"
+     },
+     {
+      "word": "mismatch",
+      "start": 62.65,
+      "end": 63.13,
+      "confidence": 0.58,
+      "punctuated_word": "mismatch"
+     },
+     {
+      "word": "repair",
+      "start": 63.17,
+      "end": 63.56,
+      "confidence": 0.887,
+      "punctuated_word": "repair"
+     },
+     {
+      "word": "proteins",
+      "start": 63.6,
+      "end": 64.08,
+      "confidence": 0.902,
+      "punctuated_word": "proteins."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000012"
+   },
+   {
+    "start": 64.68,
+    "end": 67.02,
+    "confidence": 0.926,
+    "channel": 1,
+    "transcript": "Okay. What happens after the scan?",
+    "words": [
+     {
+      "word": "okay",
+      "start": 64.68,
+      "end": 64.98,
+      "confidence": 0.994,
+      "punctuated_word": "Okay."
+     },
+     {
+      "word": "what",
+      "start": 65.23,
+      "end": 65.53,
+      "confidence": 0.948,
+      "punctuated_word": "What"
+     },
+     {
+      "word": "happens",
+      "start": 65.57,
+      "end": 66.0,
+      "confidence": 0.919,
+      "punctuated_word": "happens"
+     },
+     {
+      "word": "after",
+      "start": 66.04,
+      "end": 66.38,
+      "confidence": 0.93,
+      "punctuated_word": "after"
+     },
+     {
+      "word": "the",
+      "start": 66.42,
+      "end": 66.68,
+      "confidence": 0.876,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "scan",
+      "start": 66.72,
+      "end": 67.02,
+      "confidence": 0.89,
+      "punctuated_word": "scan?"
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000013"
+   },
+   {
+    "start": 67.62,
+    "end": 72.75,
+    "confidence": 0.912,
+    "channel": 0,
+    "transcript": "We'll meet with surgery and oncology together and go over the options with you.",
+    "words": [
+     {
+      "word": "we'll",
+      "start": 67.62,
+      "end": 67.96,
+      "confidence": 0.906,
+      "punctuated_word": "We'll"
+     },
+     {
+      "word": "meet",
+      "start": 68.0,
+      "end": 68.3,
+      "confidence": 0.939,
+      "punctuated_word": "meet"
+     },
+     {
+      "word": "with",
+      "start": 68.34,
+      "end": 68.64,
+      "confidence": 0.891,
+      "punctuated_word": "with"
+     },
+     {
+      "word": "surgery",
+      "start": 68.68,
+      "end": 69.11,
+      "confidence": 0.89,
+      "punctuated_word": "surgery"
+     },
+     {
+      "word": "and",
+      "start": 69.15,
+      "end": 69.41,
+      "confidence": 0.87,
+      "punctuated_word": "and"
+     },
+     {
+      "word": "oncology",
+      "start": 69.45,
+      "end": 69.93,
+      "confidence": 0.945,
+      "punctuated_word": "oncology"
+     },
+     {
+      "word": "together",
+      "start": 69.97,
+      "end": 70.45,
+      "confidence": 0.891,
+      "punctuated_word": "together"
+     },
+     {
+      "word": "and",
+      "start": 70.49,
+      "end": 70.75,
+      "confidence": 0.982,
+      "punctuated_word": "and"
+     },
+     {
+      "word": "go",
+      "start": 70.79,
+      "end": 71.0,
+      "confidence": 0.976,
+      "punctuated_word": "go"
+     },
+     {
+      "word": "over",
+      "start": 71.04,
+      "end": 71.34,
+      "confidence": 0.87,
+      "punctuated_word": "over"
+     },
+     {
+      "word": "the",
+      "start": 71.38,
+      "end": 71.64,
+      "confidence": 0.892,
+      "punctuated_word": "the"
+     },
+     {
+      "word": "options",
+      "start": 71.68,
+      "end": 72.11,
+      "confidence": 0.95,
+      "punctuated_word": "options"
+     },
+     {
+      "word": "with",
+      "start": 72.15,
+      "end": 72.45,
+      "confidence": 0.889,
+      "punctuated_word": "with"
+     },
+     {
+      "word": "you",
+      "start": 72.49,
+      "end": 72.75,
+      "confidence": 0.878,
+      "punctuated_word": "you."
+     }
+    ],
+    "id": "00000000-0000-4000-8000-000000000014"
+   }
+  ]
+ }
+}

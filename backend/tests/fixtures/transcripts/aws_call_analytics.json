@@ -1,0 +1,113 @@
+{
+ "JobName": "SYNTHETIC-call-analytics",
+ "AccountId": "123456789012",
+ "JobStatus": "COMPLETED",
+ "LanguageCode": "en-US",
+ "Transcript": [
+  {
+   "Id": "seg-0",
+   "ParticipantRole": "AGENT",
+   "Content": "Hi, thanks for coming in. Do you want to sit down?",
+   "BeginOffsetMillis": 300,
+   "EndOffsetMillis": 4120
+  },
+  {
+   "Id": "seg-1",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "Thanks. I've been pretty nervous about the results.",
+   "BeginOffsetMillis": 4720,
+   "EndOffsetMillis": 8050
+  },
+  {
+   "Id": "seg-2",
+   "ParticipantRole": "AGENT",
+   "Content": "That's completely understandable. So, we got the biopsy results back from your colonoscopy.",
+   "BeginOffsetMillis": 8650,
+   "EndOffsetMillis": 14530
+  },
+  {
+   "Id": "seg-3",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "Okay.",
+   "BeginOffsetMillis": 15130,
+   "EndOffsetMillis": 15430
+  },
+  {
+   "Id": "seg-4",
+   "ParticipantRole": "AGENT",
+   "Content": "The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma.",
+   "BeginOffsetMillis": 16030,
+   "EndOffsetMillis": 21630
+  },
+  {
+   "Id": "seg-5",
+   "ParticipantRole": "AGENT",
+   "Content": "That's a type of cancer that starts in the gland cells lining the colon.",
+   "BeginOffsetMillis": 22230,
+   "EndOffsetMillis": 27030
+  },
+  {
+   "Id": "seg-6",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "Is it bad? Has it spread?",
+   "BeginOffsetMillis": 27630,
+   "EndOffsetMillis": 29580
+  },
+  {
+   "Id": "seg-7",
+   "ParticipantRole": "AGENT",
+   "Content": "The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it.",
+   "BeginOffsetMillis": 30180,
+   "EndOffsetMillis": 37450
+  },
+  {
+   "Id": "seg-8",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "What does stage mean?",
+   "BeginOffsetMillis": 38050,
+   "EndOffsetMillis": 39410
+  },
+  {
+   "Id": "seg-9",
+   "ParticipantRole": "AGENT",
+   "Content": "Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs.",
+   "BeginOffsetMillis": 40010,
+   "EndOffsetMillis": 46210
+  },
+  {
+   "Id": "seg-10",
+   "ParticipantRole": "AGENT",
+   "Content": "The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal.",
+   "BeginOffsetMillis": 46810,
+   "EndOffsetMillis": 53550
+  },
+  {
+   "Id": "seg-11",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "Um, and the growth was about 2 centimeters?",
+   "BeginOffsetMillis": 54150,
+   "EndOffsetMillis": 57130
+  },
+  {
+   "Id": "seg-12",
+   "ParticipantRole": "AGENT",
+   "Content": "Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins.",
+   "BeginOffsetMillis": 57730,
+   "EndOffsetMillis": 64080
+  },
+  {
+   "Id": "seg-13",
+   "ParticipantRole": "CUSTOMER",
+   "Content": "Okay. What happens after the scan?",
+   "BeginOffsetMillis": 64680,
+   "EndOffsetMillis": 67020
+  },
+  {
+   "Id": "seg-14",
+   "ParticipantRole": "AGENT",
+   "Content": "We'll meet with surgery and oncology together and go over the options with you.",
+   "BeginOffsetMillis": 67620,
+   "EndOffsetMillis": 72750
+  }
+ ]
+}

@@ -1,0 +1,2213 @@
+{
+ "segments": [
+  {
+   "start": 0.3,
+   "end": 4.37,
+   "text": " Hi, come on in. How's the neck feeling since the biopsy?",
+   "words": [
+    {
+     "word": "Hi,",
+     "start": 0.3,
+     "end": 0.51,
+     "score": 0.9,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "come",
+     "start": 0.76,
+     "end": 1.06,
+     "score": 0.882,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "on",
+     "start": 1.1,
+     "end": 1.31,
+     "score": 0.873,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in.",
+     "start": 1.35,
+     "end": 1.56,
+     "score": 0.993,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "How's",
+     "start": 1.81,
+     "end": 2.15,
+     "score": 0.902,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 2.19,
+     "end": 2.45,
+     "score": 0.902,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "neck",
+     "start": 2.49,
+     "end": 2.79,
+     "score": 0.918,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "feeling",
+     "start": 2.83,
+     "end": 3.26,
+     "score": 0.913,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "since",
+     "start": 3.3,
+     "end": 3.64,
+     "score": 0.953,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 3.68,
+     "end": 3.94,
+     "score": 0.959,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "biopsy?",
+     "start": 3.98,
+     "end": 4.37,
+     "score": 0.93,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 4.97,
+   "end": 8.64,
+   "text": " Sore, but okay. I just want to know what it is.",
+   "words": [
+    {
+     "word": "Sore,",
+     "start": 4.97,
+     "end": 5.27,
+     "score": 0.89,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "but",
+     "start": 5.52,
+     "end": 5.78,
+     "score": 0.905,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "okay.",
+     "start": 5.82,
+     "end": 6.12,
+     "score": 0.957,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "I",
+     "start": 6.37,
+     "end": 6.53,
+     "score": 0.957,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "just",
+     "start": 6.57,
+     "end": 6.87,
+     "score": 0.91,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "want",
+     "start": 6.91,
+     "end": 7.21,
+     "score": 0.984,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "to",
+     "start": 7.25,
+     "end": 7.46,
+     "score": 0.906,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "know",
+     "start": 7.5,
+     "end": 7.8,
+     "score": 0.916,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "what",
+     "start": 7.84,
+     "end": 8.14,
+     "score": 0.964,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "it",
+     "start": 8.18,
+     "end": 8.39,
+     "score": 0.916,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "is.",
+     "start": 8.43,
+     "end": 8.64,
+     "score": 0.946,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 9.24,
+   "end": 14.05,
+   "text": " I understand. The lymph node biopsy shows a diffuse large B-cell lymphoma.",
+   "words": [
+    {
+     "word": "I",
+     "start": 9.24,
+     "end": 9.4,
+     "score": 0.974,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "understand.",
+     "start": 9.44,
+     "end": 10.01,
+     "score": 0.9,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "The",
+     "start": 10.26,
+     "end": 10.52,
+     "score": 0.964,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymph",
+     "start": 10.56,
+     "end": 10.9,
+     "score": 0.993,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "node",
+     "start": 10.94,
+     "end": 11.24,
+     "score": 0.92,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "biopsy",
+     "start": 11.28,
+     "end": 11.67,
+     "score": 0.956,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "shows",
+     "start": 11.71,
+     "end": 12.05,
+     "score": 0.888,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 12.09,
+     "end": 12.25,
+     "score": 0.895,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "diffuse",
+     "start": 12.29,
+     "end": 12.72,
+     "score": 0.941,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "large",
+     "start": 12.76,
+     "end": 13.1,
+     "score": 0.892,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "B-cell",
+     "start": 13.14,
+     "end": 13.53,
+     "score": 0.982,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymphoma.",
+     "start": 13.57,
+     "end": 14.05,
+     "score": 0.45,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 14.65,
+   "end": 16.99,
+   "text": " Lymphoma. That's a cancer, right?",
+   "words": [
+    {
+     "word": "Lymphoma.",
+     "start": 14.65,
+     "end": 15.13,
+     "score": 0.45,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "That's",
+     "start": 15.38,
+     "end": 15.77,
+     "score": 0.927,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "a",
+     "start": 15.81,
+     "end": 15.97,
+     "score": 0.895,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "cancer,",
+     "start": 16.01,
+     "end": 16.4,
+     "score": 0.88,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "right?",
+     "start": 16.65,
+     "end": 16.99,
+     "score": 0.991,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 17.59,
+   "end": 23.01,
+   "text": " Yes, it's a cancer of the lymphocytes, which are a type of white blood cell.",
+   "words": [
+    {
+     "word": "Yes,",
+     "start": 17.59,
+     "end": 17.85,
+     "score": 0.871,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "it's",
+     "start": 18.1,
+     "end": 18.4,
+     "score": 0.93,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 18.44,
+     "end": 18.6,
+     "score": 0.867,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer",
+     "start": 18.64,
+     "end": 19.03,
+     "score": 0.93,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 19.07,
+     "end": 19.28,
+     "score": 0.91,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 19.32,
+     "end": 19.58,
+     "score": 0.96,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymphocytes,",
+     "start": 19.62,
+     "end": 20.23,
+     "score": 0.986,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "which",
+     "start": 20.48,
+     "end": 20.82,
+     "score": 0.872,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "are",
+     "start": 20.86,
+     "end": 21.12,
+     "score": 0.957,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 21.16,
+     "end": 21.32,
+     "score": 0.992,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "type",
+     "start": 21.36,
+     "end": 21.66,
+     "score": 0.985,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 21.7,
+     "end": 21.91,
+     "score": 0.99,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "white",
+     "start": 21.95,
+     "end": 22.29,
+     "score": 0.993,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "blood",
+     "start": 22.33,
+     "end": 22.67,
+     "score": 0.868,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cell.",
+     "start": 22.71,
+     "end": 23.01,
+     "score": 0.96,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 23.61,
+   "end": 29.64,
+   "text": " Diffuse large B-cell lymphoma is a fast-growing lymphoma, but it's often curable with treatment.",
+   "words": [
+    {
+     "word": "Diffuse",
+     "start": 23.61,
+     "end": 24.04,
+     "score": 0.915,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "large",
+     "start": 24.08,
+     "end": 24.42,
+     "score": 0.867,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "B-cell",
+     "start": 24.46,
+     "end": 24.85,
+     "score": 0.967,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymphoma",
+     "start": 24.89,
+     "end": 25.37,
+     "score": 0.45,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 25.41,
+     "end": 25.62,
+     "score": 0.99,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 25.66,
+     "end": 25.82,
+     "score": 0.957,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "fast-growing",
+     "start": 25.86,
+     "end": 26.52,
+     "score": 0.886,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymphoma,",
+     "start": 26.56,
+     "end": 27.04,
+     "score": 0.45,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "but",
+     "start": 27.29,
+     "end": 27.55,
+     "score": 0.884,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "it's",
+     "start": 27.59,
+     "end": 27.89,
+     "score": 0.923,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "often",
+     "start": 27.93,
+     "end": 28.27,
+     "score": 0.92,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "curable",
+     "start": 28.31,
+     "end": 28.74,
+     "score": 0.993,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "with",
+     "start": 28.78,
+     "end": 29.08,
+     "score": 0.969,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "treatment.",
+     "start": 29.12,
+     "end": 29.64,
+     "score": 0.883,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 30.24,
+   "end": 34.31,
+   "text": " Okay. Um, it's just the one lump in my neck, though.",
+   "words": [
+    {
+     "word": "Okay.",
+     "start": 30.24,
+     "end": 30.54,
+     "score": 0.957,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "Um,",
+     "start": 30.79,
+     "end": 31.0,
+     "score": 0.897,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "it's",
+     "start": 31.25,
+     "end": 31.55,
+     "score": 0.876,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "just",
+     "start": 31.59,
+     "end": 31.89,
+     "score": 0.86,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "the",
+     "start": 31.93,
+     "end": 32.19,
+     "score": 0.86,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "one",
+     "start": 32.23,
+     "end": 32.49,
+     "score": 0.931,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "lump",
+     "start": 32.53,
+     "end": 32.83,
+     "score": 0.967,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "in",
+     "start": 32.87,
+     "end": 33.08,
+     "score": 0.953,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "my",
+     "start": 33.12,
+     "end": 33.33,
+     "score": 0.897,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "neck,",
+     "start": 33.37,
+     "end": 33.67,
+     "score": 0.883,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "though.",
+     "start": 33.92,
+     "end": 34.31,
+     "score": 0.982,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 34.91,
+   "end": 40.04,
+   "text": " Lymphoma only lives in the lymph nodes, so the rest of your body is fine.",
+   "words": [
+    {
+     "word": "Lymphoma",
+     "start": 34.91,
+     "end": 35.39,
+     "score": 0.45,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "only",
+     "start": 35.43,
+     "end": 35.73,
+     "score": 0.871,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lives",
+     "start": 35.77,
+     "end": 36.11,
+     "score": 0.929,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in",
+     "start": 36.15,
+     "end": 36.36,
+     "score": 0.986,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 36.4,
+     "end": 36.66,
+     "score": 0.911,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymph",
+     "start": 36.7,
+     "end": 37.04,
+     "score": 0.947,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "nodes,",
+     "start": 37.08,
+     "end": 37.42,
+     "score": 0.976,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "so",
+     "start": 37.67,
+     "end": 37.88,
+     "score": 0.957,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 37.92,
+     "end": 38.18,
+     "score": 0.88,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "rest",
+     "start": 38.22,
+     "end": 38.52,
+     "score": 0.959,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 38.56,
+     "end": 38.77,
+     "score": 0.965,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "your",
+     "start": 38.81,
+     "end": 39.11,
+     "score": 0.876,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "body",
+     "start": 39.15,
+     "end": 39.45,
+     "score": 0.891,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 39.49,
+     "end": 39.7,
+     "score": 0.959,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "fine.",
+     "start": 39.74,
+     "end": 40.04,
+     "score": 0.978,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 40.64,
+   "end": 42.87,
+   "text": " That's good. What's the treatment?",
+   "words": [
+    {
+     "word": "That's",
+     "start": 40.64,
+     "end": 41.03,
+     "score": 0.889,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "good.",
+     "start": 41.07,
+     "end": 41.37,
+     "score": 0.977,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "What's",
+     "start": 41.62,
+     "end": 42.01,
+     "score": 0.905,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "the",
+     "start": 42.05,
+     "end": 42.31,
+     "score": 0.95,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "treatment?",
+     "start": 42.35,
+     "end": 42.87,
+     "score": 0.889,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 43.47,
+   "end": 45.71,
+   "text": " The treatment is usually chemotherapy.",
+   "words": [
+    {
+     "word": "The",
+     "start": 43.47,
+     "end": 43.73,
+     "score": 0.93,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "treatment",
+     "start": 43.77,
+     "end": 44.29,
+     "score": 0.92,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 44.33,
+     "end": 44.54,
+     "score": 0.908,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "usually",
+     "start": 44.58,
+     "end": 45.01,
+     "score": 0.869,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "chemotherapy.",
+     "start": 45.05,
+     "end": 45.71,
+     "score": 0.874,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 46.31,
+   "end": 47.74,
+   "text": " Will I lose my hair?",
+   "words": [
+    {
+     "word": "Will",
+     "start": 46.31,
+     "end": 46.61,
+     "score": 0.936,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "I",
+     "start": 46.65,
+     "end": 46.81,
+     "score": 0.931,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "lose",
+     "start": 46.85,
+     "end": 47.15,
+     "score": 0.954,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "my",
+     "start": 47.19,
+     "end": 47.4,
+     "score": 0.88,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "hair?",
+     "start": 47.44,
+     "end": 47.74,
+     "score": 0.914,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 48.34,
+   "end": 54.97,
+   "text": " With most of these regimens, yes, hair loss is common, but it grows back after treatment ends.",
+   "words": [
+    {
+     "word": "With",
+     "start": 48.34,
+     "end": 48.64,
+     "score": 0.989,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "most",
+     "start": 48.68,
+     "end": 48.98,
+     "score": 0.893,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 49.02,
+     "end": 49.23,
+     "score": 0.862,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "these",
+     "start": 49.27,
+     "end": 49.61,
+     "score": 0.896,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "regimens,",
+     "start": 49.65,
+     "end": 50.13,
+     "score": 0.866,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "yes,",
+     "start": 50.38,
+     "end": 50.64,
+     "score": 0.974,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "hair",
+     "start": 50.89,
+     "end": 51.19,
+     "score": 0.893,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "loss",
+     "start": 51.23,
+     "end": 51.53,
+     "score": 0.893,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 51.57,
+     "end": 51.78,
+     "score": 0.983,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "common,",
+     "start": 51.82,
+     "end": 52.21,
+     "score": 0.927,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "but",
+     "start": 52.46,
+     "end": 52.72,
+     "score": 0.978,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "it",
+     "start": 52.76,
+     "end": 52.97,
+     "score": 0.911,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "grows",
+     "start": 53.01,
+     "end": 53.35,
+     "score": 0.921,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "back",
+     "start": 53.39,
+     "end": 53.69,
+     "score": 0.911,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "after",
+     "start": 53.73,
+     "end": 54.07,
+     "score": 0.893,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "treatment",
+     "start": 54.11,
+     "end": 54.63,
+     "score": 0.966,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "ends.",
+     "start": 54.67,
+     "end": 54.97,
+     "score": 0.885,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 55.57,
+   "end": 57.6,
+   "text": " Okay. How soon do we start?",
+   "words": [
+    {
+     "word": "Okay.",
+     "start": 55.57,
+     "end": 55.87,
+     "score": 0.926,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "How",
+     "start": 56.12,
+     "end": 56.38,
+     "score": 0.899,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "soon",
+     "start": 56.42,
+     "end": 56.72,
+     "score": 0.926,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "do",
+     "start": 56.76,
+     "end": 56.97,
+     "score": 0.988,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "we",
+     "start": 57.01,
+     "end": 57.22,
+     "score": 0.865,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "start?",
+     "start": 57.26,
+     "end": 57.6,
+     "score": 0.863,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 58.2,
+   "end": 63.54,
+   "text": " Soon. I'm referring you to the lymphoma team, and they'll see you this week.",
+   "words": [
+    {
+     "word": "Soon.",
+     "start": 58.2,
+     "end": 58.5,
+     "score": 0.917,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "I'm",
+     "start": 58.75,
+     "end": 59.01,
+     "score": 0.982,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "referring",
+     "start": 59.05,
+     "end": 59.57,
+     "score": 0.922,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "you",
+     "start": 59.61,
+     "end": 59.87,
+     "score": 0.896,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "to",
+     "start": 59.91,
+     "end": 60.12,
+     "score": 0.896,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 60.16,
+     "end": 60.42,
+     "score": 0.93,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lymphoma",
+     "start": 60.46,
+     "end": 60.94,
+     "score": 0.45,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "team,",
+     "start": 60.98,
+     "end": 61.28,
+     "score": 0.946,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 61.53,
+     "end": 61.79,
+     "score": 0.986,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "they'll",
+     "start": 61.83,
+     "end": 62.26,
+     "score": 0.889,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "see",
+     "start": 62.3,
+     "end": 62.56,
+     "score": 0.888,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "you",
+     "start": 62.6,
+     "end": 62.86,
+     "score": 0.872,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "this",
+     "start": 62.9,
+     "end": 63.2,
+     "score": 0.968,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "week.",
+     "start": 63.24,
+     "end": 63.54,
+     "score": 0.895,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 64.14,
+   "end": 65.33,
+   "text": " Okay. Thank you.",
+   "words": [
+    {
+     "word": "Okay.",
+     "start": 64.14,
+     "end": 64.44,
+     "score": 0.974,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "Thank",
+     "start": 64.69,
+     "end": 65.03,
+     "score": 0.874,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "you.",
+     "start": 65.07,
+     "end": 65.33,
+     "score": 0.915,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  }
+ ],
+ "word_segments": [
+  {
+   "word": "Hi,",
+   "start": 0.3,
+   "end": 0.51,
+   "score": 0.9,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "come",
+   "start": 0.76,
+   "end": 1.06,
+   "score": 0.882,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "on",
+   "start": 1.1,
+   "end": 1.31,
+   "score": 0.873,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in.",
+   "start": 1.35,
+   "end": 1.56,
+   "score": 0.993,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "How's",
+   "start": 1.81,
+   "end": 2.15,
+   "score": 0.902,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 2.19,
+   "end": 2.45,
+   "score": 0.902,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "neck",
+   "start": 2.49,
+   "end": 2.79,
+   "score": 0.918,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "feeling",
+   "start": 2.83,
+   "end": 3.26,
+   "score": 0.913,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "since",
+   "start": 3.3,
+   "end": 3.64,
+   "score": 0.953,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 3.68,
+   "end": 3.94,
+   "score": 0.959,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "biopsy?",
+   "start": 3.98,
+   "end": 4.37,
+   "score": 0.93,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Sore,",
+   "start": 4.97,
+   "end": 5.27,
+   "score": 0.89,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "but",
+   "start": 5.52,
+   "end": 5.78,
+   "score": 0.905,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "okay.",
+   "start": 5.82,
+   "end": 6.12,
+   "score": 0.957,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "I",
+   "start": 6.37,
+   "end": 6.53,
+   "score": 0.957,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "just",
+   "start": 6.57,
+   "end": 6.87,
+   "score": 0.91,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "want",
+   "start": 6.91,
+   "end": 7.21,
+   "score": 0.984,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "to",
+   "start": 7.25,
+   "end": 7.46,
+   "score": 0.906,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "know",
+   "start": 7.5,
+   "end": 7.8,
+   "score": 0.916,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "what",
+   "start": 7.84,
+   "end": 8.14,
+   "score": 0.964,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "it",
+   "start": 8.18,
+   "end": 8.39,
+   "score": 0.916,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "is.",
+   "start": 8.43,
+   "end": 8.64,
+   "score": 0.946,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "I",
+   "start": 9.24,
+   "end": 9.4,
+   "score": 0.974,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "understand.",
+   "start": 9.44,
+   "end": 10.01,
+   "score": 0.9,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "The",
+   "start": 10.26,
+   "end": 10.52,
+   "score": 0.964,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymph",
+   "start": 10.56,
+   "end": 10.9,
+   "score": 0.993,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "node",
+   "start": 10.94,
+   "end": 11.24,
+   "score": 0.92,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "biopsy",
+   "start": 11.28,
+   "end": 11.67,
+   "score": 0.956,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "shows",
+   "start": 11.71,
+   "end": 12.05,
+   "score": 0.888,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 12.09,
+   "end": 12.25,
+   "score": 0.895,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "diffuse",
+   "start": 12.29,
+   "end": 12.72,
+   "score": 0.941,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "large",
+   "start": 12.76,
+   "end": 13.1,
+   "score": 0.892,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "B-cell",
+   "start": 13.14,
+   "end": 13.53,
+   "score": 0.982,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymphoma.",
+   "start": 13.57,
+   "end": 14.05,
+   "score": 0.45,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Lymphoma.",
+   "start": 14.65,
+   "end": 15.13,
+   "score": 0.45,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "That's",
+   "start": 15.38,
+   "end": 15.77,
+   "score": 0.927,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "a",
+   "start": 15.81,
+   "end": 15.97,
+   "score": 0.895,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "cancer,",
+   "start": 16.01,
+   "end": 16.4,
+   "score": 0.88,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "right?",
+   "start": 16.65,
+   "end": 16.99,
+   "score": 0.991,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Yes,",
+   "start": 17.59,
+   "end": 17.85,
+   "score": 0.871,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "it's",
+   "start": 18.1,
+   "end": 18.4,
+   "score": 0.93,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 18.44,
+   "end": 18.6,
+   "score": 0.867,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer",
+   "start": 18.64,
+   "end": 19.03,
+   "score": 0.93,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 19.07,
+   "end": 19.28,
+   "score": 0.91,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 19.32,
+   "end": 19.58,
+   "score": 0.96,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymphocytes,",
+   "start": 19.62,
+   "end": 20.23,
+   "score": 0.986,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "which",
+   "start": 20.48,
+   "end": 20.82,
+   "score": 0.872,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "are",
+   "start": 20.86,
+   "end": 21.12,
+   "score": 0.957,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 21.16,
+   "end": 21.32,
+   "score": 0.992,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "type",
+   "start": 21.36,
+   "end": 21.66,
+   "score": 0.985,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 21.7,
+   "end": 21.91,
+   "score": 0.99,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "white",
+   "start": 21.95,
+   "end": 22.29,
+   "score": 0.993,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "blood",
+   "start": 22.33,
+   "end": 22.67,
+   "score": 0.868,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cell.",
+   "start": 22.71,
+   "end": 23.01,
+   "score": 0.96,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Diffuse",
+   "start": 23.61,
+   "end": 24.04,
+   "score": 0.915,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "large",
+   "start": 24.08,
+   "end": 24.42,
+   "score": 0.867,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "B-cell",
+   "start": 24.46,
+   "end": 24.85,
+   "score": 0.967,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymphoma",
+   "start": 24.89,
+   "end": 25.37,
+   "score": 0.45,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 25.41,
+   "end": 25.62,
+   "score": 0.99,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 25.66,
+   "end": 25.82,
+   "score": 0.957,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "fast-growing",
+   "start": 25.86,
+   "end": 26.52,
+   "score": 0.886,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymphoma,",
+   "start": 26.56,
+   "end": 27.04,
+   "score": 0.45,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "but",
+   "start": 27.29,
+   "end": 27.55,
+   "score": 0.884,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "it's",
+   "start": 27.59,
+   "end": 27.89,
+   "score": 0.923,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "often",
+   "start": 27.93,
+   "end": 28.27,
+   "score": 0.92,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "curable",
+   "start": 28.31,
+   "end": 28.74,
+   "score": 0.993,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "with",
+   "start": 28.78,
+   "end": 29.08,
+   "score": 0.969,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "treatment.",
+   "start": 29.12,
+   "end": 29.64,
+   "score": 0.883,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Okay.",
+   "start": 30.24,
+   "end": 30.54,
+   "score": 0.957,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Um,",
+   "start": 30.79,
+   "end": 31.0,
+   "score": 0.897,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "it's",
+   "start": 31.25,
+   "end": 31.55,
+   "score": 0.876,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "just",
+   "start": 31.59,
+   "end": 31.89,
+   "score": 0.86,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "the",
+   "start": 31.93,
+   "end": 32.19,
+   "score": 0.86,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "one",
+   "start": 32.23,
+   "end": 32.49,
+   "score": 0.931,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "lump",
+   "start": 32.53,
+   "end": 32.83,
+   "score": 0.967,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "in",
+   "start": 32.87,
+   "end": 33.08,
+   "score": 0.953,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "my",
+   "start": 33.12,
+   "end": 33.33,
+   "score": 0.897,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "neck,",
+   "start": 33.37,
+   "end": 33.67,
+   "score": 0.883,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "though.",
+   "start": 33.92,
+   "end": 34.31,
+   "score": 0.982,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Lymphoma",
+   "start": 34.91,
+   "end": 35.39,
+   "score": 0.45,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "only",
+   "start": 35.43,
+   "end": 35.73,
+   "score": 0.871,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lives",
+   "start": 35.77,
+   "end": 36.11,
+   "score": 0.929,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in",
+   "start": 36.15,
+   "end": 36.36,
+   "score": 0.986,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 36.4,
+   "end": 36.66,
+   "score": 0.911,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymph",
+   "start": 36.7,
+   "end": 37.04,
+   "score": 0.947,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "nodes,",
+   "start": 37.08,
+   "end": 37.42,
+   "score": 0.976,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "so",
+   "start": 37.67,
+   "end": 37.88,
+   "score": 0.957,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 37.92,
+   "end": 38.18,
+   "score": 0.88,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "rest",
+   "start": 38.22,
+   "end": 38.52,
+   "score": 0.959,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 38.56,
+   "end": 38.77,
+   "score": 0.965,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "your",
+   "start": 38.81,
+   "end": 39.11,
+   "score": 0.876,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "body",
+   "start": 39.15,
+   "end": 39.45,
+   "score": 0.891,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 39.49,
+   "end": 39.7,
+   "score": 0.959,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "fine.",
+   "start": 39.74,
+   "end": 40.04,
+   "score": 0.978,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "That's",
+   "start": 40.64,
+   "end": 41.03,
+   "score": 0.889,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "good.",
+   "start": 41.07,
+   "end": 41.37,
+   "score": 0.977,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "What's",
+   "start": 41.62,
+   "end": 42.01,
+   "score": 0.905,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "the",
+   "start": 42.05,
+   "end": 42.31,
+   "score": 0.95,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "treatment?",
+   "start": 42.35,
+   "end": 42.87,
+   "score": 0.889,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "The",
+   "start": 43.47,
+   "end": 43.73,
+   "score": 0.93,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "treatment",
+   "start": 43.77,
+   "end": 44.29,
+   "score": 0.92,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 44.33,
+   "end": 44.54,
+   "score": 0.908,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "usually",
+   "start": 44.58,
+   "end": 45.01,
+   "score": 0.869,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "chemotherapy.",
+   "start": 45.05,
+   "end": 45.71,
+   "score": 0.874,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Will",
+   "start": 46.31,
+   "end": 46.61,
+   "score": 0.936,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "I",
+   "start": 46.65,
+   "end": 46.81,
+   "score": 0.931,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "lose",
+   "start": 46.85,
+   "end": 47.15,
+   "score": 0.954,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "my",
+   "start": 47.19,
+   "end": 47.4,
+   "score": 0.88,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "hair?",
+   "start": 47.44,
+   "end": 47.74,
+   "score": 0.914,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "With",
+   "start": 48.34,
+   "end": 48.64,
+   "score": 0.989,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "most",
+   "start": 48.68,
+   "end": 48.98,
+   "score": 0.893,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 49.02,
+   "end": 49.23,
+   "score": 0.862,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "these",
+   "start": 49.27,
+   "end": 49.61,
+   "score": 0.896,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "regimens,",
+   "start": 49.65,
+   "end": 50.13,
+   "score": 0.866,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "yes,",
+   "start": 50.38,
+   "end": 50.64,
+   "score": 0.974,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "hair",
+   "start": 50.89,
+   "end": 51.19,
+   "score": 0.893,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "loss",
+   "start": 51.23,
+   "end": 51.53,
+   "score": 0.893,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 51.57,
+   "end": 51.78,
+   "score": 0.983,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "common,",
+   "start": 51.82,
+   "end": 52.21,
+   "score": 0.927,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "but",
+   "start": 52.46,
+   "end": 52.72,
+   "score": 0.978,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "it",
+   "start": 52.76,
+   "end": 52.97,
+   "score": 0.911,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "grows",
+   "start": 53.01,
+   "end": 53.35,
+   "score": 0.921,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "back",
+   "start": 53.39,
+   "end": 53.69,
+   "score": 0.911,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "after",
+   "start": 53.73,
+   "end": 54.07,
+   "score": 0.893,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "treatment",
+   "start": 54.11,
+   "end": 54.63,
+   "score": 0.966,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "ends.",
+   "start": 54.67,
+   "end": 54.97,
+   "score": 0.885,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Okay.",
+   "start": 55.57,
+   "end": 55.87,
+   "score": 0.926,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "How",
+   "start": 56.12,
+   "end": 56.38,
+   "score": 0.899,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "soon",
+   "start": 56.42,
+   "end": 56.72,
+   "score": 0.926,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "do",
+   "start": 56.76,
+   "end": 56.97,
+   "score": 0.988,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "we",
+   "start": 57.01,
+   "end": 57.22,
+   "score": 0.865,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "start?",
+   "start": 57.26,
+   "end": 57.6,
+   "score": 0.863,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Soon.",
+   "start": 58.2,
+   "end": 58.5,
+   "score": 0.917,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "I'm",
+   "start": 58.75,
+   "end": 59.01,
+   "score": 0.982,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "referring",
+   "start": 59.05,
+   "end": 59.57,
+   "score": 0.922,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "you",
+   "start": 59.61,
+   "end": 59.87,
+   "score": 0.896,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "to",
+   "start": 59.91,
+   "end": 60.12,
+   "score": 0.896,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 60.16,
+   "end": 60.42,
+   "score": 0.93,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lymphoma",
+   "start": 60.46,
+   "end": 60.94,
+   "score": 0.45,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "team,",
+   "start": 60.98,
+   "end": 61.28,
+   "score": 0.946,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 61.53,
+   "end": 61.79,
+   "score": 0.986,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "they'll",
+   "start": 61.83,
+   "end": 62.26,
+   "score": 0.889,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "see",
+   "start": 62.3,
+   "end": 62.56,
+   "score": 0.888,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "you",
+   "start": 62.6,
+   "end": 62.86,
+   "score": 0.872,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "this",
+   "start": 62.9,
+   "end": 63.2,
+   "score": 0.968,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "week.",
+   "start": 63.24,
+   "end": 63.54,
+   "score": 0.895,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Okay.",
+   "start": 64.14,
+   "end": 64.44,
+   "score": 0.974,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Thank",
+   "start": 64.69,
+   "end": 65.03,
+   "score": 0.874,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "you.",
+   "start": 65.07,
+   "end": 65.33,
+   "score": 0.915,
+   "speaker": "SPEAKER_01"
+  }
+ ],
+ "language": "en"
+}

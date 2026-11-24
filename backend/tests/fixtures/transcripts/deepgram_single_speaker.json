@@ -1,0 +1,402 @@
+{
+ "metadata": {
+  "transaction_key": "deprecated",
+  "request_id": "00000000-0000-4000-8000-SYNTHETIC0001",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created": "2026-11-24T00:00:00.000Z",
+  "duration": 10.94,
+  "channels": 1,
+  "models": [
+   "synthetic-model-uuid"
+  ],
+  "model_info": {
+   "synthetic-model-uuid": {
+    "name": "nova-3-medical",
+    "version": "synthetic",
+    "arch": "nova-3"
+   }
+  }
+ },
+ "results": {
+  "channels": [
+   {
+    "alternatives": [
+     {
+      "transcript": "Dictation for the record. Biopsy of the sigmoid colon shows adenocarcinoma, moderately differentiated. Mismatch repair immunohistochemistry has been requested.",
+      "confidence": 0.857,
+      "words": [
+       {
+        "word": "dictation",
+        "start": 0.3,
+        "end": 0.82,
+        "confidence": 0.946,
+        "punctuated_word": "Dictation",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "for",
+        "start": 0.86,
+        "end": 1.12,
+        "confidence": 0.863,
+        "punctuated_word": "for",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 1.16,
+        "end": 1.42,
+        "confidence": 0.897,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "record",
+        "start": 1.46,
+        "end": 1.85,
+        "confidence": 0.89,
+        "punctuated_word": "record.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "biopsy",
+        "start": 2.1,
+        "end": 2.49,
+        "confidence": 0.959,
+        "punctuated_word": "Biopsy",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "of",
+        "start": 2.53,
+        "end": 2.74,
+        "confidence": 0.951,
+        "punctuated_word": "of",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 2.78,
+        "end": 3.04,
+        "confidence": 0.98,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "sigmoid",
+        "start": 3.08,
+        "end": 3.51,
+        "confidence": 0.55,
+        "punctuated_word": "sigmoid",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colon",
+        "start": 3.55,
+        "end": 3.89,
+        "confidence": 0.917,
+        "punctuated_word": "colon",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "shows",
+        "start": 3.93,
+        "end": 4.27,
+        "confidence": 0.864,
+        "punctuated_word": "shows",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "adenocarcinoma",
+        "start": 4.31,
+        "end": 5.06,
+        "confidence": 0.41,
+        "punctuated_word": "adenocarcinoma,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "moderately",
+        "start": 5.31,
+        "end": 5.88,
+        "confidence": 0.928,
+        "punctuated_word": "moderately",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "differentiated",
+        "start": 5.92,
+        "end": 6.67,
+        "confidence": 0.864,
+        "punctuated_word": "differentiated.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mismatch",
+        "start": 7.27,
+        "end": 7.75,
+        "confidence": 0.58,
+        "punctuated_word": "Mismatch",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "repair",
+        "start": 7.79,
+        "end": 8.18,
+        "confidence": 0.948,
+        "punctuated_word": "repair",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "immunohistochemistry",
+        "start": 8.22,
+        "end": 9.24,
+        "confidence": 0.934,
+        "punctuated_word": "immunohistochemistry",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "has",
+        "start": 9.28,
+        "end": 9.54,
+        "confidence": 0.89,
+        "punctuated_word": "has",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "been",
+        "start": 9.58,
+        "end": 9.88,
+        "confidence": 0.94,
+        "punctuated_word": "been",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "requested",
+        "start": 9.92,
+        "end": 10.44,
+        "confidence": 0.969,
+        "punctuated_word": "requested.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       }
+      ]
+     }
+    ],
+    "detected_language": "en",
+    "language_confidence": 0.97
+   }
+  ],
+  "utterances": [
+   {
+    "start": 0.3,
+    "end": 6.67,
+    "confidence": 0.848,
+    "channel": 0,
+    "transcript": "Dictation for the record. Biopsy of the sigmoid colon shows adenocarcinoma, moderately differentiated.",
+    "words": [
+     {
+      "word": "dictation",
+      "start": 0.3,
+      "end": 0.82,
+      "confidence": 0.946,
+      "punctuated_word": "Dictation",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "for",
+      "start": 0.86,
+      "end": 1.12,
+      "confidence": 0.863,
+      "punctuated_word": "for",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 1.16,
+      "end": 1.42,
+      "confidence": 0.897,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "record",
+      "start": 1.46,
+      "end": 1.85,
+      "confidence": 0.89,
+      "punctuated_word": "record.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "biopsy",
+      "start": 2.1,
+      "end": 2.49,
+      "confidence": 0.959,
+      "punctuated_word": "Biopsy",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "of",
+      "start": 2.53,
+      "end": 2.74,
+      "confidence": 0.951,
+      "punctuated_word": "of",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 2.78,
+      "end": 3.04,
+      "confidence": 0.98,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "sigmoid",
+      "start": 3.08,
+      "end": 3.51,
+      "confidence": 0.55,
+      "punctuated_word": "sigmoid",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colon",
+      "start": 3.55,
+      "end": 3.89,
+      "confidence": 0.917,
+      "punctuated_word": "colon",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "shows",
+      "start": 3.93,
+      "end": 4.27,
+      "confidence": 0.864,
+      "punctuated_word": "shows",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "adenocarcinoma",
+      "start": 4.31,
+      "end": 5.06,
+      "confidence": 0.41,
+      "punctuated_word": "adenocarcinoma,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "moderately",
+      "start": 5.31,
+      "end": 5.88,
+      "confidence": 0.928,
+      "punctuated_word": "moderately",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "differentiated",
+      "start": 5.92,
+      "end": 6.67,
+      "confidence": 0.864,
+      "punctuated_word": "differentiated.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000000"
+   },
+   {
+    "start": 7.27,
+    "end": 10.44,
+    "confidence": 0.877,
+    "channel": 0,
+    "transcript": "Mismatch repair immunohistochemistry has been requested.",
+    "words": [
+     {
+      "word": "mismatch",
+      "start": 7.27,
+      "end": 7.75,
+      "confidence": 0.58,
+      "punctuated_word": "Mismatch",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "repair",
+      "start": 7.79,
+      "end": 8.18,
+      "confidence": 0.948,
+      "punctuated_word": "repair",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "immunohistochemistry",
+      "start": 8.22,
+      "end": 9.24,
+      "confidence": 0.934,
+      "punctuated_word": "immunohistochemistry",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "has",
+      "start": 9.28,
+      "end": 9.54,
+      "confidence": 0.89,
+      "punctuated_word": "has",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "been",
+      "start": 9.58,
+      "end": 9.88,
+      "confidence": 0.94,
+      "punctuated_word": "been",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "requested",
+      "start": 9.92,
+      "end": 10.44,
+      "confidence": 0.969,
+      "punctuated_word": "requested.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000001"
+   }
+  ]
+ }
+}

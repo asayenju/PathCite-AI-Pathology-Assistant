@@ -1,0 +1,33 @@
+{
+ "id": "prostate_gg2",
+ "title": "Prostate biopsy, Gleason 3+4=7",
+ "folder": "Prostate & thyroid",
+ "vendor": "openai_diarized",
+ "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
+ "keys": [
+  {
+   "span": "a Gleason score of 3 plus 4 equals 7, which is Grade Group 2",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Gleason score 3+4=7 corresponds to ISUP Grade Group 2.",
+   "source_hint": "ISUP grading; CAP prostate protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "A Gleason 7 is the most aggressive kind there is.",
+   "verdict": "inaccurate",
+   "issue": "Gleason 3+4=7 is intermediate, not the most aggressive.",
+   "correct": "Grade Groups run from 1 to 5. Gleason 3+4=7 is Grade Group 2, an intermediate risk. The most aggressive is Grade Group 5, Gleason 9 to 10.",
+   "source_hint": "ISUP grading; CAP prostate protocol",
+   "speaker": "doctor"
+  },
+  {
+   "span": "The treatment for this is surgery to remove the prostate.",
+   "verdict": "incomplete",
+   "issue": "Omits the other options.",
+   "correct": "Options for Grade Group 2 also include radiation therapy and, for some carefully selected men, active surveillance. The choice depends on PSA, extent of disease and the patient's preferences.",
+   "source_hint": "NCCN prostate cancer",
+   "speaker": "doctor"
+  }
+ ]
+}
