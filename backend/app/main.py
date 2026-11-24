@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, UploadFile
@@ -9,9 +10,11 @@ from starlette.formparsers import MultiPartParser
 from app.config import get_settings
 from app.errors import ApiError, register_error_handlers
 from app.images import load_image, read_upload
-from app.model import load_model, pick_device
+from app.model import ModelMissingError, load_model, pick_device
 from app.predict import build_response, predict_probs
 from app.schemas import PredictResponse
+
+logger = logging.getLogger("pathcite")
 
 
 def _model_version(path) -> str:
@@ -22,15 +25,22 @@ def _model_version(path) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
-    # Starlette spools uploads over 1 MB to a temp file on disk by default. Keep the
-    # whole (size-capped) upload in memory so patient images are never written to disk.
-    MultiPartParser.spool_max_size = settings.max_upload_mb * 1024 * 1024 + 1
+    # Starlette spools uploads over 1 MB to a temp file on disk by default. Keep the whole
+    # (size-capped) upload in memory so patient images and transcripts never touch disk.
+    largest_mb = max(settings.max_upload_mb, settings.max_transcript_mb)
+    MultiPartParser.spool_max_size = largest_mb * 1024 * 1024 + 1
     device = pick_device()
     app.state.settings = settings
     app.state.device = device
-    # Fails fast: a missing or mismatched weights file stops startup with a clear error.
-    app.state.model = load_model(settings.model_path, device)
-    app.state.model_version = _model_version(settings.model_path)
+    # A missing weights file only disables /predict (transcript import doesn't need it).
+    # A present but mismatched or corrupt file is a real bug: startup still fails fast.
+    try:
+        app.state.model = load_model(settings.model_path, device)
+        app.state.model_version = _model_version(settings.model_path)
+    except ModelMissingError:
+        logger.warning("Model weights not found at %s: /predict is disabled", settings.model_path)
+        app.state.model = None
+        app.state.model_version = None
     yield
     app.state.model = None
 
@@ -41,9 +51,9 @@ register_error_handlers(app)
 
 @app.get("/health")
 def health():
+    # The app is up either way; without the model only /predict is unavailable.
     loaded = getattr(app.state, "model", None) is not None
-    body = {"status": "ok" if loaded else "unavailable", "model_loaded": loaded}
-    return JSONResponse(body, status_code=200 if loaded else 503)
+    return {"status": "ok" if loaded else "degraded", "model_loaded": loaded}
 
 
 @app.post(

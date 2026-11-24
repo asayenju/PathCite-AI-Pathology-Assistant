@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     uncertain_threshold: float = 0.7
     max_upload_mb: int = 10
     max_image_pixels: int = 25_000_000  # ~5000x5000; guards against decompression bombs
+    max_transcript_mb: int = 20
 
 
 def get_settings() -> Settings:

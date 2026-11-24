@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.classes import CLASS_NAMES
 from app.config import DEFAULT_MODEL_PATH, Settings
-from app.model import ModelLoadError, load_model, pick_device
+from app.model import ModelLoadError, ModelMissingError, load_model, pick_device
 
 
 def test_defaults(monkeypatch):
@@ -64,19 +64,41 @@ def test_health_with_model():
     assert r.json() == {"status": "ok", "model_loaded": True}
 
 
-def test_startup_fails_fast_when_weights_missing(monkeypatch, tmp_path):
+def test_missing_weights_raises_missing_error(tmp_path):
+    with pytest.raises(ModelMissingError):
+        load_model(tmp_path / "missing.pt")
+
+
+def test_startup_without_weights_runs_degraded(monkeypatch, tmp_path, caplog):
     from app.main import app
 
     monkeypatch.setenv("MODEL_PATH", str(tmp_path / "missing.pt"))
-    with pytest.raises(ModelLoadError):
+    with TestClient(app) as c:
+        health = c.get("/health")
+        predict = c.post("/predict", files={"file": ("x.png", b"\x89PNG\r\n\x1a\n", "image/png")})
+    assert health.status_code == 200
+    assert health.json() == {"status": "degraded", "model_loaded": False}
+    assert predict.status_code == 503
+    assert predict.json()["code"] == "model_unavailable"
+    assert "Model weights not found" in caplog.text
+
+
+def test_startup_fails_fast_when_weights_mismatched(monkeypatch, tmp_path):
+    from app.main import app
+
+    bad = tmp_path / "bad.pt"
+    torch.save(timm.create_model("resnet18", pretrained=False, num_classes=3).state_dict(), bad)
+    monkeypatch.setenv("MODEL_PATH", str(bad))
+    with pytest.raises(ModelLoadError) as exc:
         with TestClient(app):
             pass
+    assert not isinstance(exc.value, ModelMissingError)
 
 
-def test_health_503_when_model_not_loaded():
+def test_health_degraded_when_model_not_loaded():
     from app.main import app
 
     app.state.model = None
     r = TestClient(app).get("/health")  # no lifespan: model never loaded
-    assert r.status_code == 503
-    assert r.json() == {"status": "unavailable", "model_loaded": False}
+    assert r.status_code == 200
+    assert r.json() == {"status": "degraded", "model_loaded": False}

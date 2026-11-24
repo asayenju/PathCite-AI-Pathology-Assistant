@@ -18,7 +18,7 @@ Interactive docs: http://localhost:8000/docs
 ## Endpoints
 
 ### `GET /health`
-`200 {"status": "ok", "model_loaded": true}`, or `503 {"status": "unavailable", "model_loaded": false}`.
+Always `200`: `{"status": "ok", "model_loaded": true}`, or `{"status": "degraded", "model_loaded": false}` when the weights file is missing (then only `/predict` is unavailable and returns 503).
 
 ### `POST /predict`
 Multipart upload, field name `file`: one PNG, JPEG or TIFF image (max 10 MB).
@@ -59,10 +59,11 @@ Always JSON: `{"detail": "...", "code": "..."}`.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `MODEL_PATH` | `../model/resnet18_finetuned_v2.pt` | weights file; startup fails if missing or mismatched |
+| `MODEL_PATH` | `../model/resnet18_finetuned_v2.pt` | weights file; if missing the app runs degraded (no `/predict`), if mismatched or corrupt startup fails |
 | `UNCERTAIN_THRESHOLD` | `0.7` | confidence below this sets `uncertain` |
 | `MAX_UPLOAD_MB` | `10` | max upload size |
 | `MAX_IMAGE_PIXELS` | `25000000` | max width x height, guards against decompression bombs |
+| `MAX_TRANSCRIPT_MB` | `20` | max transcript JSON upload size |
 
 ## Privacy
 Uploaded images are decoded in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type.
