@@ -9,6 +9,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `backend/`: FastAPI (`GET /health`, `POST /predict`). See `backend/README.md` for the API and error table.
 - `frontend/`: Vue 3 + TS + Tailwind v4 + shadcn-vue. See `frontend/README.md`.
 - `docs/PRD.md`: backend PRD.
+- `docs/PRD-transcript-import.md`: doctor–patient transcript import (step 1 of the RAG fact checker; issues labelled `transcript-import`).
 
 ## Commands
 

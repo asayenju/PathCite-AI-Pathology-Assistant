@@ -1,0 +1,36 @@
+{
+ "metadata": {
+  "transaction_key": "deprecated",
+  "request_id": "00000000-0000-4000-8000-SYNTHETIC0001",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created": "2026-11-24T00:00:00.000Z",
+  "duration": 0.0,
+  "channels": 1,
+  "models": [
+   "synthetic-model-uuid"
+  ],
+  "model_info": {
+   "synthetic-model-uuid": {
+    "name": "nova-3-medical",
+    "version": "synthetic",
+    "arch": "nova-3"
+   }
+  }
+ },
+ "results": {
+  "channels": [
+   {
+    "alternatives": [
+     {
+      "transcript": "",
+      "confidence": 0.0,
+      "words": []
+     }
+    ],
+    "detected_language": "en",
+    "language_confidence": 0.97
+   }
+  ],
+  "utterances": []
+ }
+}

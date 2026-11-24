@@ -1,0 +1,413 @@
+{
+ "metadata": {
+  "transaction_key": "deprecated",
+  "request_id": "00000000-0000-4000-8000-SYNTHETIC0001",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created": "2026-11-24T00:00:00.000Z",
+  "duration": 9.57,
+  "channels": 1,
+  "models": [
+   "synthetic-model-uuid"
+  ],
+  "model_info": {
+   "synthetic-model-uuid": {
+    "name": "nova-3-medical",
+    "version": "synthetic",
+    "arch": "nova-3"
+   }
+  }
+ },
+ "results": {
+  "channels": [
+   {
+    "alternatives": [
+     {
+      "transcript": "Buenos días, ya tenemos los resultados de la biopsia. ¿Y qué mostraron? Mostraron un adenocarcinoma en el colon sigmoide.",
+      "confidence": 0.887,
+      "words": [
+       {
+        "word": "buenos",
+        "start": 0.3,
+        "end": 0.69,
+        "confidence": 0.946,
+        "punctuated_word": "Buenos",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "días",
+        "start": 0.73,
+        "end": 1.03,
+        "confidence": 0.863,
+        "punctuated_word": "días,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "ya",
+        "start": 1.28,
+        "end": 1.49,
+        "confidence": 0.897,
+        "punctuated_word": "ya",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "tenemos",
+        "start": 1.53,
+        "end": 1.96,
+        "confidence": 0.89,
+        "punctuated_word": "tenemos",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "los",
+        "start": 2.0,
+        "end": 2.26,
+        "confidence": 0.959,
+        "punctuated_word": "los",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "resultados",
+        "start": 2.3,
+        "end": 2.87,
+        "confidence": 0.951,
+        "punctuated_word": "resultados",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "de",
+        "start": 2.91,
+        "end": 3.12,
+        "confidence": 0.98,
+        "punctuated_word": "de",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "la",
+        "start": 3.16,
+        "end": 3.37,
+        "confidence": 0.872,
+        "punctuated_word": "la",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "biopsia",
+        "start": 3.41,
+        "end": 3.84,
+        "confidence": 0.917,
+        "punctuated_word": "biopsia.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "¿y",
+        "start": 4.44,
+        "end": 4.65,
+        "confidence": 0.864,
+        "punctuated_word": "¿Y",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "qué",
+        "start": 4.69,
+        "end": 4.95,
+        "confidence": 0.89,
+        "punctuated_word": "qué",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mostraron",
+        "start": 4.99,
+        "end": 5.51,
+        "confidence": 0.928,
+        "punctuated_word": "mostraron?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mostraron",
+        "start": 6.11,
+        "end": 6.63,
+        "confidence": 0.864,
+        "punctuated_word": "Mostraron",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "un",
+        "start": 6.67,
+        "end": 6.88,
+        "confidence": 0.887,
+        "punctuated_word": "un",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "adenocarcinoma",
+        "start": 6.92,
+        "end": 7.67,
+        "confidence": 0.41,
+        "punctuated_word": "adenocarcinoma",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "en",
+        "start": 7.71,
+        "end": 7.92,
+        "confidence": 0.934,
+        "punctuated_word": "en",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "el",
+        "start": 7.96,
+        "end": 8.17,
+        "confidence": 0.89,
+        "punctuated_word": "el",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colon",
+        "start": 8.21,
+        "end": 8.55,
+        "confidence": 0.94,
+        "punctuated_word": "colon",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "sigmoide",
+        "start": 8.59,
+        "end": 9.07,
+        "confidence": 0.969,
+        "punctuated_word": "sigmoide.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       }
+      ]
+     }
+    ],
+    "detected_language": "es",
+    "language_confidence": 0.97
+   }
+  ],
+  "utterances": [
+   {
+    "start": 0.3,
+    "end": 3.84,
+    "confidence": 0.919,
+    "channel": 0,
+    "transcript": "Buenos días, ya tenemos los resultados de la biopsia.",
+    "words": [
+     {
+      "word": "buenos",
+      "start": 0.3,
+      "end": 0.69,
+      "confidence": 0.946,
+      "punctuated_word": "Buenos",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "días",
+      "start": 0.73,
+      "end": 1.03,
+      "confidence": 0.863,
+      "punctuated_word": "días,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "ya",
+      "start": 1.28,
+      "end": 1.49,
+      "confidence": 0.897,
+      "punctuated_word": "ya",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "tenemos",
+      "start": 1.53,
+      "end": 1.96,
+      "confidence": 0.89,
+      "punctuated_word": "tenemos",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "los",
+      "start": 2.0,
+      "end": 2.26,
+      "confidence": 0.959,
+      "punctuated_word": "los",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "resultados",
+      "start": 2.3,
+      "end": 2.87,
+      "confidence": 0.951,
+      "punctuated_word": "resultados",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "de",
+      "start": 2.91,
+      "end": 3.12,
+      "confidence": 0.98,
+      "punctuated_word": "de",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "la",
+      "start": 3.16,
+      "end": 3.37,
+      "confidence": 0.872,
+      "punctuated_word": "la",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "biopsia",
+      "start": 3.41,
+      "end": 3.84,
+      "confidence": 0.917,
+      "punctuated_word": "biopsia.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000000"
+   },
+   {
+    "start": 4.44,
+    "end": 5.51,
+    "confidence": 0.894,
+    "channel": 0,
+    "transcript": "¿Y qué mostraron?",
+    "words": [
+     {
+      "word": "¿y",
+      "start": 4.44,
+      "end": 4.65,
+      "confidence": 0.864,
+      "punctuated_word": "¿Y",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "qué",
+      "start": 4.69,
+      "end": 4.95,
+      "confidence": 0.89,
+      "punctuated_word": "qué",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "mostraron",
+      "start": 4.99,
+      "end": 5.51,
+      "confidence": 0.928,
+      "punctuated_word": "mostraron?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000001"
+   },
+   {
+    "start": 6.11,
+    "end": 9.07,
+    "confidence": 0.842,
+    "channel": 0,
+    "transcript": "Mostraron un adenocarcinoma en el colon sigmoide.",
+    "words": [
+     {
+      "word": "mostraron",
+      "start": 6.11,
+      "end": 6.63,
+      "confidence": 0.864,
+      "punctuated_word": "Mostraron",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "un",
+      "start": 6.67,
+      "end": 6.88,
+      "confidence": 0.887,
+      "punctuated_word": "un",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "adenocarcinoma",
+      "start": 6.92,
+      "end": 7.67,
+      "confidence": 0.41,
+      "punctuated_word": "adenocarcinoma",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "en",
+      "start": 7.71,
+      "end": 7.92,
+      "confidence": 0.934,
+      "punctuated_word": "en",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "el",
+      "start": 7.96,
+      "end": 8.17,
+      "confidence": 0.89,
+      "punctuated_word": "el",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colon",
+      "start": 8.21,
+      "end": 8.55,
+      "confidence": 0.94,
+      "punctuated_word": "colon",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "sigmoide",
+      "start": 8.59,
+      "end": 9.07,
+      "confidence": 0.969,
+      "punctuated_word": "sigmoide.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000002"
+   }
+  ]
+ }
+}

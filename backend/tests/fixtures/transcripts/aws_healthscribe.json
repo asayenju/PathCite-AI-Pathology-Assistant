@@ -1,0 +1,144 @@
+{
+ "Conversation": {
+  "ConversationId": "synthetic-conversation",
+  "JobName": "SYNTHETIC-healthscribe",
+  "LanguageCode": "en-US",
+  "TranscriptSegments": [
+   {
+    "SegmentId": "seg-0",
+    "Content": "Hi, thanks for coming in. Do you want to sit down?",
+    "BeginAudioTime": 0.3,
+    "EndAudioTime": 4.12,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-1",
+    "Content": "Thanks. I've been pretty nervous about the results.",
+    "BeginAudioTime": 4.72,
+    "EndAudioTime": 8.05,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-2",
+    "Content": "That's completely understandable. So, we got the biopsy results back from your colonoscopy.",
+    "BeginAudioTime": 8.65,
+    "EndAudioTime": 14.53,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-3",
+    "Content": "Okay.",
+    "BeginAudioTime": 15.13,
+    "EndAudioTime": 15.43,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-4",
+    "Content": "The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma.",
+    "BeginAudioTime": 16.03,
+    "EndAudioTime": 21.63,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-5",
+    "Content": "That's a type of cancer that starts in the gland cells lining the colon.",
+    "BeginAudioTime": 22.23,
+    "EndAudioTime": 27.03,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-6",
+    "Content": "Is it bad? Has it spread?",
+    "BeginAudioTime": 27.63,
+    "EndAudioTime": 29.58,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-7",
+    "Content": "The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it.",
+    "BeginAudioTime": 30.18,
+    "EndAudioTime": 37.45,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-8",
+    "Content": "What does stage mean?",
+    "BeginAudioTime": 38.05,
+    "EndAudioTime": 39.41,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-9",
+    "Content": "Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs.",
+    "BeginAudioTime": 40.01,
+    "EndAudioTime": 46.21,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-10",
+    "Content": "The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal.",
+    "BeginAudioTime": 46.81,
+    "EndAudioTime": 53.55,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-11",
+    "Content": "Um, and the growth was about 2 centimeters?",
+    "BeginAudioTime": 54.15,
+    "EndAudioTime": 57.13,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-12",
+    "Content": "Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins.",
+    "BeginAudioTime": 57.73,
+    "EndAudioTime": 64.08,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   },
+   {
+    "SegmentId": "seg-13",
+    "Content": "Okay. What happens after the scan?",
+    "BeginAudioTime": 64.68,
+    "EndAudioTime": 67.02,
+    "ParticipantDetails": {
+     "ParticipantRole": "PATIENT"
+    }
+   },
+   {
+    "SegmentId": "seg-14",
+    "Content": "We'll meet with surgery and oncology together and go over the options with you.",
+    "BeginAudioTime": 67.62,
+    "EndAudioTime": 72.75,
+    "ParticipantDetails": {
+     "ParticipantRole": "CLINICIAN"
+    }
+   }
+  ]
+ }
+}

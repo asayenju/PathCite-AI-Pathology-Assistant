@@ -1,0 +1,216 @@
+{
+ "text": " Hi, thanks for coming in. Do you want to sit down? Thanks. I've been pretty nervous about the results. That's completely understandable. So, we got the biopsy results back from your colonoscopy. Okay. The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma. That's a type of cancer that starts in the gland cells lining the colon. Is it bad? Has it spread? The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it. What does stage mean? Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs. The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal. Um, and the growth was about 2 centimeters? Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins. Okay. What happens after the scan? We'll meet with surgery and oncology together and go over the options with you.",
+ "segments": [
+  {
+   "id": 0,
+   "seek": 0,
+   "start": 0.3,
+   "end": 4.12,
+   "text": " Hi, thanks for coming in. Do you want to sit down?",
+   "tokens": [
+    50364
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 1,
+   "seek": 0,
+   "start": 4.72,
+   "end": 8.05,
+   "text": " Thanks. I've been pretty nervous about the results.",
+   "tokens": [
+    50365
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 2,
+   "seek": 0,
+   "start": 8.65,
+   "end": 14.53,
+   "text": " That's completely understandable. So, we got the biopsy results back from your colonoscopy.",
+   "tokens": [
+    50366
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 3,
+   "seek": 0,
+   "start": 15.13,
+   "end": 15.43,
+   "text": " Okay.",
+   "tokens": [
+    50367
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 4,
+   "seek": 0,
+   "start": 16.03,
+   "end": 21.63,
+   "text": " The sample from the growth in your sigmoid colon showed what we call an adenocarcinoma.",
+   "tokens": [
+    50368
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 5,
+   "seek": 0,
+   "start": 22.23,
+   "end": 27.03,
+   "text": " That's a type of cancer that starts in the gland cells lining the colon.",
+   "tokens": [
+    50369
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 6,
+   "seek": 0,
+   "start": 27.63,
+   "end": 29.58,
+   "text": " Is it bad? Has it spread?",
+   "tokens": [
+    50370
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 7,
+   "seek": 3000,
+   "start": 30.18,
+   "end": 37.45,
+   "text": " The biopsy alone can't tell us that. We'll do a CT scan of your chest, abdomen and pelvis to stage it.",
+   "tokens": [
+    50371
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 8,
+   "seek": 3000,
+   "start": 38.05,
+   "end": 39.41,
+   "text": " What does stage mean?",
+   "tokens": [
+    50372
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 9,
+   "seek": 3000,
+   "start": 40.01,
+   "end": 46.21,
+   "text": " Staging tells us how deep the tumor goes and whether it's in the lymph nodes or other organs.",
+   "tokens": [
+    50373
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 10,
+   "seek": 3000,
+   "start": 46.81,
+   "end": 53.55,
+   "text": " The pathologist also described it as moderately differentiated, which means the cells look somewhat abnormal.",
+   "tokens": [
+    50374
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 11,
+   "seek": 3000,
+   "start": 54.15,
+   "end": 57.13,
+   "text": " Um, and the growth was about 2 centimeters?",
+   "tokens": [
+    50375
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 12,
+   "seek": 3000,
+   "start": 57.73,
+   "end": 64.08,
+   "text": " Yes, about 2 centimeters on the scope. We'll also test the tumor for mismatch repair proteins.",
+   "tokens": [
+    50376
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 13,
+   "seek": 6000,
+   "start": 64.68,
+   "end": 67.02,
+   "text": " Okay. What happens after the scan?",
+   "tokens": [
+    50377
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  },
+  {
+   "id": 14,
+   "seek": 6000,
+   "start": 67.62,
+   "end": 72.75,
+   "text": " We'll meet with surgery and oncology together and go over the options with you.",
+   "tokens": [
+    50378
+   ],
+   "temperature": 0.0,
+   "avg_logprob": -0.21,
+   "compression_ratio": 1.42,
+   "no_speech_prob": 0.01
+  }
+ ],
+ "language": "en"
+}
