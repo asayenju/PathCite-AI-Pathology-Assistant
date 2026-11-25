@@ -10,6 +10,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `frontend/`: Vue 3 + TS + Tailwind v4 + shadcn-vue. See `frontend/README.md`.
 - `docs/PRD.md`: backend PRD.
 - `docs/PRD-transcript-import.md`: doctor–patient transcript import (step 1 of the RAG fact checker; issues labelled `transcript-import`).
+- `docs/PRD-transcript-review-ui.md`: agent review UI (highlights, Docs-style comments, resolve/disagree/reply) on a hand-written mock agent; issues labelled `transcript-review`.
 
 ## Commands
 
