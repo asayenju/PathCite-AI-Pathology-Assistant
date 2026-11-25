@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronDown } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { ROLES, ROLE_LABELS, formatClock } from '@/lib/transcripts'
 import type { Role, TranscriptSpeaker } from '@/types'
@@ -54,16 +55,23 @@ function onChange(speakerId: string, event: Event) {
 
         <div class="flex items-center gap-2">
           <label :for="`role-${speaker.id}`" class="sr-only">Role for {{ speaker.id }}</label>
-          <select
-            :id="`role-${speaker.id}`"
-            class="h-8 rounded-md border border-frost bg-bench px-2 text-sm disabled:opacity-60"
-            :value="roles[speaker.id] ?? ''"
-            :disabled="confirmed"
-            @change="onChange(speaker.id, $event)"
-          >
-            <option v-for="role in ROLES" :key="role" :value="role">{{ ROLE_LABELS[role] }}</option>
-            <option value="">Unassigned</option>
-          </select>
+          <!-- Native arrow hidden: browsers draw it flush with the border. Our chevron sits inside the padding. -->
+          <div class="relative">
+            <select
+              :id="`role-${speaker.id}`"
+              class="h-8 min-w-32 cursor-pointer appearance-none rounded-md border border-frost bg-bench py-0 pr-9 pl-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :value="roles[speaker.id] ?? ''"
+              :disabled="confirmed"
+              @change="onChange(speaker.id, $event)"
+            >
+              <option v-for="role in ROLES" :key="role" :value="role">{{ ROLE_LABELS[role] }}</option>
+              <option value="">Unassigned</option>
+            </select>
+            <ChevronDown
+              class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-quiet"
+              aria-hidden="true"
+            />
+          </div>
           <span
             v-if="speaker.suggested_role && roles[speaker.id] === speaker.suggested_role"
             class="rounded-full border border-frost px-2 py-0.5 text-xs text-quiet"
