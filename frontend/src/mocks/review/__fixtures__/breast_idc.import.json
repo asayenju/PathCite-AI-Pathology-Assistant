@@ -1,0 +1,193 @@
+{
+ "source": "openai_diarized",
+ "language": null,
+ "duration_s": 70.02,
+ "speakers": [
+  {
+   "id": "S1",
+   "source_label": "A",
+   "word_count": 122,
+   "talk_time_s": 45.93,
+   "preview": [
+    "Hi, thanks for coming in. Is it okay if your sister stays for this?",
+    "Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma."
+   ],
+   "suggested_role": "doctor"
+  },
+  {
+   "id": "S2",
+   "source_label": "B",
+   "word_count": 39,
+   "talk_time_s": 14.29,
+   "preview": [
+    "Yes, please. I want her here.",
+    "Um, okay. What does invasive mean? That sounds scary."
+   ],
+   "suggested_role": "patient"
+  }
+ ],
+ "turns": [
+  {
+   "id": "t0001",
+   "speaker": "S1",
+   "start": 0.3,
+   "end": 5.22,
+   "text": "Hi, thanks for coming in. Is it okay if your sister stays for this?",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0002",
+   "speaker": "S2",
+   "start": 5.82,
+   "end": 8.11,
+   "text": "Yes, please. I want her here.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0003",
+   "speaker": "S1",
+   "start": 8.71,
+   "end": 14.68,
+   "text": "Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0004",
+   "speaker": "S2",
+   "start": 15.28,
+   "end": 19.15,
+   "text": "Um, okay. What does invasive mean? That sounds scary.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0005",
+   "speaker": "S1",
+   "start": 19.75,
+   "end": 26.12,
+   "text": "Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0006",
+   "speaker": "S2",
+   "start": 26.72,
+   "end": 27.02,
+   "text": "Okay.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0007",
+   "speaker": "S1",
+   "start": 27.62,
+   "end": 36.31,
+   "text": "The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0008",
+   "speaker": "S2",
+   "start": 36.91,
+   "end": 40.13,
+   "text": "I don't know what any of that means, honestly.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0009",
+   "speaker": "S1",
+   "start": 40.73,
+   "end": 45.15,
+   "text": "Because it's HER2 negative, hormone-blocking pills won't work for you.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0010",
+   "speaker": "S2",
+   "start": 45.75,
+   "end": 46.51,
+   "text": "Oh. Okay.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0011",
+   "speaker": "S1",
+   "start": 47.11,
+   "end": 48.57,
+   "text": "It's a grade 2 tumor.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0012",
+   "speaker": "S2",
+   "start": 49.17,
+   "end": 50.61,
+   "text": "Is that good or bad?",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0013",
+   "speaker": "S1",
+   "start": 51.21,
+   "end": 59.6,
+   "text": "It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0014",
+   "speaker": "S2",
+   "start": 60.2,
+   "end": 61.42,
+   "text": "Will I need chemo?",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0015",
+   "speaker": "S1",
+   "start": 62.02,
+   "end": 67.73,
+   "text": "That depends on a few more results, and we'll go through all of it at that visit.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  },
+  {
+   "id": "t0016",
+   "speaker": "S2",
+   "start": 68.33,
+   "end": 69.52,
+   "text": "Okay. Thank you.",
+   "is_final": true,
+   "words": [],
+   "min_confidence": null
+  }
+ ],
+ "warnings": [],
+ "notice": "Research use only. Not a medical device and not a diagnosis."
+}

@@ -10,6 +10,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `frontend/`: Vue 3 + TS + Tailwind v4 + shadcn-vue. See `frontend/README.md`.
 - `docs/PRD.md`: backend PRD.
 - `docs/PRD-transcript-import.md`: doctor–patient transcript import (step 1 of the RAG fact checker; issues labelled `transcript-import`).
+- `docs/PRD-transcript-review-ui.md`: agent review UI (highlights, Docs-style comments, resolve/disagree/reply) on a hand-written mock agent; issues labelled `transcript-review`.
 
 ## Commands
 
@@ -37,6 +38,8 @@ npm run build        # type-check + production build
 - **Privacy:** uploads are never written to disk or logged. The lifespan raises `MultiPartParser.spool_max_size` above the upload limit so Starlette doesn't spool to temp files (there's a test); unexpected errors log only the exception type.
 - **`uncertain`** is decided server-side (`confidence < UNCERTAIN_THRESHOLD`, default 0.7). The frontend only draws the 0.70 tick; colour/state follows the response flag.
 - **Frontend flow:** `composables/usePredict.ts` is the state machine (`idle|loading|result|error`). Sample slides are dragged (custom MIME `application/x-pathcite-slide`, payload = unique file path) or clicked from `SlideFolders` onto `Stage`, fetched as a Blob and sent through the same `/predict` path as a real upload. While the stage is occupied, file drops are refused (clear first); slide drops replace.
+- **Transcript review** (`docs/PRD-transcript-review-ui.md`, issues labelled `transcript-review`): after roles are confirmed, `TranscriptDrop` runs `composables/useTranscriptReview.ts` over the roled turns. The source is today the hand-written mock in `src/mocks/review/` (3 samples only; uploads and other samples get a disabled button). The UI depends only on the `ReviewSource` / `ClarifySource` contract in `types.ts`, so a real agent plugs in as a new source. Clear, a new import and Edit roles (with a `window.confirm` if there are comments) discard the review. Export is a client-side JSON download. Keep the "Demo review: hand-written mock, not an AI agent" label while the mock is in use.
+- **Review DOM contract:** `TranscriptView` puts `data-anchor-for="<id>"` on the first run of each highlight and `aria-describedby="comment-<id>"` on the highlights. `ReviewMargin` finds anchors by that attribute inside `TranscriptReviewLayout`'s single scroll container, and cards have `id="comment-<id>"`. Don't rename these without updating both sides.
 - **Bundled samples:** `frontend/public/samples/<CODE>/<row>.jpg` (72 = 8 per class) listed in `samples.json`; the folder is the true label. They're JPEG renderings from NCT-CRC-HE-100K (CC-BY-4.0, 0.5 µm/px, hence the 25 µm scale bar on bundled slides only). Tests assert 8 per class and JPEG magic bytes.
 
 ## Gotchas

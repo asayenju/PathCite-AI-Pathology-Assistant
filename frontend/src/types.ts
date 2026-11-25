@@ -65,7 +65,7 @@ export interface TranscriptImport {
   notice: string
 }
 
-/** A turn after roles are confirmed: the input for later steps (e.g. fact checking). */
+/** A turn with its speaker's assigned role: the input for later steps (e.g. the agent review). */
 export interface RoledTurn extends TranscriptTurn {
   role: Role | null
 }
@@ -91,3 +91,51 @@ export interface TranscriptManifest {
   notice: string
   folders: TranscriptSampleFolder[]
 }
+
+/*
+ * Transcript review contract (docs/PRD-transcript-review-ui.md).
+ *
+ * A ReviewSource streams ReviewEvents for the doctor turns of a roled transcript. Today the only source is the
+ * hand-written mock in src/mocks/review/. A later backend endpoint will stream the same ReviewEvent objects over
+ * SSE, one JSON object per `data:` message, so the real agent drops in as another ReviewSource with no UI change.
+ */
+
+export type ReviewVerdict = 'inaccurate' | 'incomplete' | 'accurate'
+
+/**
+ * One agent comment on a span of a single turn. The span is located by `turn_id` + `quote`; `start`/`end` are
+ * character offsets into that turn's `text` (end exclusive), found with `anchorComment` (first exact match after NFC).
+ * Both are null for an orphan, a comment whose quote isn't in the turn: it gets a card but no highlight.
+ * Sources fill start/end before emitting (the mock anchors against the turn it was given); a server may send nulls,
+ * and consumers can always re-anchor from the quote.
+ */
+export interface ReviewComment {
+  id: string
+  turn_id: string
+  quote: string
+  start: number | null
+  end: number | null
+  verdict: ReviewVerdict
+  /** What's wrong or missing; null for accurate. */
+  issue: string | null
+  /** Better wording; null for accurate. */
+  suggestion: string | null
+  /** e.g. "AJCC 8th edition melanoma". */
+  source: string | null
+}
+
+/**
+ * Per doctor turn, in transcript order: turn_started, then its comment events, then turn_done; finally done.
+ * `error` ends the stream instead of `done`. Aborting the signal ends it with no further events.
+ */
+export type ReviewEvent =
+  | { type: 'turn_started'; turn_id: string }
+  | { type: 'comment'; comment: ReviewComment }
+  | { type: 'turn_done'; turn_id: string }
+  | { type: 'done' }
+  | { type: 'error'; message: string }
+
+export type ReviewSource = (turns: RoledTurn[], signal: AbortSignal) => AsyncIterable<ReviewEvent>
+
+/** Answers a reply on a comment. Rejects with an AbortError (DOMException) when the signal aborts. */
+export type ClarifySource = (comment: ReviewComment, question: string, signal: AbortSignal) => Promise<string>

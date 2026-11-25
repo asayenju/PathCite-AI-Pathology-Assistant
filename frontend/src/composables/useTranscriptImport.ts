@@ -6,10 +6,10 @@ import { importTranscript } from '@/lib/transcripts'
 import type { Role, RoledTurn, TranscriptImport, TranscriptSample } from '@/types'
 
 /**
- * idle → loading → review (or error) → confirmed. Review is where speaker roles are assigned; confirm
- * needs at least one doctor, and editRoles goes back from confirmed to review.
+ * idle → loading → review (or error). In review the speaker roles can be changed at any time; there is no
+ * separate confirm step. Later steps (the agent review) read `roledTurns`.
  */
-export type TranscriptStatus = 'idle' | 'loading' | 'review' | 'confirmed' | 'error'
+export type TranscriptStatus = 'idle' | 'loading' | 'review' | 'error'
 
 /** Holds the imported transcript. Memory only: nothing goes to localStorage or sessionStorage. */
 export function useTranscriptImport() {
@@ -22,12 +22,12 @@ export function useTranscriptImport() {
   /** Set while the transcript in place (or loading) is one of the bundled synthetic samples. */
   const sample = shallowRef<TranscriptSample | null>(null)
 
-  /** Several doctors are allowed (resident plus attending). */
-  const canConfirm = computed(() => Object.values(roles.value).some((role) => role === 'doctor'))
+  /** At least one speaker is the doctor. Several are allowed (resident plus attending). */
+  const hasDoctor = computed(() => Object.values(roles.value).some((role) => role === 'doctor'))
 
-  /** The turns with their speaker's role, only once confirmed. */
-  const confirmedTranscript = computed<RoledTurn[] | null>(() => {
-    if (status.value !== 'confirmed' || !transcript.value) return null
+  /** The turns with their speaker's current role, while a transcript is in review. */
+  const roledTurns = computed<RoledTurn[] | null>(() => {
+    if (status.value !== 'review' || !transcript.value) return null
     return transcript.value.turns.map((turn) => ({ ...turn, role: roles.value[turn.speaker] ?? null }))
   })
 
@@ -92,14 +92,6 @@ export function useTranscriptImport() {
     roles.value = { ...roles.value, [speakerId]: role }
   }
 
-  function confirm() {
-    if (status.value === 'review' && canConfirm.value) status.value = 'confirmed'
-  }
-
-  function editRoles() {
-    if (status.value === 'confirmed') status.value = 'review'
-  }
-
   function reset() {
     controller?.abort()
     controller = null
@@ -120,13 +112,11 @@ export function useTranscriptImport() {
     fileName,
     roles,
     sample,
-    canConfirm,
-    confirmedTranscript,
+    hasDoctor,
+    roledTurns,
     readFile,
     readSample,
     setRole,
-    confirm,
-    editRoles,
     reset,
   }
 }

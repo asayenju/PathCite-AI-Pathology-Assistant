@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 import { ROLES, ROLE_LABELS, formatClock } from '@/lib/transcripts'
 import type { Role, TranscriptSpeaker } from '@/types'
 
-/** One row per speaker: who they are, how much they said, and the role the reviewer gives them. */
-defineProps<{
+/**
+ * One row per speaker: who they are, how much they said, and the role the reviewer gives them. Roles can change at
+ * any time; there is no confirm step. The parent owns `roles` and may refuse a change (e.g. the user keeps a review).
+ */
+const props = defineProps<{
   speakers: TranscriptSpeaker[]
   roles: Record<string, Role | null>
-  confirmed: boolean
-  canConfirm: boolean
 }>()
 
-const emit = defineEmits<{
-  setRole: [speakerId: string, role: Role | null]
-  confirm: []
-  edit: []
-}>()
+const emit = defineEmits<{ setRole: [speakerId: string, role: Role | null] }>()
 
 function onChange(speakerId: string, event: Event) {
-  const value = (event.target as HTMLSelectElement).value
+  const select = event.target as HTMLSelectElement
+  const value = select.value
+  // Snap back to the prop: if the parent accepts, the re-render shows the new role; if it refuses, the old one stays.
+  select.value = props.roles[speakerId] ?? ''
   emit('setRole', speakerId, value === '' ? null : (value as Role))
 }
 </script>
@@ -61,7 +60,6 @@ function onChange(speakerId: string, event: Event) {
               :id="`role-${speaker.id}`"
               class="h-8 min-w-32 cursor-pointer appearance-none rounded-md border border-frost bg-bench py-0 pr-9 pl-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               :value="roles[speaker.id] ?? ''"
-              :disabled="confirmed"
               @change="onChange(speaker.id, $event)"
             >
               <option v-for="role in ROLES" :key="role" :value="role">{{ ROLE_LABELS[role] }}</option>
@@ -82,18 +80,5 @@ function onChange(speakerId: string, event: Event) {
         </div>
       </li>
     </ul>
-
-    <div v-if="confirmed" class="flex flex-wrap items-center gap-3">
-      <p role="status" class="text-sm font-semibold">Roles confirmed.</p>
-      <Button variant="outline" size="sm" @click="emit('edit')">Edit roles</Button>
-    </div>
-    <div v-else class="flex flex-wrap items-center gap-3">
-      <Button size="sm" :disabled="!canConfirm" aria-describedby="confirm-help" @click="emit('confirm')">
-        Confirm roles
-      </Button>
-      <p v-if="!canConfirm" id="confirm-help" class="text-sm text-quiet">
-        Mark at least one speaker as the doctor.
-      </p>
-    </div>
   </section>
 </template>

@@ -1,0 +1,1444 @@
+{
+ "source": "deepgram",
+ "language": "en",
+ "duration_s": 88.94,
+ "speakers": [
+  {
+   "id": "S1",
+   "source_label": "speaker_0",
+   "word_count": 146,
+   "talk_time_s": 56.42,
+   "preview": [
+    "Good morning, thanks for coming back in. Please, have a seat.",
+    "That's completely understandable. We have the biopsy results from your colonoscopy, so let's go through them together."
+   ],
+   "suggested_role": "doctor"
+  },
+  {
+   "id": "S2",
+   "source_label": "speaker_1",
+   "word_count": 58,
+   "talk_time_s": 22.12,
+   "preview": [
+    "Morning. Um, I've been kind of anxious all week.",
+    "Okay."
+   ],
+   "suggested_role": "patient"
+  }
+ ],
+ "turns": [
+  {
+   "id": "t0001",
+   "speaker": "S1",
+   "start": 0.3,
+   "end": 4.76,
+   "text": "Good morning, thanks for coming back in. Please, have a seat.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Good",
+     "start": 0.3,
+     "end": 0.6,
+     "confidence": 0.925
+    },
+    {
+     "text": "morning,",
+     "start": 0.64,
+     "end": 1.07,
+     "confidence": 0.995
+    },
+    {
+     "text": "thanks",
+     "start": 1.32,
+     "end": 1.71,
+     "confidence": 0.962
+    },
+    {
+     "text": "for",
+     "start": 1.75,
+     "end": 2.01,
+     "confidence": 0.861
+    },
+    {
+     "text": "coming",
+     "start": 2.05,
+     "end": 2.44,
+     "confidence": 0.977
+    },
+    {
+     "text": "back",
+     "start": 2.48,
+     "end": 2.78,
+     "confidence": 0.895
+    },
+    {
+     "text": "in.",
+     "start": 2.82,
+     "end": 3.03,
+     "confidence": 0.884
+    },
+    {
+     "text": "Please,",
+     "start": 3.28,
+     "end": 3.67,
+     "confidence": 0.91
+    },
+    {
+     "text": "have",
+     "start": 3.92,
+     "end": 4.22,
+     "confidence": 0.937
+    },
+    {
+     "text": "a",
+     "start": 4.26,
+     "end": 4.42,
+     "confidence": 0.885
+    },
+    {
+     "text": "seat.",
+     "start": 4.46,
+     "end": 4.76,
+     "confidence": 0.901
+    }
+   ],
+   "min_confidence": 0.861
+  },
+  {
+   "id": "t0002",
+   "speaker": "S2",
+   "start": 5.36,
+   "end": 8.84,
+   "text": "Morning. Um, I've been kind of anxious all week.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Morning.",
+     "start": 5.36,
+     "end": 5.79,
+     "confidence": 0.875
+    },
+    {
+     "text": "Um,",
+     "start": 6.04,
+     "end": 6.25,
+     "confidence": 0.862
+    },
+    {
+     "text": "I've",
+     "start": 6.5,
+     "end": 6.8,
+     "confidence": 0.963
+    },
+    {
+     "text": "been",
+     "start": 6.84,
+     "end": 7.14,
+     "confidence": 0.865
+    },
+    {
+     "text": "kind",
+     "start": 7.18,
+     "end": 7.48,
+     "confidence": 0.876
+    },
+    {
+     "text": "of",
+     "start": 7.52,
+     "end": 7.73,
+     "confidence": 0.973
+    },
+    {
+     "text": "anxious",
+     "start": 7.77,
+     "end": 8.2,
+     "confidence": 0.893
+    },
+    {
+     "text": "all",
+     "start": 8.24,
+     "end": 8.5,
+     "confidence": 0.988
+    },
+    {
+     "text": "week.",
+     "start": 8.54,
+     "end": 8.84,
+     "confidence": 0.871
+    }
+   ],
+   "min_confidence": 0.862
+  },
+  {
+   "id": "t0003",
+   "speaker": "S1",
+   "start": 9.44,
+   "end": 16.98,
+   "text": "That's completely understandable. We have the biopsy results from your colonoscopy, so let's go through them together.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "That's",
+     "start": 9.44,
+     "end": 9.83,
+     "confidence": 0.868
+    },
+    {
+     "text": "completely",
+     "start": 9.87,
+     "end": 10.44,
+     "confidence": 0.936
+    },
+    {
+     "text": "understandable.",
+     "start": 10.48,
+     "end": 11.23,
+     "confidence": 0.962
+    },
+    {
+     "text": "We",
+     "start": 11.48,
+     "end": 11.69,
+     "confidence": 0.868
+    },
+    {
+     "text": "have",
+     "start": 11.73,
+     "end": 12.03,
+     "confidence": 0.943
+    },
+    {
+     "text": "the",
+     "start": 12.07,
+     "end": 12.33,
+     "confidence": 0.865
+    },
+    {
+     "text": "biopsy",
+     "start": 12.37,
+     "end": 12.76,
+     "confidence": 0.984
+    },
+    {
+     "text": "results",
+     "start": 12.8,
+     "end": 13.23,
+     "confidence": 0.867
+    },
+    {
+     "text": "from",
+     "start": 13.27,
+     "end": 13.57,
+     "confidence": 0.87
+    },
+    {
+     "text": "your",
+     "start": 13.61,
+     "end": 13.91,
+     "confidence": 0.906
+    },
+    {
+     "text": "colonoscopy,",
+     "start": 13.95,
+     "end": 14.56,
+     "confidence": 0.944
+    },
+    {
+     "text": "so",
+     "start": 14.81,
+     "end": 15.02,
+     "confidence": 0.98
+    },
+    {
+     "text": "let's",
+     "start": 15.06,
+     "end": 15.4,
+     "confidence": 0.954
+    },
+    {
+     "text": "go",
+     "start": 15.44,
+     "end": 15.65,
+     "confidence": 0.993
+    },
+    {
+     "text": "through",
+     "start": 15.69,
+     "end": 16.12,
+     "confidence": 0.932
+    },
+    {
+     "text": "them",
+     "start": 16.16,
+     "end": 16.46,
+     "confidence": 0.937
+    },
+    {
+     "text": "together.",
+     "start": 16.5,
+     "end": 16.98,
+     "confidence": 0.964
+    }
+   ],
+   "min_confidence": 0.865
+  },
+  {
+   "id": "t0004",
+   "speaker": "S2",
+   "start": 17.58,
+   "end": 17.88,
+   "text": "Okay.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Okay.",
+     "start": 17.58,
+     "end": 17.88,
+     "confidence": 0.926
+    }
+   ],
+   "min_confidence": 0.926
+  },
+  {
+   "id": "t0005",
+   "speaker": "S1",
+   "start": 18.48,
+   "end": 26.36,
+   "text": "The growth in your sigmoid colon is an adenocarcinoma. That's a cancer that starts in the gland cells lining the colon.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "The",
+     "start": 18.48,
+     "end": 18.74,
+     "confidence": 0.864
+    },
+    {
+     "text": "growth",
+     "start": 18.78,
+     "end": 19.17,
+     "confidence": 0.9
+    },
+    {
+     "text": "in",
+     "start": 19.21,
+     "end": 19.42,
+     "confidence": 0.963
+    },
+    {
+     "text": "your",
+     "start": 19.46,
+     "end": 19.76,
+     "confidence": 0.891
+    },
+    {
+     "text": "sigmoid",
+     "start": 19.8,
+     "end": 20.23,
+     "confidence": 0.52
+    },
+    {
+     "text": "colon",
+     "start": 20.27,
+     "end": 20.61,
+     "confidence": 0.89
+    },
+    {
+     "text": "is",
+     "start": 20.65,
+     "end": 20.86,
+     "confidence": 0.913
+    },
+    {
+     "text": "an",
+     "start": 20.9,
+     "end": 21.11,
+     "confidence": 0.921
+    },
+    {
+     "text": "adenocarcinoma.",
+     "start": 21.15,
+     "end": 21.9,
+     "confidence": 0.882
+    },
+    {
+     "text": "That's",
+     "start": 22.15,
+     "end": 22.54,
+     "confidence": 0.985
+    },
+    {
+     "text": "a",
+     "start": 22.58,
+     "end": 22.74,
+     "confidence": 0.927
+    },
+    {
+     "text": "cancer",
+     "start": 22.78,
+     "end": 23.17,
+     "confidence": 0.861
+    },
+    {
+     "text": "that",
+     "start": 23.21,
+     "end": 23.51,
+     "confidence": 0.926
+    },
+    {
+     "text": "starts",
+     "start": 23.55,
+     "end": 23.94,
+     "confidence": 0.879
+    },
+    {
+     "text": "in",
+     "start": 23.98,
+     "end": 24.19,
+     "confidence": 0.91
+    },
+    {
+     "text": "the",
+     "start": 24.23,
+     "end": 24.49,
+     "confidence": 0.906
+    },
+    {
+     "text": "gland",
+     "start": 24.53,
+     "end": 24.87,
+     "confidence": 0.985
+    },
+    {
+     "text": "cells",
+     "start": 24.91,
+     "end": 25.25,
+     "confidence": 0.942
+    },
+    {
+     "text": "lining",
+     "start": 25.29,
+     "end": 25.68,
+     "confidence": 0.881
+    },
+    {
+     "text": "the",
+     "start": 25.72,
+     "end": 25.98,
+     "confidence": 0.869
+    },
+    {
+     "text": "colon.",
+     "start": 26.02,
+     "end": 26.36,
+     "confidence": 0.871
+    }
+   ],
+   "min_confidence": 0.52
+  },
+  {
+   "id": "t0006",
+   "speaker": "S2",
+   "start": 26.96,
+   "end": 31.07,
+   "text": "So it is cancer. Is it bad? Has it gone anywhere else?",
+   "is_final": true,
+   "words": [
+    {
+     "text": "So",
+     "start": 26.96,
+     "end": 27.17,
+     "confidence": 0.953
+    },
+    {
+     "text": "it",
+     "start": 27.21,
+     "end": 27.42,
+     "confidence": 0.886
+    },
+    {
+     "text": "is",
+     "start": 27.46,
+     "end": 27.67,
+     "confidence": 0.963
+    },
+    {
+     "text": "cancer.",
+     "start": 27.71,
+     "end": 28.1,
+     "confidence": 0.982
+    },
+    {
+     "text": "Is",
+     "start": 28.35,
+     "end": 28.56,
+     "confidence": 0.916
+    },
+    {
+     "text": "it",
+     "start": 28.6,
+     "end": 28.81,
+     "confidence": 0.984
+    },
+    {
+     "text": "bad?",
+     "start": 28.85,
+     "end": 29.11,
+     "confidence": 0.86
+    },
+    {
+     "text": "Has",
+     "start": 29.36,
+     "end": 29.62,
+     "confidence": 0.972
+    },
+    {
+     "text": "it",
+     "start": 29.66,
+     "end": 29.87,
+     "confidence": 0.873
+    },
+    {
+     "text": "gone",
+     "start": 29.91,
+     "end": 30.21,
+     "confidence": 0.869
+    },
+    {
+     "text": "anywhere",
+     "start": 30.25,
+     "end": 30.73,
+     "confidence": 0.876
+    },
+    {
+     "text": "else?",
+     "start": 30.77,
+     "end": 31.07,
+     "confidence": 0.937
+    }
+   ],
+   "min_confidence": 0.86
+  },
+  {
+   "id": "t0007",
+   "speaker": "S1",
+   "start": 31.67,
+   "end": 40.18,
+   "text": "The pathologist described the tumor as moderately differentiated. Because it's moderately differentiated, that tells us it hasn't spread.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "The",
+     "start": 31.67,
+     "end": 31.93,
+     "confidence": 0.875
+    },
+    {
+     "text": "pathologist",
+     "start": 31.97,
+     "end": 32.58,
+     "confidence": 0.948
+    },
+    {
+     "text": "described",
+     "start": 32.62,
+     "end": 33.14,
+     "confidence": 0.989
+    },
+    {
+     "text": "the",
+     "start": 33.18,
+     "end": 33.44,
+     "confidence": 0.881
+    },
+    {
+     "text": "tumor",
+     "start": 33.48,
+     "end": 33.82,
+     "confidence": 0.935
+    },
+    {
+     "text": "as",
+     "start": 33.86,
+     "end": 34.07,
+     "confidence": 0.864
+    },
+    {
+     "text": "moderately",
+     "start": 34.11,
+     "end": 34.68,
+     "confidence": 0.989
+    },
+    {
+     "text": "differentiated.",
+     "start": 34.72,
+     "end": 35.47,
+     "confidence": 0.878
+    },
+    {
+     "text": "Because",
+     "start": 35.72,
+     "end": 36.15,
+     "confidence": 0.888
+    },
+    {
+     "text": "it's",
+     "start": 36.19,
+     "end": 36.49,
+     "confidence": 0.983
+    },
+    {
+     "text": "moderately",
+     "start": 36.53,
+     "end": 37.1,
+     "confidence": 0.99
+    },
+    {
+     "text": "differentiated,",
+     "start": 37.14,
+     "end": 37.89,
+     "confidence": 0.928
+    },
+    {
+     "text": "that",
+     "start": 38.14,
+     "end": 38.44,
+     "confidence": 0.933
+    },
+    {
+     "text": "tells",
+     "start": 38.48,
+     "end": 38.82,
+     "confidence": 0.887
+    },
+    {
+     "text": "us",
+     "start": 38.86,
+     "end": 39.07,
+     "confidence": 0.864
+    },
+    {
+     "text": "it",
+     "start": 39.11,
+     "end": 39.32,
+     "confidence": 0.952
+    },
+    {
+     "text": "hasn't",
+     "start": 39.36,
+     "end": 39.75,
+     "confidence": 0.901
+    },
+    {
+     "text": "spread.",
+     "start": 39.79,
+     "end": 40.18,
+     "confidence": 0.896
+    }
+   ],
+   "min_confidence": 0.864
+  },
+  {
+   "id": "t0008",
+   "speaker": "S2",
+   "start": 40.78,
+   "end": 43.6,
+   "text": "Oh, okay. That's a relief, I guess.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Oh,",
+     "start": 40.78,
+     "end": 40.99,
+     "confidence": 0.944
+    },
+    {
+     "text": "okay.",
+     "start": 41.24,
+     "end": 41.54,
+     "confidence": 0.864
+    },
+    {
+     "text": "That's",
+     "start": 41.79,
+     "end": 42.18,
+     "confidence": 0.985
+    },
+    {
+     "text": "a",
+     "start": 42.22,
+     "end": 42.38,
+     "confidence": 0.869
+    },
+    {
+     "text": "relief,",
+     "start": 42.42,
+     "end": 42.81,
+     "confidence": 0.992
+    },
+    {
+     "text": "I",
+     "start": 43.06,
+     "end": 43.22,
+     "confidence": 0.98
+    },
+    {
+     "text": "guess.",
+     "start": 43.26,
+     "end": 43.6,
+     "confidence": 0.886
+    }
+   ],
+   "min_confidence": 0.864
+  },
+  {
+   "id": "t0009",
+   "speaker": "S1",
+   "start": 44.2,
+   "end": 49.22,
+   "text": "We'll still do a CT scan of your chest, abdomen and pelvis to stage it.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "We'll",
+     "start": 44.2,
+     "end": 44.54,
+     "confidence": 0.976
+    },
+    {
+     "text": "still",
+     "start": 44.58,
+     "end": 44.92,
+     "confidence": 0.884
+    },
+    {
+     "text": "do",
+     "start": 44.96,
+     "end": 45.17,
+     "confidence": 0.969
+    },
+    {
+     "text": "a",
+     "start": 45.21,
+     "end": 45.37,
+     "confidence": 0.882
+    },
+    {
+     "text": "CT",
+     "start": 45.41,
+     "end": 45.62,
+     "confidence": 0.949
+    },
+    {
+     "text": "scan",
+     "start": 45.66,
+     "end": 45.96,
+     "confidence": 0.916
+    },
+    {
+     "text": "of",
+     "start": 46.0,
+     "end": 46.21,
+     "confidence": 0.961
+    },
+    {
+     "text": "your",
+     "start": 46.25,
+     "end": 46.55,
+     "confidence": 0.981
+    },
+    {
+     "text": "chest,",
+     "start": 46.59,
+     "end": 46.93,
+     "confidence": 0.904
+    },
+    {
+     "text": "abdomen",
+     "start": 47.18,
+     "end": 47.61,
+     "confidence": 0.914
+    },
+    {
+     "text": "and",
+     "start": 47.65,
+     "end": 47.91,
+     "confidence": 0.967
+    },
+    {
+     "text": "pelvis",
+     "start": 47.95,
+     "end": 48.34,
+     "confidence": 0.904
+    },
+    {
+     "text": "to",
+     "start": 48.38,
+     "end": 48.59,
+     "confidence": 0.87
+    },
+    {
+     "text": "stage",
+     "start": 48.63,
+     "end": 48.97,
+     "confidence": 0.99
+    },
+    {
+     "text": "it.",
+     "start": 49.01,
+     "end": 49.22,
+     "confidence": 0.914
+    }
+   ],
+   "min_confidence": 0.87
+  },
+  {
+   "id": "t0010",
+   "speaker": "S2",
+   "start": 49.82,
+   "end": 52.07,
+   "text": "Sorry, what does that part mean?",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Sorry,",
+     "start": 49.82,
+     "end": 50.16,
+     "confidence": 0.87
+    },
+    {
+     "text": "what",
+     "start": 50.41,
+     "end": 50.71,
+     "confidence": 0.989
+    },
+    {
+     "text": "does",
+     "start": 50.75,
+     "end": 51.05,
+     "confidence": 0.94
+    },
+    {
+     "text": "that",
+     "start": 51.09,
+     "end": 51.39,
+     "confidence": 0.876
+    },
+    {
+     "text": "part",
+     "start": 51.43,
+     "end": 51.73,
+     "confidence": 0.861
+    },
+    {
+     "text": "mean?",
+     "start": 51.77,
+     "end": 52.07,
+     "confidence": 0.901
+    }
+   ],
+   "min_confidence": 0.861
+  },
+  {
+   "id": "t0011",
+   "speaker": "S1",
+   "start": 52.67,
+   "end": 59.51,
+   "text": "Staging tells us how deep the tumor goes and whether the cancer is in the lymph nodes or other organs.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Staging",
+     "start": 52.67,
+     "end": 53.1,
+     "confidence": 0.863
+    },
+    {
+     "text": "tells",
+     "start": 53.14,
+     "end": 53.48,
+     "confidence": 0.992
+    },
+    {
+     "text": "us",
+     "start": 53.52,
+     "end": 53.73,
+     "confidence": 0.879
+    },
+    {
+     "text": "how",
+     "start": 53.77,
+     "end": 54.03,
+     "confidence": 0.991
+    },
+    {
+     "text": "deep",
+     "start": 54.07,
+     "end": 54.37,
+     "confidence": 0.904
+    },
+    {
+     "text": "the",
+     "start": 54.41,
+     "end": 54.67,
+     "confidence": 0.96
+    },
+    {
+     "text": "tumor",
+     "start": 54.71,
+     "end": 55.05,
+     "confidence": 0.949
+    },
+    {
+     "text": "goes",
+     "start": 55.09,
+     "end": 55.39,
+     "confidence": 0.903
+    },
+    {
+     "text": "and",
+     "start": 55.43,
+     "end": 55.69,
+     "confidence": 0.954
+    },
+    {
+     "text": "whether",
+     "start": 55.73,
+     "end": 56.16,
+     "confidence": 0.994
+    },
+    {
+     "text": "the",
+     "start": 56.2,
+     "end": 56.46,
+     "confidence": 0.922
+    },
+    {
+     "text": "cancer",
+     "start": 56.5,
+     "end": 56.89,
+     "confidence": 0.907
+    },
+    {
+     "text": "is",
+     "start": 56.93,
+     "end": 57.14,
+     "confidence": 0.979
+    },
+    {
+     "text": "in",
+     "start": 57.18,
+     "end": 57.39,
+     "confidence": 0.974
+    },
+    {
+     "text": "the",
+     "start": 57.43,
+     "end": 57.69,
+     "confidence": 0.914
+    },
+    {
+     "text": "lymph",
+     "start": 57.73,
+     "end": 58.07,
+     "confidence": 0.985
+    },
+    {
+     "text": "nodes",
+     "start": 58.11,
+     "end": 58.45,
+     "confidence": 0.892
+    },
+    {
+     "text": "or",
+     "start": 58.49,
+     "end": 58.7,
+     "confidence": 0.894
+    },
+    {
+     "text": "other",
+     "start": 58.74,
+     "end": 59.08,
+     "confidence": 0.875
+    },
+    {
+     "text": "organs.",
+     "start": 59.12,
+     "end": 59.51,
+     "confidence": 0.956
+    }
+   ],
+   "min_confidence": 0.863
+  },
+  {
+   "id": "t0012",
+   "speaker": "S2",
+   "start": 60.11,
+   "end": 64.06,
+   "text": "Okay. Um, is there anything else they're checking on it?",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Okay.",
+     "start": 60.11,
+     "end": 60.41,
+     "confidence": 0.905
+    },
+    {
+     "text": "Um,",
+     "start": 60.66,
+     "end": 60.87,
+     "confidence": 0.993
+    },
+    {
+     "text": "is",
+     "start": 61.12,
+     "end": 61.33,
+     "confidence": 0.901
+    },
+    {
+     "text": "there",
+     "start": 61.37,
+     "end": 61.71,
+     "confidence": 0.898
+    },
+    {
+     "text": "anything",
+     "start": 61.75,
+     "end": 62.23,
+     "confidence": 0.981
+    },
+    {
+     "text": "else",
+     "start": 62.27,
+     "end": 62.57,
+     "confidence": 0.905
+    },
+    {
+     "text": "they're",
+     "start": 62.61,
+     "end": 63.04,
+     "confidence": 0.938
+    },
+    {
+     "text": "checking",
+     "start": 63.08,
+     "end": 63.56,
+     "confidence": 0.869
+    },
+    {
+     "text": "on",
+     "start": 63.6,
+     "end": 63.81,
+     "confidence": 0.86
+    },
+    {
+     "text": "it?",
+     "start": 63.85,
+     "end": 64.06,
+     "confidence": 0.871
+    }
+   ],
+   "min_confidence": 0.86
+  },
+  {
+   "id": "t0013",
+   "speaker": "S1",
+   "start": 64.66,
+   "end": 68.64,
+   "text": "Yes. We'll also test the tumor for mismatch repair proteins.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Yes.",
+     "start": 64.66,
+     "end": 64.92,
+     "confidence": 0.9
+    },
+    {
+     "text": "We'll",
+     "start": 65.17,
+     "end": 65.51,
+     "confidence": 0.939
+    },
+    {
+     "text": "also",
+     "start": 65.55,
+     "end": 65.85,
+     "confidence": 0.872
+    },
+    {
+     "text": "test",
+     "start": 65.89,
+     "end": 66.19,
+     "confidence": 0.901
+    },
+    {
+     "text": "the",
+     "start": 66.23,
+     "end": 66.49,
+     "confidence": 0.918
+    },
+    {
+     "text": "tumor",
+     "start": 66.53,
+     "end": 66.87,
+     "confidence": 0.993
+    },
+    {
+     "text": "for",
+     "start": 66.91,
+     "end": 67.17,
+     "confidence": 0.869
+    },
+    {
+     "text": "mismatch",
+     "start": 67.21,
+     "end": 67.69,
+     "confidence": 0.989
+    },
+    {
+     "text": "repair",
+     "start": 67.73,
+     "end": 68.12,
+     "confidence": 0.985
+    },
+    {
+     "text": "proteins.",
+     "start": 68.16,
+     "end": 68.64,
+     "confidence": 0.989
+    }
+   ],
+   "min_confidence": 0.869
+  },
+  {
+   "id": "t0014",
+   "speaker": "S2",
+   "start": 69.24,
+   "end": 71.71,
+   "text": "Alright. And what happens after that?",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Alright.",
+     "start": 69.24,
+     "end": 69.67,
+     "confidence": 0.912
+    },
+    {
+     "text": "And",
+     "start": 69.92,
+     "end": 70.18,
+     "confidence": 0.874
+    },
+    {
+     "text": "what",
+     "start": 70.22,
+     "end": 70.52,
+     "confidence": 0.9
+    },
+    {
+     "text": "happens",
+     "start": 70.56,
+     "end": 70.99,
+     "confidence": 0.941
+    },
+    {
+     "text": "after",
+     "start": 71.03,
+     "end": 71.37,
+     "confidence": 0.861
+    },
+    {
+     "text": "that?",
+     "start": 71.41,
+     "end": 71.71,
+     "confidence": 0.943
+    }
+   ],
+   "min_confidence": 0.861
+  },
+  {
+   "id": "t0015",
+   "speaker": "S1",
+   "start": 72.31,
+   "end": 79.74,
+   "text": "Once the scan is done, the surgeon and the oncologist will meet with you together to go over treatment options.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Once",
+     "start": 72.31,
+     "end": 72.61,
+     "confidence": 0.869
+    },
+    {
+     "text": "the",
+     "start": 72.65,
+     "end": 72.91,
+     "confidence": 0.879
+    },
+    {
+     "text": "scan",
+     "start": 72.95,
+     "end": 73.25,
+     "confidence": 0.921
+    },
+    {
+     "text": "is",
+     "start": 73.29,
+     "end": 73.5,
+     "confidence": 0.912
+    },
+    {
+     "text": "done,",
+     "start": 73.54,
+     "end": 73.84,
+     "confidence": 0.926
+    },
+    {
+     "text": "the",
+     "start": 74.09,
+     "end": 74.35,
+     "confidence": 0.908
+    },
+    {
+     "text": "surgeon",
+     "start": 74.39,
+     "end": 74.82,
+     "confidence": 0.864
+    },
+    {
+     "text": "and",
+     "start": 74.86,
+     "end": 75.12,
+     "confidence": 0.989
+    },
+    {
+     "text": "the",
+     "start": 75.16,
+     "end": 75.42,
+     "confidence": 0.889
+    },
+    {
+     "text": "oncologist",
+     "start": 75.46,
+     "end": 76.03,
+     "confidence": 0.961
+    },
+    {
+     "text": "will",
+     "start": 76.07,
+     "end": 76.37,
+     "confidence": 0.907
+    },
+    {
+     "text": "meet",
+     "start": 76.41,
+     "end": 76.71,
+     "confidence": 0.901
+    },
+    {
+     "text": "with",
+     "start": 76.75,
+     "end": 77.05,
+     "confidence": 0.98
+    },
+    {
+     "text": "you",
+     "start": 77.09,
+     "end": 77.35,
+     "confidence": 0.86
+    },
+    {
+     "text": "together",
+     "start": 77.39,
+     "end": 77.87,
+     "confidence": 0.95
+    },
+    {
+     "text": "to",
+     "start": 77.91,
+     "end": 78.12,
+     "confidence": 0.992
+    },
+    {
+     "text": "go",
+     "start": 78.16,
+     "end": 78.37,
+     "confidence": 0.865
+    },
+    {
+     "text": "over",
+     "start": 78.41,
+     "end": 78.71,
+     "confidence": 0.926
+    },
+    {
+     "text": "treatment",
+     "start": 78.75,
+     "end": 79.27,
+     "confidence": 0.884
+    },
+    {
+     "text": "options.",
+     "start": 79.31,
+     "end": 79.74,
+     "confidence": 0.986
+    }
+   ],
+   "min_confidence": 0.86
+  },
+  {
+   "id": "t0016",
+   "speaker": "S2",
+   "start": 80.34,
+   "end": 83.08,
+   "text": "Okay. Thank you for explaining all this.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Okay.",
+     "start": 80.34,
+     "end": 80.64,
+     "confidence": 0.866
+    },
+    {
+     "text": "Thank",
+     "start": 80.89,
+     "end": 81.23,
+     "confidence": 0.934
+    },
+    {
+     "text": "you",
+     "start": 81.27,
+     "end": 81.53,
+     "confidence": 0.878
+    },
+    {
+     "text": "for",
+     "start": 81.57,
+     "end": 81.83,
+     "confidence": 0.929
+    },
+    {
+     "text": "explaining",
+     "start": 81.87,
+     "end": 82.44,
+     "confidence": 0.907
+    },
+    {
+     "text": "all",
+     "start": 82.48,
+     "end": 82.74,
+     "confidence": 0.975
+    },
+    {
+     "text": "this.",
+     "start": 82.78,
+     "end": 83.08,
+     "confidence": 0.916
+    }
+   ],
+   "min_confidence": 0.866
+  },
+  {
+   "id": "t0017",
+   "speaker": "S1",
+   "start": 83.68,
+   "end": 88.44,
+   "text": "Of course. The front desk will call you this week to book the scan.",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Of",
+     "start": 83.68,
+     "end": 83.89,
+     "confidence": 0.976
+    },
+    {
+     "text": "course.",
+     "start": 83.93,
+     "end": 84.32,
+     "confidence": 0.871
+    },
+    {
+     "text": "The",
+     "start": 84.57,
+     "end": 84.83,
+     "confidence": 0.894
+    },
+    {
+     "text": "front",
+     "start": 84.87,
+     "end": 85.21,
+     "confidence": 0.978
+    },
+    {
+     "text": "desk",
+     "start": 85.25,
+     "end": 85.55,
+     "confidence": 0.987
+    },
+    {
+     "text": "will",
+     "start": 85.59,
+     "end": 85.89,
+     "confidence": 0.942
+    },
+    {
+     "text": "call",
+     "start": 85.93,
+     "end": 86.23,
+     "confidence": 0.958
+    },
+    {
+     "text": "you",
+     "start": 86.27,
+     "end": 86.53,
+     "confidence": 0.939
+    },
+    {
+     "text": "this",
+     "start": 86.57,
+     "end": 86.87,
+     "confidence": 0.865
+    },
+    {
+     "text": "week",
+     "start": 86.91,
+     "end": 87.21,
+     "confidence": 0.911
+    },
+    {
+     "text": "to",
+     "start": 87.25,
+     "end": 87.46,
+     "confidence": 0.916
+    },
+    {
+     "text": "book",
+     "start": 87.5,
+     "end": 87.8,
+     "confidence": 0.937
+    },
+    {
+     "text": "the",
+     "start": 87.84,
+     "end": 88.1,
+     "confidence": 0.985
+    },
+    {
+     "text": "scan.",
+     "start": 88.14,
+     "end": 88.44,
+     "confidence": 0.926
+    }
+   ],
+   "min_confidence": 0.865
+  }
+ ],
+ "warnings": [],
+ "notice": "Research use only. Not a medical device and not a diagnosis."
+}

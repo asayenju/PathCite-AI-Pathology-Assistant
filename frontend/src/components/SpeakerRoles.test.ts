@@ -26,17 +26,11 @@ function mountRoles(initial: Record<string, Role | null>) {
     h(SpeakerRoles, {
       speakers,
       roles: t.roles.value,
-      confirmed: t.status.value === 'confirmed',
-      canConfirm: t.canConfirm.value,
       onSetRole: t.setRole,
-      onConfirm: t.confirm,
-      onEdit: t.editRoles,
     }),
   )
   return { wrapper: mount(Host), t }
 }
-
-const confirmButton = (w: ReturnType<typeof mount>) => w.findAll('button').find((b) => b.text() === 'Confirm roles')!
 
 describe('SpeakerRoles', () => {
   it('renders a row per speaker with label, talk time, word count and quoted preview', () => {
@@ -67,22 +61,19 @@ describe('SpeakerRoles', () => {
     expect(wrapper.get('[data-testid="speaker-S2"]').find('[data-testid="suggested-badge"]').exists()).toBe(false)
   })
 
-  it('enables Confirm once a doctor is chosen, then disables controls after confirming', async () => {
+  it('has no confirm step: roles change directly and stay editable', async () => {
     const { wrapper, t } = mountRoles({ S1: null, S2: 'patient' })
-    expect(confirmButton(wrapper).attributes('disabled')).toBeDefined()
-    expect(wrapper.text()).toContain('Mark at least one speaker as the doctor.')
-
+    expect(wrapper.findAll('button').some((b) => /confirm|edit roles/i.test(b.text()))).toBe(false)
     await wrapper.get('#role-S1').setValue('doctor')
     expect(t.roles.value.S1).toBe('doctor')
-    expect(confirmButton(wrapper).attributes('disabled')).toBeUndefined()
-    expect(wrapper.text()).not.toContain('Mark at least one speaker as the doctor.')
-
-    await confirmButton(wrapper).trigger('click')
-    expect(t.status.value).toBe('confirmed')
-    for (const select of wrapper.findAll('select')) expect(select.attributes('disabled')).toBeDefined()
-    const edit = wrapper.findAll('button').find((b) => b.text() === 'Edit roles')!
-    await edit.trigger('click')
-    expect(t.status.value).toBe('review')
+    expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('doctor')
     expect(wrapper.get('#role-S1').attributes('disabled')).toBeUndefined()
+  })
+
+  it('snaps back when the parent refuses the change', async () => {
+    const wrapper = mount(SpeakerRoles, { props: { speakers, roles: { S1: 'doctor', S2: 'patient' } } })
+    await wrapper.get('#role-S1').setValue('patient')
+    expect(wrapper.emitted('setRole')).toEqual([['S1', 'patient']])
+    expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('doctor')
   })
 })
