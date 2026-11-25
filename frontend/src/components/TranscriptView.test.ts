@@ -216,7 +216,8 @@ describe('TranscriptView review progress', () => {
     const pills = w.findAll('[data-testid="reviewing-pill"]')
     expect(pills).toHaveLength(1)
     expect(w.get('[data-testid="turn-t0007"] [data-testid="reviewing-pill"]').text()).toBe('Reviewing…')
-    expect(pills[0]!.classes()).toContain('motion-safe:animate-pulse')
+    expect(pills[0]!.classes()).not.toContain('motion-safe:animate-pulse') // a pulsing pill read as flicker
+    expect(pills[0]!.find('svg').classes()).toContain('motion-safe:animate-spin')
     const live = w.get('[data-testid="review-live"]')
     expect(live.attributes('aria-live')).toBe('polite')
     expect(live.text()).toBe('Reviewing turn at 0:32')

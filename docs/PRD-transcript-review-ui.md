@@ -1,7 +1,7 @@
 # PRD: Transcript Review UI
 
 ## What
-After roles are confirmed, a **Review** button starts an agent review of the doctor turns. The UI then does four things:
+Once at least one speaker is the doctor (roles are edited in place; there is no confirm step), a **Review** button starts an agent review of the doctor turns. The UI then does four things:
 - It walks through the doctor turns one at a time. The current turn shows "Reviewing…".
 - It highlights spans: **inaccurate** in eosin with an ✕ icon, **incomplete** in amber with a + icon. **Accurate** spans get a faint green underline and a ✓, with no card.
 - It shows a comment card in the right margin for each issue, lined up with its highlight. Each card has:
@@ -43,7 +43,7 @@ ClarifySource = (comment, question, signal) => Promise<string>
   - Review status: `idle | running | done | stopped | error`.
   - Each comment has a status of `open | resolved | disagreed`, an optional `disagreeReason`, and a `thread` of `{author:'you'|'agent', text, pending?}`.
   - Also tracked: `activeCommentId`, `currentTurnId`.
-  - **Invalidation:** Clear, a new import, or Edit roles aborts the review and discards its results. Edit roles first asks for confirmation when comments exist.
+  - **Invalidation:** Clear, a new import, or a role change aborts the review and discards its results. A role change first asks when comments exist.
   - Replies are allowed while the review is running. A disagreed comment can be reopened.
 - **Rendering** (`TranscriptView.vue`):
   - A pure function `splitSegments(text, words, ranges)` splits each turn into runs that carry their highlight and low-confidence flags. A low-confidence underline and a highlight can sit on the same word. Overlapping highlights stack, the shortest range wins the click, and the stacked region gets a darker tint.
@@ -79,7 +79,7 @@ Choosing or calling an LLM, RAG/retrieval, a backend review endpoint, SSE, revie
   - The mock source event order, and that it stops on abort.
 - **Composable:**
   - Progressive arrival under fake timers.
-  - Stop, and invalidation on clear, re-import and edit roles.
+  - Stop, and invalidation on clear, re-import and role changes.
   - Resolve/reopen and disagree with a reason.
   - A reply shows a pending state, then the canned answer.
   - Export contents.
@@ -102,7 +102,7 @@ Choosing or calling an LLM, RAG/retrieval, a backend review endpoint, SSE, revie
 **2. `useTranscriptReview` state machine**
 - [ ] States are `idle → running → done | stopped | error`, and `currentTurnId` follows the events.
 - [ ] Comment actions: resolve, reopen, disagree (optional reason), reply. A reply adds a pending agent message that the mock answer replaces.
-- [ ] Clear, a new import, or edit roles aborts and discards the review. Edit roles asks for confirmation when comments exist.
+- [ ] Clear, a new import, or a role change aborts and discards the review. A role change asks first when comments exist.
 - [ ] Counts for open, resolved and disagreed, and next/previous open comment in transcript order.
 - [ ] `exportReview()` builds the JSON described in the PRD, with no transcript text beyond the quotes. Tests confirm no localStorage or sessionStorage use.
 
@@ -126,7 +126,7 @@ Choosing or calling an LLM, RAG/retrieval, a backend review endpoint, SSE, revie
 - [ ] The header has counts, Previous/Next issue, Show resolved, Stop and Export. Every control can be used from the keyboard.
 
 **6. Integration into the Transcripts view, export and docs**
-- [ ] A Review button appears after confirm. It is enabled for the 3 mocked samples, and disabled for other samples and uploads with an explanation.
+- [ ] A Review button appears once a transcript is imported (no confirm step) and needs at least one doctor. It is enabled for the 3 mocked samples, and disabled for other samples and uploads with an explanation.
 - [ ] The "Demo review: hand-written mock, not an AI agent" label and the research-use disclaimer are shown.
 - [ ] Export downloads `review-<id>-<date>.json`.
 - [ ] The existing import, role and sample flows are unchanged, and their tests pass. `frontend/README.md` and `CLAUDE.md` are updated.

@@ -24,7 +24,6 @@ const imported: TranscriptImport = {
 
 const drop = (file: File) => ({ dataTransfer: { types: ['Files'], files: [file] } })
 const zone = (w: ReturnType<typeof mount>) => w.get('[aria-label^="Drop zone."]')
-const confirmButton = (w: ReturnType<typeof mount>) => w.findAll('button').find((b) => b.text() === 'Confirm roles')!
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -82,7 +81,7 @@ describe('TranscriptDrop', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('assigns roles, confirms, edits and clears', async () => {
+  it('assigns roles directly (no confirm step) and clears', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(imported))))
     const wrapper = mount(TranscriptDrop)
     await zone(wrapper).trigger('drop', drop(new File(['{}'], 'visit.json')))
@@ -93,18 +92,11 @@ describe('TranscriptDrop', () => {
     expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('Overlapping speech found.')
     expect(wrapper.get('[data-testid="turn-t0002"] [data-testid="turn-role"]').text()).toBe('Patient')
 
-    // Suggested doctor -> Confirm enabled. Unassign it: disabled.
+    expect(wrapper.findAll('button').some((b) => /confirm roles|edit roles/i.test(b.text()))).toBe(false)
     await wrapper.get('#role-S1').setValue('')
-    expect(confirmButton(wrapper).attributes('disabled')).toBeDefined()
     expect(wrapper.get('[data-testid="turn-t0001"] [data-testid="turn-role"]').text()).toBe('Unassigned')
     await wrapper.get('#role-S1').setValue('doctor')
-    await confirmButton(wrapper).trigger('click')
-
-    expect(wrapper.text()).toContain('Roles confirmed.')
-    expect(wrapper.get('#role-S1').attributes('disabled')).toBeDefined()
-    expect(wrapper.find('[data-testid="transcript-summary"]').exists()).toBe(true)
-
-    await wrapper.findAll('button').find((b) => b.text() === 'Edit roles')!.trigger('click')
+    expect(wrapper.get('[data-testid="turn-t0001"] [data-testid="turn-role"]').text()).toBe('Doctor')
     expect(wrapper.get('#role-S1').attributes('disabled')).toBeUndefined()
 
     await wrapper.findAll('button').find((b) => b.text() === 'Clear transcript')!.trigger('click')
@@ -112,15 +104,13 @@ describe('TranscriptDrop', () => {
     expect(wrapper.find('[aria-label^="Drop zone."]').exists()).toBe(true)
   })
 
-  it('never touches web storage through import, roles, confirm and clear', async () => {
+  it('never touches web storage through import, roles and clear', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(imported))))
     const wrapper = mount(TranscriptDrop)
     await zone(wrapper).trigger('drop', drop(new File(['{}'], 'visit.json')))
     await flushPromises()
     await wrapper.get('#role-S2').setValue('other')
-    await confirmButton(wrapper).trigger('click')
-    await wrapper.findAll('button').find((b) => b.text() === 'Edit roles')!.trigger('click')
     await wrapper.findAll('button').find((b) => b.text() === 'Clear transcript')!.trigger('click')
     expect(setItem).not.toHaveBeenCalled()
     setItem.mockRestore()
@@ -233,19 +223,16 @@ describe('TranscriptDrop with sample transcripts', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('replaces a confirmed transcript with a clicked sample and resets the roles', async () => {
+  it('replaces a transcript with a clicked sample and resets the roles', async () => {
     routeFetch()
     const wrapper = mountWith()
     await sampleButton(wrapper, 0).trigger('click')
     await flushPromises()
     expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('doctor')
     await wrapper.get('#role-S2').setValue('other')
-    await confirmButton(wrapper).trigger('click')
-    expect(wrapper.text()).toContain('Roles confirmed.')
 
     await sampleButton(wrapper, 1).trigger('click')
     await flushPromises()
-    expect(wrapper.text()).not.toContain('Roles confirmed.')
     expect(wrapper.get('[data-testid="transcript-summary"]').text()).toContain('polyp.json')
     expect((wrapper.get('#role-S1').element as HTMLSelectElement).value).toBe('patient')
     expect((wrapper.get('#role-S2').element as HTMLSelectElement).value).toBe('doctor')
@@ -301,13 +288,13 @@ describe('TranscriptDrop with sample transcripts', () => {
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/transcripts/gi/crc.json'])
   })
 
-  it('never touches web storage through samples, roles, confirm and clear', async () => {
+  it('never touches web storage through samples, roles and clear', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     routeFetch()
     const wrapper = mountWith()
     await sampleButton(wrapper, 0).trigger('click')
     await flushPromises()
-    await confirmButton(wrapper).trigger('click')
+    await wrapper.get('#role-S2').setValue('other')
     await sampleButton(wrapper, 1).trigger('click')
     await flushPromises()
     await wrapper.findAll('button').find((b) => b.text() === 'Clear transcript')!.trigger('click')

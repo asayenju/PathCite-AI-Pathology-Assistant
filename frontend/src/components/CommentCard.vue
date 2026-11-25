@@ -45,8 +45,11 @@ function activate() {
     :data-status="comment.status"
     :data-verdict="comment.verdict"
     data-testid="comment-card"
-    class="cursor-pointer rounded-glass border border-frost bg-glass text-ink transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2"
-    :class="[active ? ['border-l-4 shadow-lg', verdict.border] : 'shadow-sm', collapsed ? 'px-3 py-2' : 'space-y-2 p-3']"
+    class="cursor-pointer rounded-glass border border-frost bg-glass text-ink transition-[box-shadow,border-color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
+    :class="[
+      active ? ['border-l-4 shadow-lg', verdict.border] : 'shadow-sm hover:shadow-md',
+      collapsed ? 'px-3 py-2' : 'space-y-2 p-3',
+    ]"
     @click="activate"
     @keydown.enter.self.prevent="activate"
   >
@@ -77,23 +80,51 @@ function activate() {
         Couldn't find this text in the turn.
       </p>
 
-      <blockquote class="line-clamp-2 border-l-2 border-frost pl-2 text-sm text-quiet" :title="comment.quote">
+      <blockquote
+        class="border-l-2 border-frost pl-2 text-sm text-quiet"
+        :class="active ? 'line-clamp-2' : 'line-clamp-1'"
+        :title="comment.quote"
+      >
         “{{ comment.quote }}”
       </blockquote>
 
-      <p v-if="comment.issue" class="text-sm" data-testid="comment-issue">{{ comment.issue }}</p>
+      <p v-if="comment.issue" class="text-sm" :class="!active && 'line-clamp-2'" data-testid="comment-issue">
+        {{ comment.issue }}
+      </p>
 
-      <div v-if="comment.suggestion" class="rounded-glass bg-bench px-2 py-1.5" data-testid="comment-suggestion">
-        <p class="text-xs font-semibold text-quiet">Suggested wording</p>
-        <p class="text-sm">{{ comment.suggestion }}</p>
+      <!--
+        Like Google Docs, only the selected comment shows its detail and controls; the others stay compact so they sit
+        next to their highlights. The detail opens smoothly (grid rows 0fr → 1fr) and is inert while closed.
+      -->
+      <div
+        class="grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300 motion-safe:ease-out"
+        :class="active ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+        :inert="!active"
+        data-testid="comment-details"
+        :data-open="active ? '' : undefined"
+      >
+        <!-- relative: clips absolutely positioned sr-only labels too, or they stretch the scroll area. -->
+        <div class="relative min-h-0 space-y-2 overflow-hidden">
+          <div v-if="comment.suggestion" class="rounded-glass bg-bench px-2 py-1.5" data-testid="comment-suggestion">
+            <p class="text-xs font-semibold text-quiet">Suggested wording</p>
+            <p class="text-sm">{{ comment.suggestion }}</p>
+          </div>
+
+          <p v-if="comment.source" class="text-xs text-quiet" data-testid="comment-source">
+            Source: {{ comment.source }}
+          </p>
+
+          <slot name="actions" />
+          <slot name="thread" />
+        </div>
       </div>
-
-      <p v-if="comment.source" class="text-xs text-quiet" data-testid="comment-source">Source: {{ comment.source }}</p>
+      <p v-if="!active" class="text-xs text-quiet" aria-hidden="true">Select to see the suggestion and reply</p>
     </template>
 
-    <!-- #30: Resolve / Reopen / Disagree controls go here. -->
-    <slot name="actions" />
-    <!-- #30: reply thread and reply box go here. -->
-    <slot name="thread" />
+    <!-- Resolved / disagreed cards keep their controls (Reopen, reply count) on the single line's card. -->
+    <template v-if="collapsed">
+      <slot name="actions" />
+      <slot name="thread" />
+    </template>
   </article>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Check, Plus, X } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { Check, LoaderCircle, Plus, X } from 'lucide-vue-next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import { splitSegments, type Segment, type SegmentRange, type SplitResult } from '@/lib/segments'
@@ -77,6 +77,32 @@ const percent = (confidence: number) => `${Math.round(confidence * 100)}%`
 
 const commentById = computed(() => new Map(props.comments.map((c) => [c.id, c])))
 
+/**
+ * Comments that arrived in the last moment: their highlight tint fades in once. Tracking arrivals (instead of
+ * animating every new <mark>) keeps existing highlights steady when a new span splits their runs.
+ */
+const FRESH_MS = 700
+const fresh = ref<Set<string>>(new Set())
+const seen = new Set<string>()
+const timers = new Set<ReturnType<typeof setTimeout>>()
+watch(
+  () => props.comments.map((c) => c.id),
+  (ids) => {
+    if (!ids.length) seen.clear()
+    const arrived = ids.filter((id) => !seen.has(id))
+    if (!arrived.length) return
+    for (const id of arrived) seen.add(id)
+    fresh.value = new Set([...fresh.value, ...arrived])
+    const timer = setTimeout(() => {
+      timers.delete(timer)
+      fresh.value = new Set([...fresh.value].filter((id) => !arrived.includes(id)))
+    }, FRESH_MS)
+    timers.add(timer)
+  },
+  { immediate: true },
+)
+onBeforeUnmount(() => timers.forEach(clearTimeout))
+
 /** Orphans (start null) get no highlight. */
 const segmentsByTurn = computed(() => {
   const ranges = new Map<string, SegmentRange[]>()
@@ -103,6 +129,12 @@ const targetOf = (run: Segment) => commentsOf(run).find((c) => c.verdict !== 'ac
 const startingAt = (run: Segment) =>
   commentsOf(run).filter((c) => Math.max(c.start ?? 0, 0) === run.start)
 
+/** `[everything up to the last word, the last word]`, so the last word can stay with the icon after it. */
+function splitLastWord(text: string): [string, string] {
+  const cut = text.search(/\S+\s*$/)
+  return cut <= 0 ? ['', text] : [text.slice(0, cut), text.slice(cut)]
+}
+
 const endingAt = (turn: TranscriptTurn, run: Segment) =>
   commentsOf(run).filter((c) => Math.min(c.end ?? 0, turn.text.length) === run.end)
 
@@ -123,7 +155,8 @@ function markClass(run: Segment): string[] {
   if (!primary) return []
   const styles = MARK_STYLES[primary.verdict]
   const tint = primary.status !== 'open' ? styles.faded : run.commentIds.length > 1 ? styles.stacked : styles.open
-  const classes = ['rounded-[2px] text-inherit transition-colors', tint]
+  const classes = ['rounded-[2px] text-inherit transition-colors duration-300', tint]
+  if (run.commentIds.some((id) => fresh.value.has(id))) classes.push('review-mark-in')
   if (targetOf(run)) classes.push('cursor-pointer')
   if (props.activeCommentId && run.commentIds.includes(props.activeCommentId)) {
     classes.push('ring-2 ring-ink ring-offset-1 ring-offset-glass')
@@ -176,9 +209,10 @@ const liveMessage = computed(() => {
         <li
           v-for="turn in turns"
           :key="turn.id"
-          class="rounded-glass border-l-4 bg-glass px-4 py-2 transition-opacity"
+          class="rounded-glass border-l-4 bg-glass px-4 py-2 transition-opacity duration-500 ease-out"
           :class="[styleFor(roles[turn.speaker]).border, { 'opacity-50': isDimmed(turn) }]"
           :data-testid="`turn-${turn.id}`"
+          :data-turn-id="turn.id"
           :data-dimmed="isDimmed(turn) ? '' : undefined"
         >
           <p class="mb-1 flex flex-wrap items-center gap-2 text-sm">
@@ -191,11 +225,13 @@ const liveMessage = computed(() => {
             >
               {{ roleLabel(roles[turn.speaker] ?? null) }}
             </span>
+            <!-- Steady pill with a turning icon: a pulsing pill read as flicker. -->
             <span
               v-if="isCurrent(turn)"
-              class="rounded-full border border-ink/30 bg-ink/5 px-2 py-0.5 text-xs font-medium motion-safe:animate-pulse"
+              class="review-card-in inline-flex items-center gap-1 rounded-full border border-ink/30 bg-ink/5 px-2 py-0.5 text-xs font-medium"
               data-testid="reviewing-pill"
             >
+              <LoaderCircle class="size-3 motion-safe:animate-spin" aria-hidden="true" />
               Reviewing…
             </span>
           </p>
@@ -229,18 +265,30 @@ const liveMessage = computed(() => {
                   </TooltipTrigger>
                   <TooltipContent>Transcription confidence {{ percent(run.lowConfidence) }}</TooltipContent>
                 </Tooltip>
-                <template v-else>{{ run.text }}</template>
-                <template v-for="c in endingAt(turn, run)" :key="`end-${c.id}`">
-                  <component
+                <!-- The span's last word and its verdict icon share a no-wrap box, so the icon never wraps alone. -->
+                <template v-else-if="endingAt(turn, run).length"
+                  >{{ splitLastWord(run.text)[0] }}<span class="whitespace-nowrap"
+                    >{{ splitLastWord(run.text)[1] }}<template v-for="c in endingAt(turn, run)" :key="`end-${c.id}`"
+                  ><component
                     :is="VERDICT_ICONS[c.verdict]"
                     aria-hidden="true"
                     class="ml-0.5 inline size-3 align-baseline"
                     :class="VERDICT_ICON_COLOURS[c.verdict]"
                     :stroke-width="3"
-                    data-testid="verdict-icon"
-                  />
-                  <span class="sr-only"> ({{ c.verdict }} statement)</span>
-                </template>
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                ></span
+                  ></template
+                >
+                <template v-else>{{ run.text }}</template>
+                <template v-if="run.lowConfidence !== null"><template v-for="c in endingAt(turn, run)" :key="`end-${c.id}`"
+                  ><component
+                    :is="VERDICT_ICONS[c.verdict]"
+                    aria-hidden="true"
+                    class="ml-0.5 inline size-3 align-baseline"
+                    :class="VERDICT_ICON_COLOURS[c.verdict]"
+                    :stroke-width="3"
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                ></template>
               </component>
             </template>
           </p>

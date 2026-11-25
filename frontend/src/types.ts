@@ -65,7 +65,7 @@ export interface TranscriptImport {
   notice: string
 }
 
-/** A turn after roles are confirmed: the input for later steps (e.g. fact checking). */
+/** A turn with its speaker's assigned role: the input for later steps (e.g. the agent review). */
 export interface RoledTurn extends TranscriptTurn {
   role: Role | null
 }

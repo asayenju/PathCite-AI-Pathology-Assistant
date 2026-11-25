@@ -142,7 +142,7 @@ describe('useTranscriptImport roles', () => {
   it('seeds roles from the suggestions', async () => {
     const t = await imported()
     expect(t.roles.value).toEqual({ S1: 'doctor', S2: 'patient', S3: null })
-    expect(t.canConfirm.value).toBe(true)
+    expect(t.hasDoctor.value).toBe(true)
   })
 
   it('setRole changes one speaker', async () => {
@@ -151,63 +151,40 @@ describe('useTranscriptImport roles', () => {
     expect(t.roles.value).toEqual({ S1: 'doctor', S2: 'patient', S3: 'other' })
   })
 
-  it('canConfirm needs at least one doctor and allows several', async () => {
+  it('hasDoctor needs at least one doctor and allows several', async () => {
     const t = await imported()
     t.setRole('S1', 'patient')
-    expect(t.canConfirm.value).toBe(false)
+    expect(t.hasDoctor.value).toBe(false)
     t.setRole('S2', 'doctor')
-    expect(t.canConfirm.value).toBe(true)
+    expect(t.hasDoctor.value).toBe(true)
     t.setRole('S1', 'doctor')
-    expect(t.canConfirm.value).toBe(true)
-    t.confirm()
-    expect(t.status.value).toBe('confirmed')
-  })
-
-  it('confirm is blocked without a doctor', async () => {
-    const t = await imported()
-    t.setRole('S1', null)
-    t.confirm()
+    expect(t.hasDoctor.value).toBe(true)
     expect(t.status.value).toBe('review')
-    expect(t.confirmedTranscript.value).toBeNull()
   })
 
-  it('confirmedTranscript is null until confirmed, then carries roles', async () => {
+  it('roledTurns carries the current roles and follows role changes', async () => {
     const t = await imported()
-    expect(t.confirmedTranscript.value).toBeNull()
-    t.confirm()
-    expect(t.confirmedTranscript.value!.map((x) => [x.id, x.role])).toEqual([
+    expect(t.roledTurns.value!.map((x) => [x.id, x.role])).toEqual([
       ['t0001', 'doctor'],
       ['t0002', 'patient'],
       ['t0003', null],
     ])
-    expect(t.confirmedTranscript.value![0]!.text).toBe('x')
-  })
-
-  it('editRoles goes back to review and allows changes again', async () => {
-    const t = await imported()
-    t.confirm()
-    t.setRole('S1', 'other') // ignored while confirmed
-    expect(t.roles.value.S1).toBe('doctor')
-    t.editRoles()
-    expect(t.status.value).toBe('review')
-    expect(t.confirmedTranscript.value).toBeNull()
+    expect(t.roledTurns.value![0]!.text).toBe('x')
     t.setRole('S3', 'doctor')
-    expect(t.roles.value.S3).toBe('doctor')
+    expect(t.roledTurns.value![2]!.role).toBe('doctor')
   })
 
   it('reset clears roles', async () => {
     const t = await imported()
-    t.confirm()
     t.reset()
     expect(t.roles.value).toEqual({})
-    expect(t.canConfirm.value).toBe(false)
-    expect(t.confirmedTranscript.value).toBeNull()
+    expect(t.hasDoctor.value).toBe(false)
+    expect(t.roledTurns.value).toBeNull()
   })
 
   it('a new import reseeds roles', async () => {
     const t = await imported()
     t.setRole('S2', 'doctor')
-    t.confirm()
     vi.stubGlobal(
       'fetch',
       vi.fn(async () =>

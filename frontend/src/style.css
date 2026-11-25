@@ -84,6 +84,38 @@
   .ring-pulse {
     animation: ring-pulse 1.4s ease-in-out infinite;
   }
+
+  /* Agent review: a new comment card slides in once, already at its place; a new highlight's tint fades in. */
+  .review-card-in {
+    animation: review-card-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .review-mark-in {
+    animation: review-mark-in 600ms ease-out both;
+  }
+
+  .review-card-leave {
+    transition: opacity 200ms ease-out;
+  }
+}
+
+@keyframes review-card-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* No `to`: it settles on the highlight's own colours, so the text itself never fades. */
+@keyframes review-mark-in {
+  from {
+    background-color: transparent;
+    border-color: transparent;
+  }
 }
 
 @keyframes focus-pull {
@@ -119,7 +151,9 @@
 @media (prefers-reduced-motion: reduce) {
   .focus-pull,
   .reading-in,
-  .ring-pulse {
+  .ring-pulse,
+  .review-card-in,
+  .review-mark-in {
     animation: none;
   }
 

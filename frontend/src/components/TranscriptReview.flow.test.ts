@@ -56,8 +56,9 @@ async function mountWithSample(title: string) {
   return wrapper
 }
 
-async function confirmRoles(w: W) {
-  await byText(w, 'Confirm roles')!.trigger('click')
+/** The select of the speaker currently marked doctor. */
+function doctorSelect(w: W) {
+  return w.findAll('select').find((sel) => (sel.element as HTMLSelectElement).value === 'doctor')!
 }
 
 /** Lets the mock review finish all doctor turns. */
@@ -78,11 +79,13 @@ afterEach(() => {
 })
 
 describe('Transcripts view: agent review', () => {
-  it('hides the review button until roles are confirmed', async () => {
+  it('offers review straight after import (no confirm step) and needs a doctor', async () => {
     const w = await mountWithSample(crc.title)
-    expect(reviewButton(w).exists()).toBe(false)
-    await confirmRoles(w)
-    expect(reviewButton(w).exists()).toBe(true)
+    expect(byText(w, 'Confirm roles')).toBeUndefined()
+    expect(reviewButton(w).attributes('disabled')).toBeUndefined()
+    await doctorSelect(w).setValue('patient')
+    expect(reviewButton(w).attributes('disabled')).toBeDefined()
+    expect(w.get('#review-unavailable').text()).toBe('Mark at least one speaker as the doctor to run a review.')
   })
 
   it('is disabled with a reason for an uploaded transcript', async () => {
@@ -92,7 +95,6 @@ describe('Transcripts view: agent review', () => {
       dataTransfer: { types: ['Files'], files: [new File(['{}'], 'visit.json', { type: 'application/json' })] },
     })
     await flushPromises()
-    await confirmRoles(w)
     const button = reviewButton(w)
     expect(button.attributes('disabled')).toBeDefined()
     expect(button.attributes('aria-describedby')).toBe('review-unavailable')
@@ -101,7 +103,6 @@ describe('Transcripts view: agent review', () => {
 
   it('is disabled with a reason for a sample without a mock review', async () => {
     const w = await mountWithSample(unmocked.title)
-    await confirmRoles(w)
     expect(reviewButton(w).attributes('disabled')).toBeDefined()
     expect(reviewButton(w).attributes('aria-describedby')).toBe('review-unavailable')
     expect(w.get('#review-unavailable').text()).toBe('Agent review is only mocked for 3 samples so far.')
@@ -109,7 +110,6 @@ describe('Transcripts view: agent review', () => {
 
   it('reviews a mocked sample progressively, with the demo label, header, highlights and cards', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     const button = reviewButton(w)
     expect(button.attributes('disabled')).toBeUndefined()
     expect(button.text()).toBe('Review with agent')
@@ -151,7 +151,6 @@ describe('Transcripts view: agent review', () => {
 
   it('restart discards the results and runs again', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
     expect(card(w, 'crc-2').exists()).toBe(true)
@@ -165,7 +164,6 @@ describe('Transcripts view: agent review', () => {
 
   it('Clear transcript discards the review', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
     await byText(w, 'Clear transcript')!.trigger('click')
@@ -173,14 +171,12 @@ describe('Transcripts view: agent review', () => {
     // Loading the same sample again starts from a clean slate: no header until Review is pressed.
     await sampleButton(w, crc.title).trigger('click')
     await flushPromises()
-    await confirmRoles(w)
     expect(w.find('[data-testid="review-header"]').exists()).toBe(false)
     expect(reviewButton(w).text()).toBe('Review with agent')
   })
 
   it('loading another sample discards the review', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
     await sampleButton(w, unmocked.title).trigger('click')
@@ -189,41 +185,35 @@ describe('Transcripts view: agent review', () => {
     expect(w.find('[data-testid="review-scroll"]').exists()).toBe(false)
   })
 
-  it('Edit roles with results asks first: cancel keeps the review, accept discards it', async () => {
+  it('changing a role with results asks first: cancel keeps the review and the role, accept discards it', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
 
+    const select = doctorSelect(w)
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
-    await byText(w, 'Edit roles')!.trigger('click')
-    expect(confirmSpy).toHaveBeenCalledWith('Editing roles discards the current review. Continue?')
-    expect(w.text()).toContain('Roles confirmed.')
+    await select.setValue('other')
+    expect(confirmSpy).toHaveBeenCalledWith('Changing roles discards the current review. Continue?')
+    expect((select.element as HTMLSelectElement).value).toBe('doctor')
     expect(card(w, 'crc-2').exists()).toBe(true)
 
     confirmSpy.mockReturnValue(true)
-    await byText(w, 'Edit roles')!.trigger('click')
+    await select.setValue('other')
     expect(confirmSpy).toHaveBeenCalledTimes(2)
+    expect((select.element as HTMLSelectElement).value).toBe('other')
     expect(w.find('[data-testid="review-header"]').exists()).toBe(false)
-    expect(w.get('#role-S1').attributes('disabled')).toBeUndefined()
-
-    // Confirming again offers a fresh review.
-    await confirmRoles(w)
-    expect(reviewButton(w).text()).toBe('Review with agent')
   })
 
-  it('Edit roles without results does not ask', async () => {
+  it('changing a role before any review does not ask', async () => {
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     const confirmSpy = vi.spyOn(window, 'confirm')
-    await byText(w, 'Edit roles')!.trigger('click')
+    await doctorSelect(w).setValue('other')
     expect(confirmSpy).not.toHaveBeenCalled()
   })
 
   it('Export review downloads review-<sampleId>-<YYYYMMDD>.json', async () => {
     vi.setSystemTime(new Date(2026, 10, 25, 12))
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
     await w.get('[data-testid="review-export"]').trigger('click')
@@ -240,13 +230,12 @@ describe('Transcripts view: agent review', () => {
   it('never touches web storage through a review', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const w = await mountWithSample(crc.title)
-    await confirmRoles(w)
     await reviewButton(w).trigger('click')
     await runToEnd()
     await card(w, 'crc-2').get('[data-testid="resolve"]').trigger('click')
     await w.get('[data-testid="review-export"]').trigger('click')
     vi.spyOn(window, 'confirm').mockReturnValue(true)
-    await byText(w, 'Edit roles')!.trigger('click')
+    await doctorSelect(w).setValue('other')
     await byText(w, 'Clear transcript')!.trigger('click')
     expect(setItem).not.toHaveBeenCalled()
   })

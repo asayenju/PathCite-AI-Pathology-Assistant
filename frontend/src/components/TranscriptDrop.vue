@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { CircleAlert, Sparkles } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { DEMO_REVIEW_LABEL, downloadJson } from '@/lib/review'
 import { hasMockReview, mockClarify, mockReviewSource } from '@/mocks/review'
 import { TRANSCRIPT_MIME, findSample } from '@/lib/transcriptSamples'
 import { TRANSCRIPT_ACCEPT } from '@/lib/transcripts'
-import type { TranscriptManifest, TranscriptSample } from '@/types'
+import type { Role, TranscriptManifest, TranscriptSample } from '@/types'
 import CommentActions from './CommentActions.vue'
 import CommentThread from './CommentThread.vue'
 import ReviewHeader from './ReviewHeader.vue'
@@ -21,11 +21,11 @@ import TranscriptReviewLayout from './TranscriptReviewLayout.vue'
 import TranscriptView from './TranscriptView.vue'
 
 /**
- * The Transcripts view: drop or pick a diarized transcript JSON (or a bundled synthetic sample), assign speaker
- * roles, confirm. Memory only. Without a manifest the sample folders are simply not shown.
+ * The Transcripts view: drop or pick a diarized transcript JSON (or a bundled synthetic sample) and check the speaker
+ * roles. Memory only. Without a manifest the sample folders are simply not shown.
  *
- * Once roles are confirmed, "Review with agent" streams a review of the doctor turns (today the hand-written mock in
- * src/mocks/review, only for the samples it covers). Clear, a new file or sample, and Edit roles discard the review.
+ * With at least one doctor, "Review with agent" streams a review of the doctor turns (today the hand-written mock in
+ * src/mocks/review, only for the samples it covers). Clear, a new file or sample, and a role change discard it.
  */
 const props = withDefaults(defineProps<{ manifest?: TranscriptManifest | null }>(), { manifest: null })
 
@@ -36,13 +36,11 @@ const {
   fileName,
   roles,
   sample,
-  canConfirm,
-  confirmedTranscript,
+  hasDoctor,
+  roledTurns,
   readFile,
   readSample,
   setRole,
-  confirm,
-  editRoles,
   reset,
 } = useTranscriptImport()
 
@@ -72,26 +70,57 @@ const {
 const showResolved = ref(false)
 /** A review was started for the transcript in place (running, done, stopped or error). */
 const reviewing = computed(() => reviewStatus.value !== 'idle')
-const canReview = computed(() => !!confirmedTranscript.value && hasMockReview(sample.value?.id))
+const canReview = computed(() => !!roledTurns.value && hasDoctor.value && hasMockReview(sample.value?.id))
 const reviewUnavailable = computed(() =>
-  sample.value
-    ? 'Agent review is only mocked for 3 samples so far.'
-    : "Agent review isn't available for uploaded transcripts yet.",
+  !sample.value
+    ? "Agent review isn't available for uploaded transcripts yet."
+    : !hasMockReview(sample.value.id)
+      ? 'Agent review is only mocked for 3 samples so far.'
+      : 'Mark at least one speaker as the doctor to run a review.',
 )
+
+/**
+ * Where to scroll after an activation: clicking a highlight goes to its comment, clicking a comment goes to its
+ * highlight. `n` makes a repeat click on the same item scroll again.
+ */
+const focusRequest = ref<{ id: string; target: 'card' | 'highlight'; n: number } | null>(null)
+let focusCount = 0
+
+function activateFrom(target: 'card' | 'highlight') {
+  return (id: string) => {
+    setActive(id)
+    focusRequest.value = { id, target, n: ++focusCount }
+  }
+}
+const onHighlightActivate = activateFrom('card')
+const onCardActivate = activateFrom('highlight')
+
+function goTo(step: () => string | null) {
+  const id = step()
+  if (id) focusRequest.value = { id, target: 'highlight', n: ++focusCount }
+}
 
 function discardReview() {
   resetReview()
   showResolved.value = false
+  focusRequest.value = null
 }
 
-/** Start, or restart (the run in place is discarded), the review of the confirmed turns. */
+/** Start, or restart (the run in place is discarded), the review of the turns with their current roles. */
 function startReview() {
-  const turns = confirmedTranscript.value
+  const turns = roledTurns.value
   const id = sample.value?.id
   if (!turns || !id || !hasMockReview(id)) return
   discardReview()
   void startReviewRun(turns, { sampleId: id, source: mockReviewSource(id) })
+  // The review opens below the roles; bring it up so the agent's progress is in view.
+  void nextTick(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    reviewPanel.value?.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  })
 }
+
+const reviewPanel = ref<HTMLElement | null>(null)
 
 function onExport() {
   const { filename, data } = exportReview()
@@ -114,20 +143,20 @@ function clear() {
   reset()
 }
 
-/** Editing roles invalidates the review; ask first when there is something to lose. */
-function onEditRoles() {
-  if (hasResults.value && !window.confirm('Editing roles discards the current review. Continue?')) return
-  discardReview()
-  editRoles()
+/** A role change invalidates the review (it decides which turns are checked); ask first when there is something to lose. */
+function onSetRole(speakerId: string, role: Role | null) {
+  if ((roles.value[speakerId] ?? null) === role) return
+  if (reviewing.value) {
+    if (hasResults.value && !window.confirm('Changing roles discards the current review. Continue?')) return
+    discardReview()
+  }
+  setRole(speakerId, role)
 }
 
-// Belt and braces: whatever leaves the confirmed transcript also drops the review.
-watch(
-  () => (status.value === 'confirmed' ? transcript.value : null),
-  (now, before) => {
-    if (now !== before) discardReview()
-  },
-)
+// Belt and braces: whatever replaces the transcript also drops the review.
+watch(transcript, (now, before) => {
+  if (now !== before) discardReview()
+})
 
 const over = ref(false)
 const picker = ref<HTMLInputElement | null>(null)
@@ -198,7 +227,7 @@ function onPick(event: Event) {
       <div :aria-live="reviewing ? 'off' : 'polite'" :aria-busy="status === 'loading'">
         <!-- Review: summary (with warnings), speaker roles, then the turn-by-turn view. -->
         <div
-          v-if="transcript && (status === 'review' || status === 'confirmed')"
+          v-if="transcript && status === 'review'"
           data-testid="transcript-review"
           class="space-y-8 rounded-glass transition-shadow"
           :class="overReview && 'shadow-[0_0_0_2px_var(--color-ink)]'"
@@ -211,17 +240,9 @@ function onPick(event: Event) {
             Synthetic sample: {{ sample.title }}. {{ manifest?.notice }}
           </p>
           <TranscriptSummary :transcript="transcript" :file-name="fileName" />
-          <SpeakerRoles
-            :speakers="transcript.speakers"
-            :roles="roles"
-            :confirmed="status === 'confirmed'"
-            :can-confirm="canConfirm"
-            @set-role="setRole"
-            @confirm="confirm"
-            @edit="onEditRoles"
-          />
+          <SpeakerRoles :speakers="transcript.speakers" :roles="roles" @set-role="onSetRole" />
 
-          <div v-if="status === 'confirmed'" class="flex flex-wrap items-center gap-3" data-testid="review-start">
+          <div class="flex flex-wrap items-center gap-3" data-testid="review-start">
             <Button
               size="sm"
               :disabled="!canReview"
@@ -238,7 +259,12 @@ function onPick(event: Event) {
           </div>
 
           <!-- Reviewing: transcript and comment margin share one scroll container. -->
-          <div v-if="reviewing" class="space-y-4" data-testid="transcript-agent-review">
+          <div
+            v-if="reviewing"
+            ref="reviewPanel"
+            class="review-card-in scroll-mt-4 space-y-4"
+            data-testid="transcript-agent-review"
+          >
             <ReviewHeader
               :status="reviewStatus"
               :counts="counts"
@@ -248,12 +274,15 @@ function onPick(event: Event) {
               :can-export="hasResults"
               :demo-label="DEMO_REVIEW_LABEL"
               @update:show-resolved="showResolved = $event"
-              @prev="prevIssue"
-              @next="nextIssue"
+              @prev="goTo(prevIssue)"
+              @next="goTo(nextIssue)"
               @stop="stopReview"
               @export="onExport"
             />
-            <TranscriptReviewLayout :active-comment-id="activeCommentId">
+            <TranscriptReviewLayout
+              :focus-request="focusRequest"
+              :follow-turn-id="reviewStatus === 'running' ? currentTurnId : null"
+            >
               <template #transcript>
                 <TranscriptView
                   :turns="transcript.turns"
@@ -264,7 +293,7 @@ function onPick(event: Event) {
                   :done-turn-ids="doneTurnIds"
                   :reviewing="true"
                   :scroll="false"
-                  @activate="setActive"
+                  @activate="onHighlightActivate"
                 />
               </template>
               <template #margin="{ container }">
@@ -274,7 +303,7 @@ function onPick(event: Event) {
                   :active-comment-id="activeCommentId"
                   :show-resolved="showResolved"
                   :container="container"
-                  @activate="setActive"
+                  @activate="onCardActivate"
                 >
                   <template #actions="{ comment }">
                     <CommentActions
@@ -292,8 +321,8 @@ function onPick(event: Event) {
             </TranscriptReviewLayout>
           </div>
           <TranscriptView v-else :turns="transcript.turns" :roles="roles" />
-          <!-- Later steps (fact checking) consume the confirmed, role-tagged turns from here. -->
-          <slot name="review" :transcript="transcript" :status="status" :confirmed-transcript="confirmedTranscript" />
+          <!-- Later steps consume the role-tagged turns from here. -->
+          <slot name="review" :transcript="transcript" :status="status" :roled-turns="roledTurns" />
           <Button variant="outline" size="sm" @click="clear">Clear transcript</Button>
         </div>
 

@@ -63,6 +63,21 @@ const root = ref<HTMLElement | null>(null)
 const cardEls = new Map<string, HTMLElement>()
 const tops = ref<Record<string, number>>({})
 const minHeight = ref(0)
+/**
+ * Cards that have been laid out and shown. A new card renders invisible until its first measure puts it at its
+ * highlight; only then does it fade in, and only placed cards animate moves. Without this a new card would flash at
+ * the top of the margin and slide down.
+ */
+const placed = ref<Set<string>>(new Set())
+
+function markPlaced(ids: string[]) {
+  const fresh = ids.filter((id) => !placed.value.has(id))
+  if (!fresh.length) return
+  const show = () => (placed.value = new Set([...placed.value, ...fresh]))
+  // One frame later, so the invisible card is already at its place when it starts to appear.
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(show)
+  else show()
+}
 
 function setCardEl(id: string, el: unknown) {
   if (el instanceof HTMLElement) cardEls.set(id, el)
@@ -87,6 +102,7 @@ function measure() {
   })
   const next = layoutCards(items, props.activeCommentId, props.gap)
   tops.value = next
+  markPlaced(items.filter((item) => item.height > 0).map((item) => item.id))
   const bottom = items.reduce((max, item) => Math.max(max, next[item.id] + item.height), 0)
   minHeight.value = Math.max(bottom, props.container?.offsetHeight ?? 0)
 }
@@ -108,6 +124,15 @@ async function relayout() {
   observe()
 }
 
+// A card that leaves (resolved and hidden) must be placed afresh if it comes back.
+watch(
+  () => visible.value.map((c) => c.id),
+  (ids) => {
+    const keep = new Set(ids)
+    if ([...placed.value].some((id) => !keep.has(id))) placed.value = new Set([...placed.value].filter((id) => keep.has(id)))
+  },
+)
+
 watch(
   () => [
     visible.value.map((c) => `${c.id}:${c.status}:${c.thread.length}`).join('|'),
@@ -122,6 +147,8 @@ onMounted(relayout)
 useEventListener(window, 'resize', measure)
 onBeforeUnmount(() => observer?.disconnect())
 
+const isPlaced = (id: string) => placed.value.has(id)
+
 defineExpose({ measure })
 </script>
 
@@ -134,28 +161,41 @@ defineExpose({ measure })
       :style="{ minHeight: `${minHeight}px` }"
       data-testid="review-margin-positioned"
     >
-      <div
-        v-for="comment in visible"
-        :key="comment.id"
-        :ref="(el) => setCardEl(comment.id, el)"
-        class="absolute inset-x-0 top-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out"
-        :style="{ transform: `translateY(${tops[comment.id] ?? 0}px)` }"
-        :data-card-for="comment.id"
-      >
-        <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
-          <template #actions><slot name="actions" :comment="comment" /></template>
-          <template #thread><slot name="thread" :comment="comment" /></template>
-        </CommentCard>
-      </div>
+      <TransitionGroup leave-active-class="review-card-leave" leave-to-class="opacity-0">
+        <div
+          v-for="comment in visible"
+          :key="comment.id"
+          :ref="(el) => setCardEl(comment.id, el)"
+          class="absolute inset-x-0 top-0"
+          :class="
+            isPlaced(comment.id)
+              ? 'motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.2,0.7,0.2,1)]'
+              : 'invisible'
+          "
+          :style="{ transform: `translateY(${tops[comment.id] ?? 0}px)` }"
+          :data-card-for="comment.id"
+          :data-top="tops[comment.id] ?? 0"
+          :data-placed="isPlaced(comment.id) ? '' : undefined"
+        >
+          <div :class="isPlaced(comment.id) && 'review-card-in'">
+            <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
+              <template #actions><slot name="actions" :comment="comment" /></template>
+              <template #thread><slot name="thread" :comment="comment" /></template>
+            </CommentCard>
+          </div>
+        </div>
+      </TransitionGroup>
     </div>
 
     <ol v-else class="space-y-3" data-testid="review-margin-list">
-      <li v-for="comment in visible" :key="comment.id" :data-card-for="comment.id">
-        <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
-          <template #actions><slot name="actions" :comment="comment" /></template>
-          <template #thread><slot name="thread" :comment="comment" /></template>
-        </CommentCard>
-      </li>
+      <TransitionGroup enter-active-class="review-card-in" leave-active-class="review-card-leave" leave-to-class="opacity-0">
+        <li v-for="comment in visible" :key="comment.id" :data-card-for="comment.id">
+          <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
+            <template #actions><slot name="actions" :comment="comment" /></template>
+            <template #thread><slot name="thread" :comment="comment" /></template>
+          </CommentCard>
+        </li>
+      </TransitionGroup>
     </ol>
 
     <p v-if="!visible.length" class="text-sm text-quiet" data-testid="review-margin-empty">No open comments.</p>
