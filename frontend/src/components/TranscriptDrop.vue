@@ -1,20 +1,31 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { CircleAlert } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { CircleAlert, Sparkles } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useTranscriptImport } from '@/composables/useTranscriptImport'
+import { useTranscriptReview } from '@/composables/useTranscriptReview'
+import { DEMO_REVIEW_LABEL, downloadJson } from '@/lib/review'
+import { hasMockReview, mockClarify, mockReviewSource } from '@/mocks/review'
 import { TRANSCRIPT_MIME, findSample } from '@/lib/transcriptSamples'
 import { TRANSCRIPT_ACCEPT } from '@/lib/transcripts'
-import type { TranscriptManifest } from '@/types'
+import type { TranscriptManifest, TranscriptSample } from '@/types'
+import CommentActions from './CommentActions.vue'
+import CommentThread from './CommentThread.vue'
+import ReviewHeader from './ReviewHeader.vue'
+import ReviewMargin from './ReviewMargin.vue'
 import SpeakerRoles from './SpeakerRoles.vue'
 import TranscriptFolders from './TranscriptFolders.vue'
 import TranscriptSummary from './TranscriptSummary.vue'
+import TranscriptReviewLayout from './TranscriptReviewLayout.vue'
 import TranscriptView from './TranscriptView.vue'
 
 /**
  * The Transcripts view: drop or pick a diarized transcript JSON (or a bundled synthetic sample), assign speaker
  * roles, confirm. Memory only. Without a manifest the sample folders are simply not shown.
+ *
+ * Once roles are confirmed, "Review with agent" streams a review of the doctor turns (today the hand-written mock in
+ * src/mocks/review, only for the samples it covers). Clear, a new file or sample, and Edit roles discard the review.
  */
 const props = withDefaults(defineProps<{ manifest?: TranscriptManifest | null }>(), { manifest: null })
 
@@ -35,6 +46,89 @@ const {
   reset,
 } = useTranscriptImport()
 
+const {
+  status: reviewStatus,
+  errorMessage: reviewError,
+  currentTurnId,
+  doneTurnIds,
+  comments,
+  activeCommentId,
+  hasResults,
+  counts,
+  issueOrder,
+  start: startReviewRun,
+  stop: stopReview,
+  reset: resetReview,
+  resolve,
+  reopen,
+  disagree,
+  setActive,
+  reply,
+  nextIssue,
+  prevIssue,
+  exportReview,
+} = useTranscriptReview({ clarify: mockClarify, sourceName: 'mock' })
+
+const showResolved = ref(false)
+/** A review was started for the transcript in place (running, done, stopped or error). */
+const reviewing = computed(() => reviewStatus.value !== 'idle')
+const canReview = computed(() => !!confirmedTranscript.value && hasMockReview(sample.value?.id))
+const reviewUnavailable = computed(() =>
+  sample.value
+    ? 'Agent review is only mocked for 3 samples so far.'
+    : "Agent review isn't available for uploaded transcripts yet.",
+)
+
+function discardReview() {
+  resetReview()
+  showResolved.value = false
+}
+
+/** Start, or restart (the run in place is discarded), the review of the confirmed turns. */
+function startReview() {
+  const turns = confirmedTranscript.value
+  const id = sample.value?.id
+  if (!turns || !id || !hasMockReview(id)) return
+  discardReview()
+  void startReviewRun(turns, { sampleId: id, source: mockReviewSource(id) })
+}
+
+function onExport() {
+  const { filename, data } = exportReview()
+  downloadJson(filename, data)
+}
+
+// Every way the transcript can change goes through these, so a review never outlives its transcript.
+function loadFile(file: File) {
+  discardReview()
+  readFile(file)
+}
+
+function loadSample(chosen: TranscriptSample) {
+  discardReview()
+  readSample(chosen)
+}
+
+function clear() {
+  discardReview()
+  reset()
+}
+
+/** Editing roles invalidates the review; ask first when there is something to lose. */
+function onEditRoles() {
+  if (hasResults.value && !window.confirm('Editing roles discards the current review. Continue?')) return
+  discardReview()
+  editRoles()
+}
+
+// Belt and braces: whatever leaves the confirmed transcript also drops the review.
+watch(
+  () => (status.value === 'confirmed' ? transcript.value : null),
+  (now, before) => {
+    if (now !== before) discardReview()
+  },
+)
+
 const over = ref(false)
 const picker = ref<HTMLInputElement | null>(null)
 
@@ -46,7 +140,7 @@ function dropSample(event: DragEvent): boolean {
   const file = event.dataTransfer?.getData(TRANSCRIPT_MIME)
   if (!file) return true
   const chosen = findSample(props.manifest, file)
-  if (chosen) readSample(chosen)
+  if (chosen) loadSample(chosen)
   return true
 }
 
@@ -54,7 +148,7 @@ function onDrop(event: DragEvent) {
   over.value = false
   if (dropSample(event)) return
   const file = event.dataTransfer?.files?.[0]
-  if (file) readFile(file)
+  if (file) loadFile(file)
 }
 
 /** In review only samples can be dropped (files keep needing Clear first), so only they get the drop target. */
@@ -76,25 +170,32 @@ function onReviewDrop(event: DragEvent) {
 function onPick(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
-  if (file) readFile(file)
+  if (file) loadFile(file)
   input.value = '' // allow choosing the same file again
 }
 </script>
 
 <template>
   <!-- Same column rhythm as the Slides tab: folders on the left on wide screens, above on narrow ones. -->
-  <div class="grid gap-10" :class="manifest && 'lg:grid-cols-[15rem_minmax(0,52rem)] lg:gap-14'">
+  <!-- While reviewing, the transcript column drops its 52rem cap: the comment margin needs the room. -->
+  <div
+    class="grid gap-10"
+    :class="
+      manifest && (reviewing ? 'lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-14' : 'lg:grid-cols-[15rem_minmax(0,52rem)] lg:gap-14')
+    "
+  >
     <TranscriptFolders
       v-if="manifest"
       :manifest="manifest"
       :active-file="sample?.file ?? null"
-      @pick="readSample"
+      @pick="loadSample"
     />
 
-    <section aria-labelledby="transcript-title" class="min-w-0 max-w-[52rem]">
+    <section aria-labelledby="transcript-title" class="min-w-0" :class="!reviewing && 'max-w-[52rem]'">
       <h2 id="transcript-title" class="mb-3 text-sm font-semibold text-quiet">Transcript</h2>
 
-      <div aria-live="polite" :aria-busy="status === 'loading'">
+      <!-- Streaming review content has its own status line; announcing every card here would be noise. -->
+      <div :aria-live="reviewing ? 'off' : 'polite'" :aria-busy="status === 'loading'">
         <!-- Review: summary (with warnings), speaker roles, then the turn-by-turn view. -->
         <div
           v-if="transcript && (status === 'review' || status === 'confirmed')"
@@ -117,12 +218,83 @@ function onPick(event: Event) {
             :can-confirm="canConfirm"
             @set-role="setRole"
             @confirm="confirm"
-            @edit="editRoles"
+            @edit="onEditRoles"
           />
-          <TranscriptView :turns="transcript.turns" :roles="roles" />
+
+          <div v-if="status === 'confirmed'" class="flex flex-wrap items-center gap-3" data-testid="review-start">
+            <Button
+              size="sm"
+              :disabled="!canReview"
+              :aria-describedby="canReview ? undefined : 'review-unavailable'"
+              data-testid="review-button"
+              @click="startReview"
+            >
+              <Sparkles aria-hidden="true" />
+              {{ reviewing ? 'Restart review' : 'Review with agent' }}
+            </Button>
+            <p v-if="!canReview" id="review-unavailable" class="text-sm text-quiet" data-testid="review-unavailable">
+              {{ reviewUnavailable }}
+            </p>
+          </div>
+
+          <!-- Reviewing: transcript and comment margin share one scroll container. -->
+          <div v-if="reviewing" class="space-y-4" data-testid="transcript-agent-review">
+            <ReviewHeader
+              :status="reviewStatus"
+              :counts="counts"
+              :error-message="reviewError"
+              :show-resolved="showResolved"
+              :has-open="counts.open > 0"
+              :can-export="hasResults"
+              :demo-label="DEMO_REVIEW_LABEL"
+              @update:show-resolved="showResolved = $event"
+              @prev="prevIssue"
+              @next="nextIssue"
+              @stop="stopReview"
+              @export="onExport"
+            />
+            <TranscriptReviewLayout :active-comment-id="activeCommentId">
+              <template #transcript>
+                <TranscriptView
+                  :turns="transcript.turns"
+                  :roles="roles"
+                  :comments="comments"
+                  :active-comment-id="activeCommentId"
+                  :current-turn-id="currentTurnId"
+                  :done-turn-ids="doneTurnIds"
+                  :reviewing="true"
+                  :scroll="false"
+                  @activate="setActive"
+                />
+              </template>
+              <template #margin="{ container }">
+                <ReviewMargin
+                  :comments="comments"
+                  :order="issueOrder"
+                  :active-comment-id="activeCommentId"
+                  :show-resolved="showResolved"
+                  :container="container"
+                  @activate="setActive"
+                >
+                  <template #actions="{ comment }">
+                    <CommentActions
+                      :comment="comment"
+                      @resolve="resolve(comment.id)"
+                      @reopen="reopen(comment.id)"
+                      @disagree="disagree(comment.id, $event)"
+                    />
+                  </template>
+                  <template #thread="{ comment }">
+                    <CommentThread :comment="comment" @reply="reply(comment.id, $event)" />
+                  </template>
+                </ReviewMargin>
+              </template>
+            </TranscriptReviewLayout>
+          </div>
+          <TranscriptView v-else :turns="transcript.turns" :roles="roles" />
           <!-- Later steps (fact checking) consume the confirmed, role-tagged turns from here. -->
           <slot name="review" :transcript="transcript" :status="status" :confirmed-transcript="confirmedTranscript" />
-          <Button variant="outline" size="sm" @click="reset">Clear transcript</Button>
+          <Button variant="outline" size="sm" @click="clear">Clear transcript</Button>
         </div>
 
         <!-- Idle, loading or error: the drop zone stays available so a new file can replace a bad one. -->
@@ -156,7 +328,7 @@ function onPick(event: Event) {
             <AlertTitle>The transcript wasn't imported</AlertTitle>
             <AlertDescription class="text-ink">
               <p>{{ errorMessage }}</p>
-              <Button variant="outline" size="sm" class="mt-3" @click="reset">Clear</Button>
+              <Button variant="outline" size="sm" class="mt-3" @click="clear">Clear</Button>
             </AlertDescription>
           </Alert>
         </div>
