@@ -14,6 +14,7 @@
   --color-eosin: #d9406f;
   --color-frost: #cbd3dc;
   --color-amber: #b7791f;
+  --color-moss: #2f7d4f; /* "accurate" only, never alone: 5:1 on glass */
   --color-quiet: #565478; /* secondary text, 6:1 on bench */
 
   /* shadcn-vue semantic tokens mapped onto the palette */
