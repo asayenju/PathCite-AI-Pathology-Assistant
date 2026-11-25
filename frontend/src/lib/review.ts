@@ -30,9 +30,11 @@ export function anchorComment(turn: Pick<TranscriptTurn, 'text'>, quote: string)
   return { start: toOriginalOffset(text, at), end: toOriginalOffset(text, at + needle.length) }
 }
 
+/** Badge text shown in the review header while the review comes from the hand-written mock. */
+export const DEMO_REVIEW_LABEL = 'Demo review: hand-written mock, not an AI agent'
+
 /** The notice at the top of an exported review. */
-export const REVIEW_EXPORT_NOTICE =
-  'Demo review: hand-written mock, not an AI agent. Research use only, not a diagnosis.'
+export const REVIEW_EXPORT_NOTICE = `${DEMO_REVIEW_LABEL}. Research use only, not a diagnosis.`
 
 /** `review-<sampleId or "transcript">-<YYYYMMDD>.json`, using the local date. Unsafe id characters become `_`. */
 export function reviewFilename(sampleId: string | null, now: Date): string {
