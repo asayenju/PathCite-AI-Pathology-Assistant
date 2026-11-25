@@ -29,3 +29,33 @@ export function anchorComment(turn: Pick<TranscriptTurn, 'text'>, quote: string)
   if (normalized === text) return { start: at, end: at + needle.length }
   return { start: toOriginalOffset(text, at), end: toOriginalOffset(text, at + needle.length) }
 }
+
+/** The notice at the top of an exported review. */
+export const REVIEW_EXPORT_NOTICE =
+  'Demo review: hand-written mock, not an AI agent. Research use only, not a diagnosis.'
+
+/** `review-<sampleId or "transcript">-<YYYYMMDD>.json`, using the local date. Unsafe id characters become `_`. */
+export function reviewFilename(sampleId: string | null, now: Date): string {
+  const id = sampleId ? sampleId.replace(/[^A-Za-z0-9_-]/g, '_') : 'transcript'
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
+  return `review-${id}-${date}.json`
+}
+
+/** Saves `data` as a pretty-printed JSON file in the browser (Blob + object URL + anchor click). Nothing is uploaded. */
+export function downloadJson(filename: string, data: unknown): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.rel = 'noopener'
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  try {
+    a.click()
+  } finally {
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+}
