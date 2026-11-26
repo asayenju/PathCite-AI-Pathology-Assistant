@@ -6,14 +6,6 @@
  "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
  "keys": [
   {
-   "span": "The pathologist didn't see anything worrying.",
-   "verdict": "incomplete",
-   "issue": "Vague: doesn't name the findings.",
-   "correct": "The polyp was a tubular adenoma with low-grade dysplasia, with no high-grade dysplasia or cancer, and it was completely removed.",
-   "source_hint": "CAP colon and rectum protocol; pathology report",
-   "speaker": "doctor"
-  },
-  {
    "span": "a benign polyp, but it could slowly turn into cancer over years if it were left alone",
    "verdict": "accurate",
    "issue": null,
@@ -22,17 +14,17 @@
    "speaker": "doctor"
   },
   {
-   "span": "it was removed completely and showed no high-grade dysplasia",
-   "verdict": "accurate",
-   "issue": null,
-   "correct": "The adenoma was completely removed and had no high-grade dysplasia.",
-   "source_hint": "Pathology report; CAP colon and rectum protocol",
+   "span": "Dysplasia means the cells look abnormal under the microscope.",
+   "verdict": "incomplete",
+   "issue": "Doesn't say that dysplasia is a precancerous change, or that high-grade dysplasia is the step closest to cancer.",
+   "correct": "Dysplasia is a precancerous change in the lining cells. Low-grade dysplasia is the usual finding in an adenoma; high-grade dysplasia is a more advanced change, closer to cancer.",
+   "source_hint": "CAP colon and rectum protocol; WHO classification of digestive system tumours",
    "speaker": "doctor"
   },
   {
-   "span": "So you won't ever need another colonoscopy.",
+   "span": "Once an adenoma has been removed completely, there's no need for another colonoscopy.",
    "verdict": "inaccurate",
-   "issue": "Surveillance colonoscopy is still recommended after an adenoma.",
+   "issue": "Surveillance colonoscopy is still recommended after an adenoma is removed.",
    "correct": "Surveillance colonoscopy is still recommended. For one or two tubular adenomas under 10 mm, the next one is usually in 7 to 10 years.",
    "source_hint": "US Multi-Society Task Force 2020 post-polypectomy surveillance",
    "speaker": "doctor"

@@ -1,7 +1,7 @@
 {
  "task": "transcribe",
- "duration": 70.02,
- "text": "Hi, thanks for coming in. Is it okay if your sister stays for this? Yes, please. I want her here. Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma. Um, okay. What does invasive mean? That sounds scary. Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue. Okay. The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative. I don't know what any of that means, honestly. Because it's HER2 negative, hormone-blocking pills won't work for you. Oh. Okay. It's a grade 2 tumor. Is that good or bad? It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment. Will I need chemo? That depends on a few more results, and we'll go through all of it at that visit. Okay. Thank you.",
+ "duration": 72.85,
+ "text": "Hi, thanks for coming in. Is it okay if your sister stays for this? Yes, please. I want her here. Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma. Um, okay. What does invasive mean? That sounds scary. Invasive means the cancer cells have grown out of the milk duct into the surrounding breast tissue. Okay. The pathologist also tested the humor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative. I don't know what any of that means, honestly. Because it's HER2 negative, hormone-blocking pills won't work for you. Oh. Okay. It's a grade 2 tumor. Breast cancers are graded from 1 to 3. Is that good or bad? It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment. Will I need chemo? That depends on a few more results, and we'll go through all of it at that visit. Okay. Thank you.",
  "segments": [
   {
    "type": "transcript.text.segment",
@@ -56,7 +56,7 @@
    "id": "seg_006",
    "start": 27.62,
    "end": 36.31,
-   "text": "The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
+   "text": "The pathologist also tested the humor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
    "speaker": "A"
   },
   {
@@ -87,53 +87,53 @@
    "type": "transcript.text.segment",
    "id": "seg_010",
    "start": 47.11,
-   "end": 48.57,
-   "text": "It's a grade 2 tumor.",
+   "end": 51.4,
+   "text": "It's a grade 2 tumor. Breast cancers are graded from 1 to 3.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_011",
-   "start": 49.17,
-   "end": 50.61,
+   "start": 52.0,
+   "end": 53.44,
    "text": "Is that good or bad?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_012",
-   "start": 51.21,
-   "end": 59.6,
+   "start": 54.04,
+   "end": 62.43,
    "text": "It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_013",
-   "start": 60.2,
-   "end": 61.42,
+   "start": 63.03,
+   "end": 64.25,
    "text": "Will I need chemo?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_014",
-   "start": 62.02,
-   "end": 67.73,
+   "start": 64.85,
+   "end": 70.56,
    "text": "That depends on a few more results, and we'll go through all of it at that visit.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_015",
-   "start": 68.33,
-   "end": 69.52,
+   "start": 71.16,
+   "end": 72.35,
    "text": "Okay. Thank you.",
    "speaker": "B"
   }
  ],
  "usage": {
   "type": "duration",
-  "seconds": 70
+  "seconds": 73
  }
 }

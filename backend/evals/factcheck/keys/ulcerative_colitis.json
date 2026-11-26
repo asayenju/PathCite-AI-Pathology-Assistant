@@ -6,14 +6,6 @@
  "notice": "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22).",
  "keys": [
   {
-   "span": "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis",
-   "verdict": "accurate",
-   "issue": null,
-   "correct": "Chronic active colitis with this pattern on biopsy is consistent with ulcerative colitis.",
-   "source_hint": "Pathology report; ACG ulcerative colitis guideline",
-   "speaker": "doctor"
-  },
-  {
    "span": "Ulcerative colitis mostly affects your small intestine.",
    "verdict": "inaccurate",
    "issue": "Wrong location: ulcerative colitis affects the colon and rectum.",
@@ -22,9 +14,17 @@
    "speaker": "doctor"
   },
   {
-   "span": "There was no dysplasia in the samples.",
+   "span": "It's a long-term inflammatory condition, but most people manage it well with medication.",
+   "verdict": "accurate",
+   "issue": null,
+   "correct": "Ulcerative colitis is a chronic inflammatory bowel disease, and most people control it with medication such as mesalamine.",
+   "source_hint": "ACG ulcerative colitis guideline",
+   "speaker": "doctor"
+  },
+  {
+   "span": "Over many years, ulcerative colitis can raise the risk of colon cancer.",
    "verdict": "incomplete",
-   "issue": "Doesn't mention the future cancer risk or the need for surveillance.",
+   "issue": "Doesn't say that the risk is managed with regular surveillance colonoscopy.",
    "correct": "Long-standing ulcerative colitis increases colorectal cancer risk, so regular surveillance colonoscopy is recommended, usually starting about 8 years after symptoms begin.",
    "source_hint": "ACG ulcerative colitis guideline; SCENIC consensus",
    "speaker": "doctor"

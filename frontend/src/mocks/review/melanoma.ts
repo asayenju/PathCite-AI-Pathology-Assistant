@@ -42,7 +42,7 @@ export const melanoma: MockComment[] = [
   {
     id: 'mel-4',
     turn_id: 't0009',
-    quote: "It's a standard measurement pathologists use for melanoma.",
+    quote: 'Breast low thickness is a standard measurement pathologists use for melanoma.',
     verdict: 'incomplete',
     issue: "The patient asked what Breslow is, and the answer doesn't say what it measures or why it matters.",
     suggestion:
@@ -54,11 +54,11 @@ export const melanoma: MockComment[] = [
   {
     id: 'mel-5',
     turn_id: 't0011',
-    quote: "Next we'll remove a wider area of skin around the scar.",
+    quote: 'For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar.',
     verdict: 'incomplete',
     issue: 'For a melanoma of this thickness a sentinel lymph node biopsy is usually discussed, and it is not mentioned.',
     suggestion:
-      "Next we'll remove a wider area of skin around the scar. We'll also talk about checking the nearest lymph nodes with a sentinel lymph node biopsy.",
+      'For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar, and to discuss checking the nearest lymph nodes with a sentinel lymph node biopsy.',
     source: 'NCCN Guidelines: Melanoma: Cutaneous (wide excision and sentinel node biopsy)',
     clarification:
       'Guidelines recommend discussing and offering sentinel lymph node biopsy for melanomas thicker than about 0.8 mm. It is usually done at the same operation as the wider excision, so it belongs in this conversation.',

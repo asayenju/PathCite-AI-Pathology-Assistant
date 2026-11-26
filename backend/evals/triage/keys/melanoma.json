@@ -1,0 +1,95 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "melanoma",
+ "file": "transcripts/skin-blood/melanoma.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 28,
+   "quote": "Hello, thanks for coming in.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 29,
+   "end": 65,
+   "quote": "How's the spot on your back healing?",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 0,
+   "end": 14,
+   "quote": "That's normal.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 15,
+   "end": 100,
+   "quote": "I have the pathology report from the skin biopsy, and I want to go over it carefully.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 21,
+   "quote": "Yes, it's a melanoma.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 22,
+   "end": 83,
+   "quote": "Melanoma is a cancer of the pigment-making cells in the skin.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 36,
+   "quote": "The report gives a few measurements.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 37,
+   "end": 111,
+   "quote": "The Breslow thickness was 1.2 millimeters, which is how wide the spot was.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 77,
+   "quote": "Breast low thickness is a standard measurement pathologists use for melanoma.",
+   "label": "transcription",
+   "base_kind": "claim",
+   "wrong": "Breast low",
+   "intended": "Breslow",
+   "intended_quote": "Breslow thickness is a standard measurement pathologists use for melanoma."
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 106,
+   "quote": "For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 63,
+   "quote": "It will be a longer scar, but the surgeon will close it neatly.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 7,
+   "start": 0,
+   "end": 70,
+   "quote": "The surgery team will call you in the next week or two to schedule it.",
+   "label": "skip"
+  }
+ ]
+}

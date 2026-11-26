@@ -1,0 +1,95 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "ulcerative_colitis",
+ "file": "transcripts/gi/ulcerative_colitis.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 18,
+   "quote": "Hello, come on in.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 19,
+   "end": 50,
+   "quote": "How are the symptoms this week?",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 0,
+   "end": 34,
+   "quote": "I'm sorry, that sounds exhausting.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 35,
+   "end": 112,
+   "quote": "Your biopsy results from the colonoscopy came back, and they help explain it.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 82,
+   "quote": "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 55,
+   "quote": "Ulcerative colitis mostly affects your small intestine.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 88,
+   "quote": "It's a long-term inflammatory condition, but most people manage it well with medication.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 38,
+   "quote": "There was no dysplasia in the samples.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 39,
+   "end": 110,
+   "quote": "Over many years, ulcerative colitis can raise the risk of colon cancer.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 80,
+   "quote": "Dysplasia means precancerous changes in the lining cells, and there weren't any.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 7,
+   "start": 0,
+   "end": 99,
+   "quote": "We'll start you on a medication called mesa lamine and see you back in the clinic in about 8 weeks.",
+   "label": "transcription",
+   "base_kind": "skip",
+   "wrong": "mesa lamine",
+   "intended": "mesalamine",
+   "intended_quote": "We'll start you on a medication called mesalamine and see you back in the clinic in about 8 weeks."
+  },
+  {
+   "doctor_turn_index": 8,
+   "start": 0,
+   "end": 66,
+   "quote": "If the bleeding gets worse or you get a fever, call us right away.",
+   "label": "skip"
+  }
+ ]
+}

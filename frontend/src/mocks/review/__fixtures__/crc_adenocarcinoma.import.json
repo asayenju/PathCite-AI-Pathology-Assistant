@@ -1,13 +1,13 @@
 {
  "source": "deepgram",
  "language": "en",
- "duration_s": 88.94,
+ "duration_s": 94.18,
  "speakers": [
   {
    "id": "S1",
    "source_label": "speaker_0",
-   "word_count": 146,
-   "talk_time_s": 56.42,
+   "word_count": 158,
+   "talk_time_s": 61.66,
    "preview": [
     "Good morning, thanks for coming back in. Please, have a seat.",
     "That's completely understandable. We have the biopsy results from your colonoscopy, so let's go through them together."
@@ -304,7 +304,7 @@
    "speaker": "S1",
    "start": 18.48,
    "end": 26.36,
-   "text": "The growth in your sigmoid colon is an adenocarcinoma. That's a cancer that starts in the gland cells lining the colon.",
+   "text": "The growth in your sigmoid colin is an adenocarcinoma. That's a cancer that starts in the gland cells lining the colon.",
    "is_final": true,
    "words": [
     {
@@ -338,10 +338,10 @@
      "confidence": 0.52
     },
     {
-     "text": "colon",
+     "text": "colin",
      "start": 20.27,
      "end": 20.61,
-     "confidence": 0.89
+     "confidence": 0.41
     },
     {
      "text": "is",
@@ -434,7 +434,7 @@
      "confidence": 0.871
     }
    ],
-   "min_confidence": 0.52
+   "min_confidence": 0.41
   },
   {
    "id": "t0006",
@@ -1045,8 +1045,8 @@
    "id": "t0013",
    "speaker": "S1",
    "start": 64.66,
-   "end": 68.64,
-   "text": "Yes. We'll also test the tumor for mismatch repair proteins.",
+   "end": 73.88,
+   "text": "Yes. We'll also test the tumor for mismatch repair proteins. Mismatch repair testing is a check for Lynch syndrome, an inherited condition.",
    "is_final": true,
    "words": [
     {
@@ -1108,184 +1108,256 @@
      "start": 68.16,
      "end": 68.64,
      "confidence": 0.989
-    }
-   ],
-   "min_confidence": 0.869
-  },
-  {
-   "id": "t0014",
-   "speaker": "S2",
-   "start": 69.24,
-   "end": 71.71,
-   "text": "Alright. And what happens after that?",
-   "is_final": true,
-   "words": [
+    },
     {
-     "text": "Alright.",
-     "start": 69.24,
-     "end": 69.67,
+     "text": "Mismatch",
+     "start": 68.89,
+     "end": 69.37,
      "confidence": 0.912
     },
     {
-     "text": "And",
-     "start": 69.92,
-     "end": 70.18,
+     "text": "repair",
+     "start": 69.41,
+     "end": 69.8,
      "confidence": 0.874
     },
     {
-     "text": "what",
-     "start": 70.22,
-     "end": 70.52,
+     "text": "testing",
+     "start": 69.84,
+     "end": 70.27,
      "confidence": 0.9
     },
     {
-     "text": "happens",
-     "start": 70.56,
-     "end": 70.99,
+     "text": "is",
+     "start": 70.31,
+     "end": 70.52,
      "confidence": 0.941
     },
     {
-     "text": "after",
-     "start": 71.03,
-     "end": 71.37,
+     "text": "a",
+     "start": 70.56,
+     "end": 70.72,
      "confidence": 0.861
     },
     {
-     "text": "that?",
-     "start": 71.41,
-     "end": 71.71,
+     "text": "check",
+     "start": 70.76,
+     "end": 71.1,
      "confidence": 0.943
+    },
+    {
+     "text": "for",
+     "start": 71.14,
+     "end": 71.4,
+     "confidence": 0.869
+    },
+    {
+     "text": "Lynch",
+     "start": 71.44,
+     "end": 71.78,
+     "confidence": 0.879
+    },
+    {
+     "text": "syndrome,",
+     "start": 71.82,
+     "end": 72.3,
+     "confidence": 0.921
+    },
+    {
+     "text": "an",
+     "start": 72.55,
+     "end": 72.76,
+     "confidence": 0.912
+    },
+    {
+     "text": "inherited",
+     "start": 72.8,
+     "end": 73.32,
+     "confidence": 0.926
+    },
+    {
+     "text": "condition.",
+     "start": 73.36,
+     "end": 73.88,
+     "confidence": 0.908
     }
    ],
    "min_confidence": 0.861
   },
   {
+   "id": "t0014",
+   "speaker": "S2",
+   "start": 74.48,
+   "end": 76.95,
+   "text": "Alright. And what happens after that?",
+   "is_final": true,
+   "words": [
+    {
+     "text": "Alright.",
+     "start": 74.48,
+     "end": 74.91,
+     "confidence": 0.864
+    },
+    {
+     "text": "And",
+     "start": 75.16,
+     "end": 75.42,
+     "confidence": 0.989
+    },
+    {
+     "text": "what",
+     "start": 75.46,
+     "end": 75.76,
+     "confidence": 0.889
+    },
+    {
+     "text": "happens",
+     "start": 75.8,
+     "end": 76.23,
+     "confidence": 0.961
+    },
+    {
+     "text": "after",
+     "start": 76.27,
+     "end": 76.61,
+     "confidence": 0.907
+    },
+    {
+     "text": "that?",
+     "start": 76.65,
+     "end": 76.95,
+     "confidence": 0.901
+    }
+   ],
+   "min_confidence": 0.864
+  },
+  {
    "id": "t0015",
    "speaker": "S1",
-   "start": 72.31,
-   "end": 79.74,
+   "start": 77.55,
+   "end": 84.98,
    "text": "Once the scan is done, the surgeon and the oncologist will meet with you together to go over treatment options.",
    "is_final": true,
    "words": [
     {
      "text": "Once",
-     "start": 72.31,
-     "end": 72.61,
-     "confidence": 0.869
-    },
-    {
-     "text": "the",
-     "start": 72.65,
-     "end": 72.91,
-     "confidence": 0.879
-    },
-    {
-     "text": "scan",
-     "start": 72.95,
-     "end": 73.25,
-     "confidence": 0.921
-    },
-    {
-     "text": "is",
-     "start": 73.29,
-     "end": 73.5,
-     "confidence": 0.912
-    },
-    {
-     "text": "done,",
-     "start": 73.54,
-     "end": 73.84,
-     "confidence": 0.926
-    },
-    {
-     "text": "the",
-     "start": 74.09,
-     "end": 74.35,
-     "confidence": 0.908
-    },
-    {
-     "text": "surgeon",
-     "start": 74.39,
-     "end": 74.82,
-     "confidence": 0.864
-    },
-    {
-     "text": "and",
-     "start": 74.86,
-     "end": 75.12,
-     "confidence": 0.989
-    },
-    {
-     "text": "the",
-     "start": 75.16,
-     "end": 75.42,
-     "confidence": 0.889
-    },
-    {
-     "text": "oncologist",
-     "start": 75.46,
-     "end": 76.03,
-     "confidence": 0.961
-    },
-    {
-     "text": "will",
-     "start": 76.07,
-     "end": 76.37,
-     "confidence": 0.907
-    },
-    {
-     "text": "meet",
-     "start": 76.41,
-     "end": 76.71,
-     "confidence": 0.901
-    },
-    {
-     "text": "with",
-     "start": 76.75,
-     "end": 77.05,
+     "start": 77.55,
+     "end": 77.85,
      "confidence": 0.98
     },
     {
-     "text": "you",
-     "start": 77.09,
-     "end": 77.35,
+     "text": "the",
+     "start": 77.89,
+     "end": 78.15,
      "confidence": 0.86
     },
     {
-     "text": "together",
-     "start": 77.39,
-     "end": 77.87,
+     "text": "scan",
+     "start": 78.19,
+     "end": 78.49,
      "confidence": 0.95
     },
     {
-     "text": "to",
-     "start": 77.91,
-     "end": 78.12,
+     "text": "is",
+     "start": 78.53,
+     "end": 78.74,
      "confidence": 0.992
     },
     {
-     "text": "go",
-     "start": 78.16,
-     "end": 78.37,
+     "text": "done,",
+     "start": 78.78,
+     "end": 79.08,
      "confidence": 0.865
     },
     {
-     "text": "over",
-     "start": 78.41,
-     "end": 78.71,
+     "text": "the",
+     "start": 79.33,
+     "end": 79.59,
      "confidence": 0.926
     },
     {
-     "text": "treatment",
-     "start": 78.75,
-     "end": 79.27,
+     "text": "surgeon",
+     "start": 79.63,
+     "end": 80.06,
      "confidence": 0.884
     },
     {
-     "text": "options.",
-     "start": 79.31,
-     "end": 79.74,
+     "text": "and",
+     "start": 80.1,
+     "end": 80.36,
      "confidence": 0.986
+    },
+    {
+     "text": "the",
+     "start": 80.4,
+     "end": 80.66,
+     "confidence": 0.866
+    },
+    {
+     "text": "oncologist",
+     "start": 80.7,
+     "end": 81.27,
+     "confidence": 0.934
+    },
+    {
+     "text": "will",
+     "start": 81.31,
+     "end": 81.61,
+     "confidence": 0.878
+    },
+    {
+     "text": "meet",
+     "start": 81.65,
+     "end": 81.95,
+     "confidence": 0.929
+    },
+    {
+     "text": "with",
+     "start": 81.99,
+     "end": 82.29,
+     "confidence": 0.907
+    },
+    {
+     "text": "you",
+     "start": 82.33,
+     "end": 82.59,
+     "confidence": 0.975
+    },
+    {
+     "text": "together",
+     "start": 82.63,
+     "end": 83.11,
+     "confidence": 0.916
+    },
+    {
+     "text": "to",
+     "start": 83.15,
+     "end": 83.36,
+     "confidence": 0.976
+    },
+    {
+     "text": "go",
+     "start": 83.4,
+     "end": 83.61,
+     "confidence": 0.871
+    },
+    {
+     "text": "over",
+     "start": 83.65,
+     "end": 83.95,
+     "confidence": 0.894
+    },
+    {
+     "text": "treatment",
+     "start": 83.99,
+     "end": 84.51,
+     "confidence": 0.978
+    },
+    {
+     "text": "options.",
+     "start": 84.55,
+     "end": 84.98,
+     "confidence": 0.987
     }
    ],
    "min_confidence": 0.86
@@ -1293,150 +1365,150 @@
   {
    "id": "t0016",
    "speaker": "S2",
-   "start": 80.34,
-   "end": 83.08,
+   "start": 85.58,
+   "end": 88.32,
    "text": "Okay. Thank you for explaining all this.",
    "is_final": true,
    "words": [
     {
      "text": "Okay.",
-     "start": 80.34,
-     "end": 80.64,
-     "confidence": 0.866
+     "start": 85.58,
+     "end": 85.88,
+     "confidence": 0.942
     },
     {
      "text": "Thank",
-     "start": 80.89,
-     "end": 81.23,
-     "confidence": 0.934
+     "start": 86.13,
+     "end": 86.47,
+     "confidence": 0.958
     },
     {
      "text": "you",
-     "start": 81.27,
-     "end": 81.53,
-     "confidence": 0.878
+     "start": 86.51,
+     "end": 86.77,
+     "confidence": 0.939
     },
     {
      "text": "for",
-     "start": 81.57,
-     "end": 81.83,
-     "confidence": 0.929
+     "start": 86.81,
+     "end": 87.07,
+     "confidence": 0.865
     },
     {
      "text": "explaining",
-     "start": 81.87,
-     "end": 82.44,
-     "confidence": 0.907
+     "start": 87.11,
+     "end": 87.68,
+     "confidence": 0.911
     },
     {
      "text": "all",
-     "start": 82.48,
-     "end": 82.74,
-     "confidence": 0.975
+     "start": 87.72,
+     "end": 87.98,
+     "confidence": 0.916
     },
     {
      "text": "this.",
-     "start": 82.78,
-     "end": 83.08,
-     "confidence": 0.916
+     "start": 88.02,
+     "end": 88.32,
+     "confidence": 0.937
     }
    ],
-   "min_confidence": 0.866
+   "min_confidence": 0.865
   },
   {
    "id": "t0017",
    "speaker": "S1",
-   "start": 83.68,
-   "end": 88.44,
+   "start": 88.92,
+   "end": 93.68,
    "text": "Of course. The front desk will call you this week to book the scan.",
    "is_final": true,
    "words": [
     {
      "text": "Of",
-     "start": 83.68,
-     "end": 83.89,
-     "confidence": 0.976
-    },
-    {
-     "text": "course.",
-     "start": 83.93,
-     "end": 84.32,
-     "confidence": 0.871
-    },
-    {
-     "text": "The",
-     "start": 84.57,
-     "end": 84.83,
-     "confidence": 0.894
-    },
-    {
-     "text": "front",
-     "start": 84.87,
-     "end": 85.21,
-     "confidence": 0.978
-    },
-    {
-     "text": "desk",
-     "start": 85.25,
-     "end": 85.55,
-     "confidence": 0.987
-    },
-    {
-     "text": "will",
-     "start": 85.59,
-     "end": 85.89,
-     "confidence": 0.942
-    },
-    {
-     "text": "call",
-     "start": 85.93,
-     "end": 86.23,
-     "confidence": 0.958
-    },
-    {
-     "text": "you",
-     "start": 86.27,
-     "end": 86.53,
-     "confidence": 0.939
-    },
-    {
-     "text": "this",
-     "start": 86.57,
-     "end": 86.87,
-     "confidence": 0.865
-    },
-    {
-     "text": "week",
-     "start": 86.91,
-     "end": 87.21,
-     "confidence": 0.911
-    },
-    {
-     "text": "to",
-     "start": 87.25,
-     "end": 87.46,
-     "confidence": 0.916
-    },
-    {
-     "text": "book",
-     "start": 87.5,
-     "end": 87.8,
-     "confidence": 0.937
-    },
-    {
-     "text": "the",
-     "start": 87.84,
-     "end": 88.1,
+     "start": 88.92,
+     "end": 89.13,
      "confidence": 0.985
     },
     {
-     "text": "scan.",
-     "start": 88.14,
-     "end": 88.44,
+     "text": "course.",
+     "start": 89.17,
+     "end": 89.56,
      "confidence": 0.926
+    },
+    {
+     "text": "The",
+     "start": 89.81,
+     "end": 90.07,
+     "confidence": 0.943
+    },
+    {
+     "text": "front",
+     "start": 90.11,
+     "end": 90.45,
+     "confidence": 0.979
+    },
+    {
+     "text": "desk",
+     "start": 90.49,
+     "end": 90.79,
+     "confidence": 0.874
+    },
+    {
+     "text": "will",
+     "start": 90.83,
+     "end": 91.13,
+     "confidence": 0.93
+    },
+    {
+     "text": "call",
+     "start": 91.17,
+     "end": 91.47,
+     "confidence": 0.927
+    },
+    {
+     "text": "you",
+     "start": 91.51,
+     "end": 91.77,
+     "confidence": 0.926
+    },
+    {
+     "text": "this",
+     "start": 91.81,
+     "end": 92.11,
+     "confidence": 0.903
+    },
+    {
+     "text": "week",
+     "start": 92.15,
+     "end": 92.45,
+     "confidence": 0.926
+    },
+    {
+     "text": "to",
+     "start": 92.49,
+     "end": 92.7,
+     "confidence": 0.919
+    },
+    {
+     "text": "book",
+     "start": 92.74,
+     "end": 93.04,
+     "confidence": 0.943
+    },
+    {
+     "text": "the",
+     "start": 93.08,
+     "end": 93.34,
+     "confidence": 0.931
+    },
+    {
+     "text": "scan.",
+     "start": 93.38,
+     "end": 93.68,
+     "confidence": 0.977
     }
    ],
-   "min_confidence": 0.865
+   "min_confidence": 0.874
   }
  ],
  "warnings": [],

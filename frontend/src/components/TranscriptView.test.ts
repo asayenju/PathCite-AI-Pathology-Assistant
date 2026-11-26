@@ -181,14 +181,14 @@ describe('TranscriptView highlights', () => {
   })
 
   it('keeps the low-confidence underline inside a highlight', () => {
-    // crc-1 is on t0005; put an issue over the low-confidence "sigmoid" there.
+    // crc-1 is on t0005; put an issue over the low-confidence "sigmoid" and the planted "colin" there.
     const turn = crc.turns.find((t) => t.id === 't0005')!
-    const a = anchorComment(turn, 'your sigmoid colon')!
+    const a = anchorComment(turn, 'your sigmoid colin')!
     const comment: ReviewThread = {
       ...crcComments[1]!,
       id: 'x-1',
       turn_id: 't0005',
-      quote: 'your sigmoid colon',
+      quote: 'your sigmoid colin',
       start: a.start,
       end: a.end,
     }
@@ -197,7 +197,11 @@ describe('TranscriptView highlights', () => {
     expect(mark.element.textContent).toBe('your ')
     // Spacing survives the split: the paragraph reads as the turn text plus screen-reader notes.
     const para = w.get('[data-testid="turn-t0005"] p.leading-relaxed').element.textContent
-    expect(para).toBe(turn.text.replace('sigmoid', 'sigmoid (transcription confidence 52%)').replace('colon ', 'colon (inaccurate statement) '))
+    expect(para).toBe(
+      turn.text
+        .replace('sigmoid', 'sigmoid (transcription confidence 52%)')
+        .replace('colin ', 'colin (transcription confidence 41%) (inaccurate statement) '),
+    )
     const low = w.get('[data-testid="turn-t0005"] [data-testid="low-confidence-word"]')
     expect(low.text()).toContain('sigmoid')
     expect(low.text()).toContain('transcription confidence 52%')

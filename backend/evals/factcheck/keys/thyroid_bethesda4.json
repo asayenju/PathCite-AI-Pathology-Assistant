@@ -14,7 +14,7 @@
    "speaker": "doctor"
   },
   {
-   "span": "That means the needle test shows it's cancer.",
+   "span": "A follicular neoplasm on a needle test means it's cancer.",
    "verdict": "inaccurate",
    "issue": "Bethesda IV is not a cancer diagnosis.",
    "correct": "Bethesda IV means follicular neoplasm. A needle sample can't tell a benign follicular adenoma from a carcinoma, because that needs the whole capsule examined after surgery. The cancer risk is roughly a quarter to a third.",
@@ -22,7 +22,7 @@
    "speaker": "doctor"
   },
   {
-   "span": "The next step is surgery to take out half of your thyroid.",
+   "span": "For a Bethesda 4 nodule, the usual next step is surgery to take out half of the thyroid.",
    "verdict": "incomplete",
    "issue": "Omits molecular testing as an option.",
    "correct": "Molecular testing of the FNA sample is an option that can refine the risk and sometimes avoid surgery. Lobectomy also gives the diagnosis.",

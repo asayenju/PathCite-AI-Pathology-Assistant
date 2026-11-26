@@ -1,7 +1,7 @@
 {
  "task": "transcribe",
- "duration": 56.89,
- "text": "Good afternoon, thanks for coming in. Your wife is welcome to stay. Thanks. We've both been waiting on this. The prostate biopsy did find cancer in a few of the samples. Okay. How bad is it? The pathologist gave it a Gleason score of 3 plus 4 equals 7, which is Grade Group 2. Gleason, okay. My brother had a Gleason 6, I think. A Gleason 7 is the most aggressive kind there is. Oh. Oh, wow. So what do we do? The treatment for this is surgery to remove the prostate. Um, would that be soon? I'll refer you to a urologist and an oncologist to talk through the details. Okay. Can my wife come to those appointments too? Absolutely, and bring any questions you have written down. Okay. Thank you, doctor.",
+ "duration": 59.24,
+ "text": "Good afternoon, thanks for coming in. Your wife is welcome to stay. Thanks. We've both been waiting on this. The prostrate biopsy did find cancer in a few of the samples. Okay. How bad is it? The pathologist gave it a Gleason score of 3 plus 4 equals 7, which is Grade Group 2. Gleason, okay. My brother had a Gleason 6, I think. A Gleason 7 is the most aggressive kind there is. Oh. Oh, wow. So what do we do? For this grade of prostate cancer, the standard treatment is surgery to remove the prostate. Um, would that be soon? I'll refer you to a urologist and an oncologist to talk through the details. Okay. Can my wife come to those appointments too? Absolutely, and bring any questions you have written down. Okay. Thank you, doctor.",
  "segments": [
   {
    "type": "transcript.text.segment",
@@ -23,101 +23,101 @@
    "type": "transcript.text.segment",
    "id": "seg_002",
    "start": 8.9,
-   "end": 12.95,
-   "text": "The prostate biopsy did find cancer in a few of the samples.",
+   "end": 12.99,
+   "text": "The prostrate biopsy did find cancer in a few of the samples.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_003",
-   "start": 13.55,
-   "end": 15.16,
+   "start": 13.59,
+   "end": 15.2,
    "text": "Okay. How bad is it?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_004",
-   "start": 15.76,
-   "end": 21.73,
+   "start": 15.8,
+   "end": 21.77,
    "text": "The pathologist gave it a Gleason score of 3 plus 4 equals 7, which is Grade Group 2.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_005",
-   "start": 22.33,
-   "end": 26.2,
+   "start": 22.37,
+   "end": 26.24,
    "text": "Gleason, okay. My brother had a Gleason 6, I think.",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_006",
-   "start": 26.8,
-   "end": 30.1,
+   "start": 26.84,
+   "end": 30.14,
    "text": "A Gleason 7 is the most aggressive kind there is.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_007",
-   "start": 30.7,
-   "end": 33.43,
+   "start": 30.74,
+   "end": 33.47,
    "text": "Oh. Oh, wow. So what do we do?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_008",
-   "start": 34.03,
-   "end": 37.71,
-   "text": "The treatment for this is surgery to remove the prostate.",
+   "start": 34.07,
+   "end": 40.06,
+   "text": "For this grade of prostate cancer, the standard treatment is surgery to remove the prostate.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_009",
-   "start": 38.31,
-   "end": 40.04,
+   "start": 40.66,
+   "end": 42.39,
    "text": "Um, would that be soon?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_010",
-   "start": 40.64,
-   "end": 45.62,
+   "start": 42.99,
+   "end": 47.97,
    "text": "I'll refer you to a urologist and an oncologist to talk through the details.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_011",
-   "start": 46.22,
-   "end": 49.59,
+   "start": 48.57,
+   "end": 51.94,
    "text": "Okay. Can my wife come to those appointments too?",
    "speaker": "B"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_012",
-   "start": 50.19,
-   "end": 53.96,
+   "start": 52.54,
+   "end": 56.31,
    "text": "Absolutely, and bring any questions you have written down.",
    "speaker": "A"
   },
   {
    "type": "transcript.text.segment",
    "id": "seg_013",
-   "start": 54.56,
-   "end": 56.39,
+   "start": 56.91,
+   "end": 58.74,
    "text": "Okay. Thank you, doctor.",
    "speaker": "B"
   }
  ],
  "usage": {
   "type": "duration",
-  "seconds": 57
+  "seconds": 59
  }
 }

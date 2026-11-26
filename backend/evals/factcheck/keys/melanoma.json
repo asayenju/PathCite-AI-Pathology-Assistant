@@ -22,7 +22,7 @@
    "speaker": "doctor"
   },
   {
-   "span": "Next we'll remove a wider area of skin around the scar.",
+   "span": "For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar.",
    "verdict": "incomplete",
    "issue": "Misses lymph node evaluation and the margin size.",
    "correct": "For a melanoma thicker than 0.8 mm a sentinel lymph node biopsy is usually discussed. Wide excision margins are typically 1 to 2 cm for this thickness.",

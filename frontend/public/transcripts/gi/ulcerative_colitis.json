@@ -817,8 +817,8 @@
   },
   {
    "start": 49.49,
-   "end": 51.96,
-   "text": " There was no dysplasia in the samples.",
+   "end": 56.9,
+   "text": " There was no dysplasia in the samples. Over many years, ulcerative colitis can raise the risk of colon cancer.",
    "words": [
     {
      "word": "There",
@@ -868,310 +868,401 @@
      "end": 51.96,
      "score": 0.958,
      "speaker": "SPEAKER_00"
-    }
-   ],
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "start": 52.56,
-   "end": 53.51,
-   "text": " What's dysplasia?",
-   "words": [
-    {
-     "word": "What's",
-     "start": 52.56,
-     "end": 52.95,
-     "score": 0.907,
-     "speaker": "SPEAKER_01"
     },
     {
-     "word": "dysplasia?",
-     "start": 52.99,
-     "end": 53.51,
-     "score": 0.949,
-     "speaker": "SPEAKER_01"
-    }
-   ],
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "start": 54.11,
-   "end": 59.2,
-   "text": " Dysplasia means precancerous changes in the lining cells, and there weren't any.",
-   "words": [
+     "word": "Over",
+     "start": 52.21,
+     "end": 52.51,
+     "score": 0.907,
+     "speaker": "SPEAKER_00"
+    },
     {
-     "word": "Dysplasia",
-     "start": 54.11,
-     "end": 54.63,
+     "word": "many",
+     "start": 52.55,
+     "end": 52.85,
+     "score": 0.949,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "years,",
+     "start": 52.89,
+     "end": 53.23,
      "score": 0.891,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "means",
-     "start": 54.67,
-     "end": 55.01,
+     "word": "ulcerative",
+     "start": 53.48,
+     "end": 54.05,
      "score": 0.97,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "precancerous",
-     "start": 55.05,
-     "end": 55.71,
-     "score": 0.969,
+     "word": "colitis",
+     "start": 54.09,
+     "end": 54.52,
+     "score": 0.49,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "changes",
-     "start": 55.75,
-     "end": 56.18,
+     "word": "can",
+     "start": 54.56,
+     "end": 54.82,
      "score": 0.903,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "in",
-     "start": 56.22,
-     "end": 56.43,
+     "word": "raise",
+     "start": 54.86,
+     "end": 55.2,
      "score": 0.983,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "the",
-     "start": 56.47,
-     "end": 56.73,
+     "start": 55.24,
+     "end": 55.5,
      "score": 0.948,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "lining",
-     "start": 56.77,
-     "end": 57.16,
+     "word": "risk",
+     "start": 55.54,
+     "end": 55.84,
      "score": 0.936,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "cells,",
-     "start": 57.2,
-     "end": 57.54,
+     "word": "of",
+     "start": 55.88,
+     "end": 56.09,
      "score": 0.931,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "and",
-     "start": 57.79,
-     "end": 58.05,
+     "word": "colon",
+     "start": 56.13,
+     "end": 56.47,
      "score": 0.937,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "there",
-     "start": 58.09,
-     "end": 58.43,
+     "word": "cancer.",
+     "start": 56.51,
+     "end": 56.9,
      "score": 0.969,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "weren't",
-     "start": 58.47,
-     "end": 58.9,
-     "score": 0.961,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "any.",
-     "start": 58.94,
-     "end": 59.2,
-     "score": 0.924,
      "speaker": "SPEAKER_00"
     }
    ],
    "speaker": "SPEAKER_00"
   },
   {
-   "start": 59.8,
-   "end": 62.45,
-   "text": " Okay, good. So what do I do now?",
+   "start": 57.5,
+   "end": 58.45,
+   "text": " What's dysplasia?",
    "words": [
     {
-     "word": "Okay,",
-     "start": 59.8,
-     "end": 60.1,
-     "score": 0.882,
+     "word": "What's",
+     "start": 57.5,
+     "end": 57.89,
+     "score": 0.961,
      "speaker": "SPEAKER_01"
     },
     {
-     "word": "good.",
-     "start": 60.35,
-     "end": 60.65,
-     "score": 0.943,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "So",
-     "start": 60.9,
-     "end": 61.11,
-     "score": 0.903,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "what",
-     "start": 61.15,
-     "end": 61.45,
-     "score": 0.866,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "do",
-     "start": 61.49,
-     "end": 61.7,
-     "score": 0.885,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "I",
-     "start": 61.74,
-     "end": 61.9,
-     "score": 0.926,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "do",
-     "start": 61.94,
-     "end": 62.15,
-     "score": 0.875,
-     "speaker": "SPEAKER_01"
-    },
-    {
-     "word": "now?",
-     "start": 62.19,
-     "end": 62.45,
-     "score": 0.927,
+     "word": "dysplasia?",
+     "start": 57.93,
+     "end": 58.45,
+     "score": 0.924,
      "speaker": "SPEAKER_01"
     }
    ],
    "speaker": "SPEAKER_01"
   },
   {
-   "start": 63.05,
-   "end": 69.6,
-   "text": " We'll start you on a medication called mesalamine and see you back in the clinic in about 8 weeks.",
+   "start": 59.05,
+   "end": 64.14,
+   "text": " Dysplasia means precancerous changes in the lining cells, and there weren't any.",
    "words": [
     {
-     "word": "We'll",
-     "start": 63.05,
-     "end": 63.39,
-     "score": 0.94,
+     "word": "Dysplasia",
+     "start": 59.05,
+     "end": 59.57,
+     "score": 0.882,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "start",
-     "start": 63.43,
-     "end": 63.77,
-     "score": 0.868,
+     "word": "means",
+     "start": 59.61,
+     "end": 59.95,
+     "score": 0.943,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "you",
-     "start": 63.81,
-     "end": 64.07,
-     "score": 0.947,
+     "word": "precancerous",
+     "start": 59.99,
+     "end": 60.65,
+     "score": 0.903,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "on",
-     "start": 64.11,
-     "end": 64.32,
-     "score": 0.964,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "a",
-     "start": 64.36,
-     "end": 64.52,
-     "score": 0.923,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "medication",
-     "start": 64.56,
-     "end": 65.13,
-     "score": 0.986,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "called",
-     "start": 65.17,
-     "end": 65.56,
-     "score": 0.963,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "mesalamine",
-     "start": 65.6,
-     "end": 66.17,
-     "score": 0.981,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "and",
-     "start": 66.21,
-     "end": 66.47,
-     "score": 0.935,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "see",
-     "start": 66.51,
-     "end": 66.77,
-     "score": 0.929,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "you",
-     "start": 66.81,
-     "end": 67.07,
-     "score": 0.932,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "back",
-     "start": 67.11,
-     "end": 67.41,
-     "score": 0.938,
+     "word": "changes",
+     "start": 60.69,
+     "end": 61.12,
+     "score": 0.866,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "in",
-     "start": 67.45,
-     "end": 67.66,
-     "score": 0.896,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "the",
-     "start": 67.7,
-     "end": 67.96,
+     "start": 61.16,
+     "end": 61.37,
      "score": 0.885,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "clinic",
-     "start": 68.0,
-     "end": 68.39,
+     "word": "the",
+     "start": 61.41,
+     "end": 61.67,
+     "score": 0.926,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lining",
+     "start": 61.71,
+     "end": 62.1,
+     "score": 0.875,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cells,",
+     "start": 62.14,
+     "end": 62.48,
+     "score": 0.927,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 62.73,
+     "end": 62.99,
+     "score": 0.94,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "there",
+     "start": 63.03,
+     "end": 63.37,
+     "score": 0.868,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "weren't",
+     "start": 63.41,
+     "end": 63.84,
+     "score": 0.947,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "any.",
+     "start": 63.88,
+     "end": 64.14,
+     "score": 0.964,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 64.74,
+   "end": 67.39,
+   "text": " Okay, good. So what do I do now?",
+   "words": [
+    {
+     "word": "Okay,",
+     "start": 64.74,
+     "end": 65.04,
+     "score": 0.923,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "good.",
+     "start": 65.29,
+     "end": 65.59,
+     "score": 0.986,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "So",
+     "start": 65.84,
+     "end": 66.05,
+     "score": 0.963,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "what",
+     "start": 66.09,
+     "end": 66.39,
+     "score": 0.981,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "do",
+     "start": 66.43,
+     "end": 66.64,
+     "score": 0.935,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "I",
+     "start": 66.68,
+     "end": 66.84,
+     "score": 0.929,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "do",
+     "start": 66.88,
+     "end": 67.09,
+     "score": 0.932,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "now?",
+     "start": 67.13,
+     "end": 67.39,
+     "score": 0.938,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 67.99,
+   "end": 74.7,
+   "text": " We'll start you on a medication called mesa lamine and see you back in the clinic in about 8 weeks.",
+   "words": [
+    {
+     "word": "We'll",
+     "start": 67.99,
+     "end": 68.33,
+     "score": 0.896,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "start",
+     "start": 68.37,
+     "end": 68.71,
+     "score": 0.885,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "you",
+     "start": 68.75,
+     "end": 69.01,
      "score": 0.985,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "in",
-     "start": 68.43,
-     "end": 68.64,
+     "word": "on",
+     "start": 69.05,
+     "end": 69.26,
      "score": 0.877,
      "speaker": "SPEAKER_00"
     },
     {
-     "word": "about",
-     "start": 68.68,
-     "end": 69.02,
+     "word": "a",
+     "start": 69.3,
+     "end": 69.46,
      "score": 0.966,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "medication",
+     "start": 69.5,
+     "end": 70.07,
+     "score": 0.974,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "called",
+     "start": 70.11,
+     "end": 70.5,
+     "score": 0.916,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "mesa",
+     "start": 70.54,
+     "end": 70.84,
+     "score": 0.36,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "lamine",
+     "start": 70.88,
+     "end": 71.27,
+     "score": 0.36,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 71.31,
+     "end": 71.57,
+     "score": 0.904,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "see",
+     "start": 71.61,
+     "end": 71.87,
+     "score": 0.963,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "you",
+     "start": 71.91,
+     "end": 72.17,
+     "score": 0.97,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "back",
+     "start": 72.21,
+     "end": 72.51,
+     "score": 0.957,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in",
+     "start": 72.55,
+     "end": 72.76,
+     "score": 0.897,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 72.8,
+     "end": 73.06,
+     "score": 0.883,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "clinic",
+     "start": 73.1,
+     "end": 73.49,
+     "score": 0.915,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in",
+     "start": 73.53,
+     "end": 73.74,
+     "score": 0.922,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "about",
+     "start": 73.78,
+     "end": 74.12,
+     "score": 0.979,
      "speaker": "SPEAKER_00"
     },
     {
@@ -1179,137 +1270,137 @@
     },
     {
      "word": "weeks.",
-     "start": 69.26,
-     "end": 69.6,
-     "score": 0.916,
+     "start": 74.36,
+     "end": 74.7,
+     "score": 0.959,
      "speaker": "SPEAKER_00"
     }
    ],
    "speaker": "SPEAKER_00"
   },
   {
-   "start": 70.2,
-   "end": 71.14,
+   "start": 75.3,
+   "end": 76.24,
    "text": " Okay. Thanks.",
    "words": [
     {
      "word": "Okay.",
-     "start": 70.2,
-     "end": 70.5,
-     "score": 0.877,
+     "start": 75.3,
+     "end": 75.6,
+     "score": 0.966,
      "speaker": "SPEAKER_01"
     },
     {
      "word": "Thanks.",
-     "start": 70.75,
-     "end": 71.14,
-     "score": 0.916,
+     "start": 75.85,
+     "end": 76.24,
+     "score": 0.886,
      "speaker": "SPEAKER_01"
     }
    ],
    "speaker": "SPEAKER_01"
   },
   {
-   "start": 71.74,
-   "end": 76.44,
+   "start": 76.84,
+   "end": 81.54,
    "text": " If the bleeding gets worse or you get a fever, call us right away.",
    "words": [
     {
      "word": "If",
-     "start": 71.74,
-     "end": 71.95,
-     "score": 0.904,
+     "start": 76.84,
+     "end": 77.05,
+     "score": 0.941,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "the",
-     "start": 71.99,
-     "end": 72.25,
-     "score": 0.963,
+     "start": 77.09,
+     "end": 77.35,
+     "score": 0.92,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "bleeding",
-     "start": 72.29,
-     "end": 72.77,
-     "score": 0.97,
+     "start": 77.39,
+     "end": 77.87,
+     "score": 0.946,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "gets",
-     "start": 72.81,
-     "end": 73.11,
-     "score": 0.957,
+     "start": 77.91,
+     "end": 78.21,
+     "score": 0.888,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "worse",
-     "start": 73.15,
-     "end": 73.49,
-     "score": 0.897,
+     "start": 78.25,
+     "end": 78.59,
+     "score": 0.894,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "or",
-     "start": 73.53,
-     "end": 73.74,
-     "score": 0.883,
+     "start": 78.63,
+     "end": 78.84,
+     "score": 0.907,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "you",
-     "start": 73.78,
-     "end": 74.04,
-     "score": 0.915,
+     "start": 78.88,
+     "end": 79.14,
+     "score": 0.944,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "get",
-     "start": 74.08,
-     "end": 74.34,
-     "score": 0.922,
+     "start": 79.18,
+     "end": 79.44,
+     "score": 0.943,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "a",
-     "start": 74.38,
-     "end": 74.54,
-     "score": 0.979,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "fever,",
-     "start": 74.58,
-     "end": 74.92,
-     "score": 0.993,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "call",
-     "start": 75.17,
-     "end": 75.47,
-     "score": 0.959,
-     "speaker": "SPEAKER_00"
-    },
-    {
-     "word": "us",
-     "start": 75.51,
-     "end": 75.72,
+     "start": 79.48,
+     "end": 79.64,
      "score": 0.966,
      "speaker": "SPEAKER_00"
     },
     {
+     "word": "fever,",
+     "start": 79.68,
+     "end": 80.02,
+     "score": 0.923,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "call",
+     "start": 80.27,
+     "end": 80.57,
+     "score": 0.909,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "us",
+     "start": 80.61,
+     "end": 80.82,
+     "score": 0.949,
+     "speaker": "SPEAKER_00"
+    },
+    {
      "word": "right",
-     "start": 75.76,
-     "end": 76.1,
-     "score": 0.886,
+     "start": 80.86,
+     "end": 81.2,
+     "score": 0.948,
      "speaker": "SPEAKER_00"
     },
     {
      "word": "away.",
-     "start": 76.14,
-     "end": 76.44,
-     "score": 0.941,
+     "start": 81.24,
+     "end": 81.54,
+     "score": 0.933,
      "speaker": "SPEAKER_00"
     }
    ],
@@ -2102,276 +2193,367 @@
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "What's",
-   "start": 52.56,
-   "end": 52.95,
+   "word": "Over",
+   "start": 52.21,
+   "end": 52.51,
    "score": 0.907,
-   "speaker": "SPEAKER_01"
+   "speaker": "SPEAKER_00"
   },
   {
-   "word": "dysplasia?",
-   "start": 52.99,
-   "end": 53.51,
+   "word": "many",
+   "start": 52.55,
+   "end": 52.85,
    "score": 0.949,
-   "speaker": "SPEAKER_01"
+   "speaker": "SPEAKER_00"
   },
   {
-   "word": "Dysplasia",
-   "start": 54.11,
-   "end": 54.63,
+   "word": "years,",
+   "start": 52.89,
+   "end": 53.23,
    "score": 0.891,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "means",
-   "start": 54.67,
-   "end": 55.01,
+   "word": "ulcerative",
+   "start": 53.48,
+   "end": 54.05,
    "score": 0.97,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "precancerous",
-   "start": 55.05,
-   "end": 55.71,
-   "score": 0.969,
+   "word": "colitis",
+   "start": 54.09,
+   "end": 54.52,
+   "score": 0.49,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "changes",
-   "start": 55.75,
-   "end": 56.18,
+   "word": "can",
+   "start": 54.56,
+   "end": 54.82,
    "score": 0.903,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "in",
-   "start": 56.22,
-   "end": 56.43,
+   "word": "raise",
+   "start": 54.86,
+   "end": 55.2,
    "score": 0.983,
    "speaker": "SPEAKER_00"
   },
   {
    "word": "the",
-   "start": 56.47,
-   "end": 56.73,
+   "start": 55.24,
+   "end": 55.5,
    "score": 0.948,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "lining",
-   "start": 56.77,
-   "end": 57.16,
+   "word": "risk",
+   "start": 55.54,
+   "end": 55.84,
    "score": 0.936,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "cells,",
-   "start": 57.2,
-   "end": 57.54,
+   "word": "of",
+   "start": 55.88,
+   "end": 56.09,
    "score": 0.931,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "and",
-   "start": 57.79,
-   "end": 58.05,
+   "word": "colon",
+   "start": 56.13,
+   "end": 56.47,
    "score": 0.937,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "there",
-   "start": 58.09,
-   "end": 58.43,
+   "word": "cancer.",
+   "start": 56.51,
+   "end": 56.9,
    "score": 0.969,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "weren't",
-   "start": 58.47,
-   "end": 58.9,
+   "word": "What's",
+   "start": 57.5,
+   "end": 57.89,
    "score": 0.961,
-   "speaker": "SPEAKER_00"
+   "speaker": "SPEAKER_01"
   },
   {
-   "word": "any.",
-   "start": 58.94,
-   "end": 59.2,
+   "word": "dysplasia?",
+   "start": 57.93,
+   "end": 58.45,
    "score": 0.924,
-   "speaker": "SPEAKER_00"
+   "speaker": "SPEAKER_01"
   },
   {
-   "word": "Okay,",
-   "start": 59.8,
-   "end": 60.1,
+   "word": "Dysplasia",
+   "start": 59.05,
+   "end": 59.57,
    "score": 0.882,
-   "speaker": "SPEAKER_01"
+   "speaker": "SPEAKER_00"
   },
   {
-   "word": "good.",
-   "start": 60.35,
-   "end": 60.65,
+   "word": "means",
+   "start": 59.61,
+   "end": 59.95,
    "score": 0.943,
-   "speaker": "SPEAKER_01"
+   "speaker": "SPEAKER_00"
   },
   {
-   "word": "So",
-   "start": 60.9,
-   "end": 61.11,
+   "word": "precancerous",
+   "start": 59.99,
+   "end": 60.65,
    "score": 0.903,
-   "speaker": "SPEAKER_01"
+   "speaker": "SPEAKER_00"
   },
   {
-   "word": "what",
-   "start": 61.15,
-   "end": 61.45,
+   "word": "changes",
+   "start": 60.69,
+   "end": 61.12,
    "score": 0.866,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "do",
-   "start": 61.49,
-   "end": 61.7,
-   "score": 0.885,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "I",
-   "start": 61.74,
-   "end": 61.9,
-   "score": 0.926,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "do",
-   "start": 61.94,
-   "end": 62.15,
-   "score": 0.875,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "now?",
-   "start": 62.19,
-   "end": 62.45,
-   "score": 0.927,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "We'll",
-   "start": 63.05,
-   "end": 63.39,
-   "score": 0.94,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "start",
-   "start": 63.43,
-   "end": 63.77,
-   "score": 0.868,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "you",
-   "start": 63.81,
-   "end": 64.07,
-   "score": 0.947,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "on",
-   "start": 64.11,
-   "end": 64.32,
-   "score": 0.964,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "a",
-   "start": 64.36,
-   "end": 64.52,
-   "score": 0.923,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "medication",
-   "start": 64.56,
-   "end": 65.13,
-   "score": 0.986,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "called",
-   "start": 65.17,
-   "end": 65.56,
-   "score": 0.963,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "mesalamine",
-   "start": 65.6,
-   "end": 66.17,
-   "score": 0.981,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "and",
-   "start": 66.21,
-   "end": 66.47,
-   "score": 0.935,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "see",
-   "start": 66.51,
-   "end": 66.77,
-   "score": 0.929,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "you",
-   "start": 66.81,
-   "end": 67.07,
-   "score": 0.932,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "back",
-   "start": 67.11,
-   "end": 67.41,
-   "score": 0.938,
    "speaker": "SPEAKER_00"
   },
   {
    "word": "in",
-   "start": 67.45,
-   "end": 67.66,
-   "score": 0.896,
+   "start": 61.16,
+   "end": 61.37,
+   "score": 0.885,
    "speaker": "SPEAKER_00"
   },
   {
    "word": "the",
-   "start": 67.7,
-   "end": 67.96,
+   "start": 61.41,
+   "end": 61.67,
+   "score": 0.926,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lining",
+   "start": 61.71,
+   "end": 62.1,
+   "score": 0.875,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cells,",
+   "start": 62.14,
+   "end": 62.48,
+   "score": 0.927,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 62.73,
+   "end": 62.99,
+   "score": 0.94,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "there",
+   "start": 63.03,
+   "end": 63.37,
+   "score": 0.868,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "weren't",
+   "start": 63.41,
+   "end": 63.84,
+   "score": 0.947,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "any.",
+   "start": 63.88,
+   "end": 64.14,
+   "score": 0.964,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Okay,",
+   "start": 64.74,
+   "end": 65.04,
+   "score": 0.923,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "good.",
+   "start": 65.29,
+   "end": 65.59,
+   "score": 0.986,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "So",
+   "start": 65.84,
+   "end": 66.05,
+   "score": 0.963,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "what",
+   "start": 66.09,
+   "end": 66.39,
+   "score": 0.981,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "do",
+   "start": 66.43,
+   "end": 66.64,
+   "score": 0.935,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "I",
+   "start": 66.68,
+   "end": 66.84,
+   "score": 0.929,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "do",
+   "start": 66.88,
+   "end": 67.09,
+   "score": 0.932,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "now?",
+   "start": 67.13,
+   "end": 67.39,
+   "score": 0.938,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "We'll",
+   "start": 67.99,
+   "end": 68.33,
+   "score": 0.896,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "start",
+   "start": 68.37,
+   "end": 68.71,
    "score": 0.885,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "clinic",
-   "start": 68.0,
-   "end": 68.39,
+   "word": "you",
+   "start": 68.75,
+   "end": 69.01,
    "score": 0.985,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "in",
-   "start": 68.43,
-   "end": 68.64,
+   "word": "on",
+   "start": 69.05,
+   "end": 69.26,
    "score": 0.877,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "about",
-   "start": 68.68,
-   "end": 69.02,
+   "word": "a",
+   "start": 69.3,
+   "end": 69.46,
    "score": 0.966,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "medication",
+   "start": 69.5,
+   "end": 70.07,
+   "score": 0.974,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "called",
+   "start": 70.11,
+   "end": 70.5,
+   "score": 0.916,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "mesa",
+   "start": 70.54,
+   "end": 70.84,
+   "score": 0.36,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "lamine",
+   "start": 70.88,
+   "end": 71.27,
+   "score": 0.36,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 71.31,
+   "end": 71.57,
+   "score": 0.904,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "see",
+   "start": 71.61,
+   "end": 71.87,
+   "score": 0.963,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "you",
+   "start": 71.91,
+   "end": 72.17,
+   "score": 0.97,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "back",
+   "start": 72.21,
+   "end": 72.51,
+   "score": 0.957,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in",
+   "start": 72.55,
+   "end": 72.76,
+   "score": 0.897,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 72.8,
+   "end": 73.06,
+   "score": 0.883,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "clinic",
+   "start": 73.1,
+   "end": 73.49,
+   "score": 0.915,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in",
+   "start": 73.53,
+   "end": 73.74,
+   "score": 0.922,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "about",
+   "start": 73.78,
+   "end": 74.12,
+   "score": 0.979,
    "speaker": "SPEAKER_00"
   },
   {
@@ -2379,121 +2561,121 @@
   },
   {
    "word": "weeks.",
-   "start": 69.26,
-   "end": 69.6,
-   "score": 0.916,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "Okay.",
-   "start": 70.2,
-   "end": 70.5,
-   "score": 0.877,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "Thanks.",
-   "start": 70.75,
-   "end": 71.14,
-   "score": 0.916,
-   "speaker": "SPEAKER_01"
-  },
-  {
-   "word": "If",
-   "start": 71.74,
-   "end": 71.95,
-   "score": 0.904,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "the",
-   "start": 71.99,
-   "end": 72.25,
-   "score": 0.963,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "bleeding",
-   "start": 72.29,
-   "end": 72.77,
-   "score": 0.97,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "gets",
-   "start": 72.81,
-   "end": 73.11,
-   "score": 0.957,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "worse",
-   "start": 73.15,
-   "end": 73.49,
-   "score": 0.897,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "or",
-   "start": 73.53,
-   "end": 73.74,
-   "score": 0.883,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "you",
-   "start": 73.78,
-   "end": 74.04,
-   "score": 0.915,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "get",
-   "start": 74.08,
-   "end": 74.34,
-   "score": 0.922,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "a",
-   "start": 74.38,
-   "end": 74.54,
-   "score": 0.979,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "fever,",
-   "start": 74.58,
-   "end": 74.92,
-   "score": 0.993,
-   "speaker": "SPEAKER_00"
-  },
-  {
-   "word": "call",
-   "start": 75.17,
-   "end": 75.47,
+   "start": 74.36,
+   "end": 74.7,
    "score": 0.959,
    "speaker": "SPEAKER_00"
   },
   {
-   "word": "us",
-   "start": 75.51,
-   "end": 75.72,
+   "word": "Okay.",
+   "start": 75.3,
+   "end": 75.6,
+   "score": 0.966,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Thanks.",
+   "start": 75.85,
+   "end": 76.24,
+   "score": 0.886,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "If",
+   "start": 76.84,
+   "end": 77.05,
+   "score": 0.941,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 77.09,
+   "end": 77.35,
+   "score": 0.92,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "bleeding",
+   "start": 77.39,
+   "end": 77.87,
+   "score": 0.946,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "gets",
+   "start": 77.91,
+   "end": 78.21,
+   "score": 0.888,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "worse",
+   "start": 78.25,
+   "end": 78.59,
+   "score": 0.894,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "or",
+   "start": 78.63,
+   "end": 78.84,
+   "score": 0.907,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "you",
+   "start": 78.88,
+   "end": 79.14,
+   "score": 0.944,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "get",
+   "start": 79.18,
+   "end": 79.44,
+   "score": 0.943,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 79.48,
+   "end": 79.64,
    "score": 0.966,
    "speaker": "SPEAKER_00"
   },
   {
+   "word": "fever,",
+   "start": 79.68,
+   "end": 80.02,
+   "score": 0.923,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "call",
+   "start": 80.27,
+   "end": 80.57,
+   "score": 0.909,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "us",
+   "start": 80.61,
+   "end": 80.82,
+   "score": 0.949,
+   "speaker": "SPEAKER_00"
+  },
+  {
    "word": "right",
-   "start": 75.76,
-   "end": 76.1,
-   "score": 0.886,
+   "start": 80.86,
+   "end": 81.2,
+   "score": 0.948,
    "speaker": "SPEAKER_00"
   },
   {
    "word": "away.",
-   "start": 76.14,
-   "end": 76.44,
-   "score": 0.941,
+   "start": 81.24,
+   "end": 81.54,
+   "score": 0.933,
    "speaker": "SPEAKER_00"
   }
  ],

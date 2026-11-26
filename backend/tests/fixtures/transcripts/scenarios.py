@@ -9,6 +9,14 @@ lines carry keys. A key's `span` is an exact substring of its line and occurs on
 conversation, so it can be found again in the imported (possibly merged) doctor turn. Doctor
 lines without a key (greetings, scheduling) count as not_checkable.
 
+Facts only (docs/PRD-jev-triage.md): keys sit on general medical facts, never on plans,
+recommendations or patient-specific results with no general assertion, because those are
+triaged as small talk and never reach the checker.
+
+Triage gold labels (backend/evals/triage/README.md) come from the same data: a doctor sentence
+is a claim if it contains a key span or is listed in `claims` (unkeyed general facts), a
+transcription error if it contains `asr_error.wrong`, and small talk otherwise.
+
 Text uses only letters, digits, spaces, apostrophes, hyphens, plus signs and . , ? ! so every
 vendor renderer tokenises it the same way.
 """
@@ -42,13 +50,30 @@ class Key:
 
 
 @dataclass(frozen=True)
+class AsrError:
+    """A planted speech-to-text mistake in one doctor line, e.g. "colin" for "colon".
+
+    `wrong` occurs exactly once in the conversation. Its words get `confidence` in vendor
+    formats that carry word confidences (only at that spot, not elsewhere in the conversation).
+    """
+
+    wrong: str
+    intended: str
+    confidence: float
+
+
+@dataclass(frozen=True)
 class Scenario:
     id: str
     folder: str
     title: str
     vendor: Vendor
     low_confidence: dict[str, float]
+    """A correctly transcribed medical term given a low score everywhere it appears."""
+    asr_error: AsrError
     lines: list[tuple[int, str, list[Key]]] = field(default_factory=list)
+    claims: list[str] = field(default_factory=list)
+    """Unkeyed doctor sentences that are general medical facts (triage label "claim")."""
 
     @property
     def dialogue(self) -> list[tuple[int, str]]:
@@ -71,12 +96,13 @@ SCENARIOS: list[Scenario] = [
         title="Colorectal adenocarcinoma results",
         vendor="deepgram",
         low_confidence={"sigmoid": 0.52},
+        asr_error=AsrError("colin", "colon", 0.41),
         lines=[
             (0, "Good morning, thanks for coming back in. Please, have a seat.", []),
             (1, "Morning. Um, I've been kind of anxious all week.", []),
             (0, "That's completely understandable. We have the biopsy results from your colonoscopy, so let's go through them together.", []),
             (1, "Okay.", []),
-            (0, "The growth in your sigmoid colon is an adenocarcinoma. That's a cancer that starts in the gland cells lining the colon.", [
+            (0, "The growth in your sigmoid colin is an adenocarcinoma. That's a cancer that starts in the gland cells lining the colon.", [
                 _acc(
                     "a cancer that starts in the gland cells lining the colon",
                     "Adenocarcinoma is a cancer that starts in the gland-forming cells that line the colon.",
@@ -94,21 +120,15 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Oh, okay. That's a relief, I guess.", []),
-            (0, "We'll still do a CT scan of your chest, abdomen and pelvis to stage it.", [
-                _acc(
-                    "a CT scan of your chest, abdomen and pelvis to stage it",
-                    "Staging of colon cancer includes CT of the chest, abdomen and pelvis.",
-                    "NCCN colon cancer guidelines",
-                ),
-            ]),
+            (0, "We'll still do a CT scan of your chest, abdomen and pelvis to stage it.", []),
             (1, "Sorry, what does that part mean?", []),
             (0, "Staging tells us how deep the tumor goes and whether the cancer is in the lymph nodes or other organs.", []),
             (1, "Okay. Um, is there anything else they're checking on it?", []),
-            (0, "Yes. We'll also test the tumor for mismatch repair proteins.", [
+            (0, "Yes. We'll also test the tumor for mismatch repair proteins. Mismatch repair testing is a check for Lynch syndrome, an inherited condition.", [
                 Key(
-                    "We'll also test the tumor for mismatch repair proteins.",
+                    "Mismatch repair testing is a check for Lynch syndrome, an inherited condition.",
                     "incomplete",
-                    "Doesn't say why the test is done.",
+                    "Leaves out that it is recommended for every colorectal cancer and that the result can guide treatment such as immunotherapy.",
                     "Mismatch repair (MMR) or MSI testing screens for Lynch syndrome, an inherited condition, and can guide treatment such as immunotherapy.",
                     "CAP colorectal biomarker template",
                 ),
@@ -118,6 +138,9 @@ SCENARIOS: list[Scenario] = [
             (1, "Okay. Thank you for explaining all this.", []),
             (0, "Of course. The front desk will call you this week to book the scan.", []),
         ],
+        claims=[
+            "Staging tells us how deep the tumor goes and whether the cancer is in the lymph nodes or other organs.",
+        ],
     ),
     Scenario(
         id="tubular_adenoma",
@@ -125,20 +148,13 @@ SCENARIOS: list[Scenario] = [
         title="Benign tubular adenoma polyp",
         vendor="aws_medical",
         low_confidence={"adenoma": 0.52},
+        asr_error=AsrError("pollen", "polyp", 0.38),
         lines=[
             (0, "Hi there, nice to see you again. How have you been feeling since the procedure?", []),
             (1, "Pretty good, thanks. A little bloated the first day, but that went away.", []),
-            (0, "Good, that's normal. I have the pathology report on the polyp we removed during your colonoscopy.", []),
+            (0, "Good, that's normal. I have the pathology report on the pollen we removed during your colonoscopy.", []),
             (1, "Um, okay. Was it, was it anything bad?", []),
-            (0, "The pathologist didn't see anything worrying.", [
-                Key(
-                    "The pathologist didn't see anything worrying.",
-                    "incomplete",
-                    "Vague: doesn't name the findings.",
-                    "The polyp was a tubular adenoma with low-grade dysplasia, with no high-grade dysplasia or cancer, and it was completely removed.",
-                    "CAP colon and rectum protocol; pathology report",
-                ),
-            ]),
+            (0, "The pathologist didn't see anything worrying.", []),
             (1, "Oh, good. So what was it?", []),
             (0, "It was a tubular adenoma. A tubular adenoma is a benign polyp, but it could slowly turn into cancer over years if it were left alone.", [
                 _acc(
@@ -148,19 +164,21 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "A tubular what? Sorry, adenoma?", []),
-            (0, "Adenoma, yes. The good news is it was removed completely and showed no high-grade dysplasia.", [
-                _acc(
-                    "it was removed completely and showed no high-grade dysplasia",
-                    "The adenoma was completely removed and had no high-grade dysplasia.",
-                    "Pathology report; CAP colon and rectum protocol",
+            (0, "Adenoma, yes. The good news is it was removed completely and showed no high-grade dysplasia. Dysplasia means the cells look abnormal under the microscope.", [
+                Key(
+                    "Dysplasia means the cells look abnormal under the microscope.",
+                    "incomplete",
+                    "Doesn't say that dysplasia is a precancerous change, or that high-grade dysplasia is the step closest to cancer.",
+                    "Dysplasia is a precancerous change in the lining cells. Low-grade dysplasia is the usual finding in an adenoma; high-grade dysplasia is a more advanced change, closer to cancer.",
+                    "CAP colon and rectum protocol; WHO classification of digestive system tumours",
                 ),
             ]),
             (1, "Okay. So that's it then?", []),
-            (0, "That's it. So you won't ever need another colonoscopy.", [
+            (0, "That's it. Once an adenoma has been removed completely, there's no need for another colonoscopy.", [
                 Key(
-                    "So you won't ever need another colonoscopy.",
+                    "Once an adenoma has been removed completely, there's no need for another colonoscopy.",
                     "inaccurate",
-                    "Surveillance colonoscopy is still recommended after an adenoma.",
+                    "Surveillance colonoscopy is still recommended after an adenoma is removed.",
                     "Surveillance colonoscopy is still recommended. For one or two tubular adenomas under 10 mm, the next one is usually in 7 to 10 years.",
                     "US Multi-Society Task Force 2020 post-polypectomy surveillance",
                 ),
@@ -177,18 +195,13 @@ SCENARIOS: list[Scenario] = [
         title="Ulcerative colitis biopsy",
         vendor="whisperx",
         low_confidence={"colitis": 0.49},
+        asr_error=AsrError("mesa lamine", "mesalamine", 0.36),
         lines=[
             (0, "Hello, come on in. How are the symptoms this week?", []),
             (1, "Still running to the bathroom a lot, and there's some blood sometimes.", []),
             (0, "I'm sorry, that sounds exhausting. Your biopsy results from the colonoscopy came back, and they help explain it.", []),
             (1, "Okay. What did they find?", []),
-            (0, "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis.", [
-                _acc(
-                    "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis",
-                    "Chronic active colitis with this pattern on biopsy is consistent with ulcerative colitis.",
-                    "Pathology report; ACG ulcerative colitis guideline",
-                ),
-            ]),
+            (0, "The biopsies show chronic active colitis, and the pattern fits ulcerative colitis.", []),
             (1, "Ulcerative colitis. My aunt has something like that, I think. Um, where is it exactly?", []),
             (0, "Ulcerative colitis mostly affects your small intestine.", [
                 Key(
@@ -200,13 +213,19 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Okay. Is it, like, dangerous?", []),
-            (0, "It's a long-term inflammatory condition, but most people manage it well with medication.", []),
+            (0, "It's a long-term inflammatory condition, but most people manage it well with medication.", [
+                _acc(
+                    "It's a long-term inflammatory condition, but most people manage it well with medication.",
+                    "Ulcerative colitis is a chronic inflammatory bowel disease, and most people control it with medication such as mesalamine.",
+                    "ACG ulcerative colitis guideline",
+                ),
+            ]),
             (1, "Did they see anything that looked like cancer?", []),
-            (0, "There was no dysplasia in the samples.", [
+            (0, "There was no dysplasia in the samples. Over many years, ulcerative colitis can raise the risk of colon cancer.", [
                 Key(
-                    "There was no dysplasia in the samples.",
+                    "Over many years, ulcerative colitis can raise the risk of colon cancer.",
                     "incomplete",
-                    "Doesn't mention the future cancer risk or the need for surveillance.",
+                    "Doesn't say that the risk is managed with regular surveillance colonoscopy.",
                     "Long-standing ulcerative colitis increases colorectal cancer risk, so regular surveillance colonoscopy is recommended, usually starting about 8 years after symptoms begin.",
                     "ACG ulcerative colitis guideline; SCENIC consensus",
                 ),
@@ -214,9 +233,12 @@ SCENARIOS: list[Scenario] = [
             (1, "What's dysplasia?", []),
             (0, "Dysplasia means precancerous changes in the lining cells, and there weren't any.", []),
             (1, "Okay, good. So what do I do now?", []),
-            (0, "We'll start you on a medication called mesalamine and see you back in the clinic in about 8 weeks.", []),
+            (0, "We'll start you on a medication called mesa lamine and see you back in the clinic in about 8 weeks.", []),
             (1, "Okay. Thanks.", []),
             (0, "If the bleeding gets worse or you get a fever, call us right away.", []),
+        ],
+        claims=[
+            "Dysplasia means precancerous changes in the lining cells, and there weren't any.",
         ],
     ),
     # ------------------------------------------------------------------------------- Breast
@@ -226,6 +248,7 @@ SCENARIOS: list[Scenario] = [
         title="Invasive ductal carcinoma, ER and PR positive, HER2 negative",
         vendor="openai_diarized",
         low_confidence={"ductal": 0.5},
+        asr_error=AsrError("humor", "tumor", 0.4),
         lines=[
             (0, "Hi, thanks for coming in. Is it okay if your sister stays for this?", []),
             (1, "Yes, please. I want her here.", []),
@@ -239,7 +262,7 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Okay.", []),
-            (0, "The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.", []),
+            (0, "The pathologist also tested the humor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.", []),
             (1, "I don't know what any of that means, honestly.", []),
             (0, "Because it's HER2 negative, hormone-blocking pills won't work for you.", [
                 Key(
@@ -251,11 +274,11 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Oh. Okay.", []),
-            (0, "It's a grade 2 tumor.", [
+            (0, "It's a grade 2 tumor. Breast cancers are graded from 1 to 3.", [
                 Key(
-                    "It's a grade 2 tumor.",
+                    "Breast cancers are graded from 1 to 3.",
                     "incomplete",
-                    "The grade is stated but not explained.",
+                    "Gives the scale but not what grade describes, or that it is not the stage.",
                     "The Nottingham grade, 1 to 3, describes how abnormal the cells look and how fast they are likely to grow. It is not the stage.",
                     "CAP invasive breast carcinoma protocol (Nottingham grade)",
                 ),
@@ -273,10 +296,11 @@ SCENARIOS: list[Scenario] = [
         title="Fibroadenoma",
         vendor="deepgram",
         low_confidence={"fibroadenoma": 0.46},
+        asr_error=AsrError("court", "core", 0.42),
         lines=[
             (0, "Hi, good to see you. Come on in and have a seat.", []),
             (1, "Hi. I've been checking my phone all day for the results.", []),
-            (0, "Well, I have good news. The core biopsy of the lump in your breast shows a fibroadenoma.", []),
+            (0, "Well, I have good news. The court biopsy of the lump in your breast shows a fibroadenoma.", []),
             (1, "A fibro, a fibroadenoma? What's that?", []),
             (0, "A fibroadenoma is a benign, non-cancerous lump made of glandular and connective tissue, and it's common in younger women.", [
                 _acc(
@@ -286,11 +310,11 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Oh, thank goodness. Will it go away on its own?", []),
-            (0, "Sometimes they shrink. We'll just keep an eye on it.", [
+            (0, "Sometimes they shrink. Most fibroadenomas can simply be watched over time.", [
                 Key(
-                    "We'll just keep an eye on it.",
+                    "Most fibroadenomas can simply be watched over time.",
                     "incomplete",
-                    "No follow-up plan is given.",
+                    "Doesn't say what watching involves or when to come back.",
                     "Follow-up usually means a clinical exam and/or ultrasound in a few months to check the size, and coming back sooner if it grows or changes.",
                     "NCCN breast cancer screening and diagnosis",
                 ),
@@ -310,6 +334,7 @@ SCENARIOS: list[Scenario] = [
             (1, "Okay. Thanks.", []),
             (0, "Call the clinic if the lump gets bigger or you notice anything new.", []),
         ],
+        claims=["Sometimes they shrink."],
     ),
     # ------------------------------------------------------------------------------- Skin & blood
     Scenario(
@@ -318,6 +343,7 @@ SCENARIOS: list[Scenario] = [
         title="Melanoma, Breslow 1.2 mm",
         vendor="aws_medical",
         low_confidence={"breslow": 0.53},
+        asr_error=AsrError("Breast low", "Breslow", 0.39),
         lines=[
             (0, "Hello, thanks for coming in. How's the spot on your back healing?", []),
             (1, "It's fine, a little itchy where the stitches were.", []),
@@ -341,11 +367,11 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "A Breslow? Sorry, what's that?", []),
-            (0, "It's a standard measurement pathologists use for melanoma.", []),
+            (0, "Breast low thickness is a standard measurement pathologists use for melanoma.", []),
             (1, "Okay. So what happens next?", []),
-            (0, "Next we'll remove a wider area of skin around the scar.", [
+            (0, "For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar.", [
                 Key(
-                    "Next we'll remove a wider area of skin around the scar.",
+                    "For a melanoma like this, the standard treatment is to remove a wider area of skin around the biopsy scar.",
                     "incomplete",
                     "Misses lymph node evaluation and the margin size.",
                     "For a melanoma thicker than 0.8 mm a sentinel lymph node biopsy is usually discussed. Wide excision margins are typically 1 to 2 cm for this thickness.",
@@ -357,6 +383,7 @@ SCENARIOS: list[Scenario] = [
             (1, "Okay. When would that be?", []),
             (0, "The surgery team will call you in the next week or two to schedule it.", []),
         ],
+        claims=["Breast low thickness is a standard measurement pathologists use for melanoma."],
     ),
     Scenario(
         id="dlbcl",
@@ -364,12 +391,13 @@ SCENARIOS: list[Scenario] = [
         title="Diffuse large B-cell lymphoma",
         vendor="whisperx",
         low_confidence={"lymphoma": 0.45},
+        asr_error=AsrError("sell", "cell", 0.37),
         lines=[
             (0, "Hi, come on in. How's the neck feeling since the biopsy?", []),
             (1, "Sore, but okay. I just want to know what it is.", []),
             (0, "I understand. The lymph node biopsy shows a diffuse large B-cell lymphoma.", []),
             (1, "Lymphoma. That's a cancer, right?", []),
-            (0, "Yes, it's a cancer of the lymphocytes, which are a type of white blood cell.", []),
+            (0, "Yes, it's a cancer of the lymphocytes, which are a type of white blood sell.", []),
             (0, "Diffuse large B-cell lymphoma is a fast-growing lymphoma, but it's often curable with treatment.", [
                 _acc(
                     "Diffuse large B-cell lymphoma is a fast-growing lymphoma, but it's often curable with treatment",
@@ -388,9 +416,9 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "That's good. What's the treatment?", []),
-            (0, "The treatment is usually chemotherapy.", [
+            (0, "This type of lymphoma is usually treated with chemotherapy.", [
                 Key(
-                    "The treatment is usually chemotherapy.",
+                    "This type of lymphoma is usually treated with chemotherapy.",
                     "incomplete",
                     "Incomplete regimen and no mention of staging first.",
                     "Standard first treatment combines chemotherapy with the antibody rituximab, for example R-CHOP, after staging with PET-CT.",
@@ -403,6 +431,10 @@ SCENARIOS: list[Scenario] = [
             (0, "Soon. I'm referring you to the lymphoma team, and they'll see you this week.", []),
             (1, "Okay. Thank you.", []),
         ],
+        claims=[
+            "Yes, it's a cancer of the lymphocytes, which are a type of white blood sell.",
+            "With most of these regimens, yes, hair loss is common, but it grows back after treatment ends.",
+        ],
     ),
     # ------------------------------------------------------------------------------- Prostate & thyroid
     Scenario(
@@ -411,10 +443,11 @@ SCENARIOS: list[Scenario] = [
         title="Prostate biopsy, Gleason 3+4=7",
         vendor="openai_diarized",
         low_confidence={"gleason": 0.5},
+        asr_error=AsrError("prostrate", "prostate", 0.4),
         lines=[
             (0, "Good afternoon, thanks for coming in. Your wife is welcome to stay.", []),
             (1, "Thanks. We've both been waiting on this.", []),
-            (0, "The prostate biopsy did find cancer in a few of the samples.", []),
+            (0, "The prostrate biopsy did find cancer in a few of the samples.", []),
             (1, "Okay. How bad is it?", []),
             (0, "The pathologist gave it a Gleason score of 3 plus 4 equals 7, which is Grade Group 2.", [
                 _acc(
@@ -434,9 +467,9 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Oh. Oh, wow. So what do we do?", []),
-            (0, "The treatment for this is surgery to remove the prostate.", [
+            (0, "For this grade of prostate cancer, the standard treatment is surgery to remove the prostate.", [
                 Key(
-                    "The treatment for this is surgery to remove the prostate.",
+                    "For this grade of prostate cancer, the standard treatment is surgery to remove the prostate.",
                     "incomplete",
                     "Omits the other options.",
                     "Options for Grade Group 2 also include radiation therapy and, for some carefully selected men, active surveillance. The choice depends on PSA, extent of disease and the patient's preferences.",
@@ -456,10 +489,11 @@ SCENARIOS: list[Scenario] = [
         title="Thyroid FNA, Bethesda IV",
         vendor="deepgram",
         low_confidence={"follicular": 0.48},
+        asr_error=AsrError("noodle", "nodule", 0.35),
         lines=[
             (0, "Hi, thanks for waiting. Come on in.", []),
             (1, "Hi. Is this about the needle test on my neck?", []),
-            (0, "Yes. The fine needle aspiration of your thyroid nodule came back, and the pathologist reviewed the cytology.", []),
+            (0, "Yes. The fine needle aspiration of your thyroid noodle came back, and the pathologist reviewed the cytology.", []),
             (1, "Okay. And?", []),
             (0, "The result is Bethesda category 4, which means a follicular neoplasm.", [
                 _acc(
@@ -469,9 +503,9 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Follicular, um, neoplasm? I don't know that word.", []),
-            (0, "Neoplasm means a growth. That means the needle test shows it's cancer.", [
+            (0, "Neoplasm means a growth. A follicular neoplasm on a needle test means it's cancer.", [
                 Key(
-                    "That means the needle test shows it's cancer.",
+                    "A follicular neoplasm on a needle test means it's cancer.",
                     "inaccurate",
                     "Bethesda IV is not a cancer diagnosis.",
                     "Bethesda IV means follicular neoplasm. A needle sample can't tell a benign follicular adenoma from a carcinoma, because that needs the whole capsule examined after surgery. The cancer risk is roughly a quarter to a third.",
@@ -479,9 +513,9 @@ SCENARIOS: list[Scenario] = [
                 ),
             ]),
             (1, "Oh my god. Okay. Okay.", []),
-            (0, "The next step is surgery to take out half of your thyroid.", [
+            (0, "For a Bethesda 4 nodule, the usual next step is surgery to take out half of the thyroid.", [
                 Key(
-                    "The next step is surgery to take out half of your thyroid.",
+                    "For a Bethesda 4 nodule, the usual next step is surgery to take out half of the thyroid.",
                     "incomplete",
                     "Omits molecular testing as an option.",
                     "Molecular testing of the FNA sample is an option that can refine the risk and sometimes avoid surgery. Lobectomy also gives the diagnosis.",
@@ -493,6 +527,11 @@ SCENARIOS: list[Scenario] = [
             (1, "Okay. How long is the recovery?", []),
             (0, "Most people go home the same day or the next morning, and the surgeon will go over that with you.", []),
             (1, "Okay. Thank you.", []),
+        ],
+        claims=[
+            "Neoplasm means a growth.",
+            "Many people don't after removing one side, but we'll check your thyroid levels with a blood test after surgery.",
+            "Most people go home the same day or the next morning, and the surgeon will go over that with you.",
         ],
     ),
 ]

@@ -1,0 +1,88 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "dlbcl",
+ "file": "transcripts/skin-blood/dlbcl.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 15,
+   "quote": "Hi, come on in.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 16,
+   "end": 56,
+   "quote": "How's the neck feeling since the biopsy?",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 0,
+   "end": 13,
+   "quote": "I understand.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 14,
+   "end": 74,
+   "quote": "The lymph node biopsy shows a diffuse large B-cell lymphoma.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 76,
+   "quote": "Yes, it's a cancer of the lymphocytes, which are a type of white blood sell.",
+   "label": "transcription",
+   "base_kind": "claim",
+   "wrong": "sell",
+   "intended": "cell",
+   "intended_quote": "Yes, it's a cancer of the lymphocytes, which are a type of white blood cell."
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 77,
+   "end": 173,
+   "quote": "Diffuse large B-cell lymphoma is a fast-growing lymphoma, but it's often curable with treatment.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 73,
+   "quote": "Lymphoma only lives in the lymph nodes, so the rest of your body is fine.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 59,
+   "quote": "This type of lymphoma is usually treated with chemotherapy.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 94,
+   "quote": "With most of these regimens, yes, hair loss is common, but it grows back after treatment ends.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 5,
+   "quote": "Soon.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 6,
+   "end": 76,
+   "quote": "I'm referring you to the lymphoma team, and they'll see you this week.",
+   "label": "skip"
+  }
+ ]
+}
