@@ -1,4 +1,5 @@
 import { anchorComment } from '@/lib/review'
+import { wait } from '@/lib/wait'
 import type { ReviewComment, ReviewEvent, ReviewSource, RoledTurn, TranscriptTurn } from '@/types'
 import { MOCK_REVIEWS } from './reviews'
 import type { MockComment } from './types'
@@ -8,24 +9,6 @@ export const DEFAULT_CLARIFY_DELAY_MS = 800
 
 const FALLBACK_CLARIFICATION =
   "This is a demo review, so there is no further detail for this comment. Check the cited source for the exact wording."
-
-const abortError = () => new DOMException('The review was aborted.', 'AbortError')
-
-/** Resolves after ms, or rejects with an AbortError as soon as the signal aborts (no timer left behind). */
-function wait(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) return reject(abortError())
-    const onAbort = () => {
-      clearTimeout(timer)
-      reject(abortError())
-    }
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', onAbort)
-      resolve()
-    }, ms)
-    signal.addEventListener('abort', onAbort, { once: true })
-  })
-}
 
 /** A mock comment as emitted: anchored against its turn (start/end null for an orphan), without the canned answer. */
 export function toReviewComment(mock: MockComment, turn: Pick<TranscriptTurn, 'text'>): ReviewComment {

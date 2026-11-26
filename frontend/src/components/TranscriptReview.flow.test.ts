@@ -5,6 +5,7 @@ import { messageFor } from '@/lib/api'
 import { STUB_CHECK_DELAY_MS } from '@/lib/claimChecker'
 import { JEV_REVIEW_EXPORT_NOTICE, JEV_REVIEW_LABEL, downloadJson } from '@/lib/review'
 import { parseTranscriptManifest } from '@/lib/transcriptSamples'
+import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 import crcImport from '@/mocks/review/__fixtures__/crc_adenocarcinoma.import.json'
 import rawManifest from '../../public/transcripts/index.json'
 import type { TranscriptImport, TranscriptManifest } from '@/types'
@@ -193,6 +194,8 @@ async function open(w: W, id: string) {
 
 beforeEach(() => {
   vi.useFakeTimers()
+  // Most tests step the stream turn by turn and want each step shown at once: no pacing (see 'paced reveal').
+  stubReducedMotion(true)
   triageCalls = []
   triageStatus = null
   spanAnswer = async () => jsonResponse({ kind: 'claim', p_claim: 0.8 })
@@ -205,6 +208,78 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.mocked(downloadJson).mockClear()
+  unstubMatchMedia()
+})
+
+describe('Transcripts view: paced reveal (issue #39)', () => {
+  const pillTurn = (w: W) => w.find('[data-testid="reviewing-pill"]').element.closest('[data-turn-id]')?.getAttribute('data-turn-id')
+  const dimmed = (w: W, id: string) => w.get(`[data-testid="turn-${id}"]`).attributes('data-dimmed') !== undefined
+
+  it('reveals Jev results turn by turn: the marker moves down and later turns stay dimmed', async () => {
+    stubReducedMotion(false)
+    const w = await mountWithSample(crc.title)
+    await startReview(w)
+
+    // Jev sends the first two turns at once.
+    lastCall().step()
+    lastCall().step()
+    await settle()
+    expect(pillTurn(w)).toBe('t0001')
+    expect(dimmed(w, 't0005')).toBe(true)
+    expect(card(w, GLAND_ID).exists()).toBe(false)
+
+    // t0001 only has skips: a 350 ms quiet dwell, then the marker moves on and t0005's results appear.
+    await vi.advanceTimersByTimeAsync(349)
+    expect(pillTurn(w)).toBe('t0001')
+    await vi.advanceTimersByTimeAsync(1)
+    await settle()
+    expect(pillTurn(w)).toBe('t0005')
+    expect(dimmed(w, 't0005')).toBe(false)
+    expect(dimmed(w, 't0007')).toBe(true)
+    expect(card(w, GLAND_ID).exists()).toBe(true)
+    expect(card(w, COLIN_ID).exists()).toBe(true)
+
+    // t0005 has two cards: 300 fade + 120 stagger + 200 slide + 400 reading = 1020 ms.
+    lastCall().step()
+    lastCall().step()
+    await settle()
+    await vi.advanceTimersByTimeAsync(1019)
+    expect(pillTurn(w)).toBe('t0005')
+    expect(card(w, SPREAD_ID).exists()).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    await settle()
+    expect(pillTurn(w)).toBe('t0007')
+    expect(card(w, SPREAD_ID).exists()).toBe(true)
+
+    await vi.advanceTimersByTimeAsync(900)
+    await settle()
+    expect(w.get('[data-testid="review-status"]').text()).toBe('Review complete')
+  })
+
+  it('shows everything at once with prefers-reduced-motion', async () => {
+    stubReducedMotion(true)
+    const w = await mountWithSample(crc.title)
+    await startReview(w)
+    for (let i = 0; i < STEPS.length; i++) lastCall().step()
+    await settle()
+    expect(w.get('[data-testid="review-status"]').text()).toBe('Review complete')
+    expect(card(w, SPREAD_ID).exists()).toBe(true)
+  })
+
+  it('Stop during a dwell ends the reveal at once and leaves no pacing timer behind', async () => {
+    stubReducedMotion(false)
+    const w = await mountWithSample(crc.title)
+    await startReview(w)
+    for (let i = 0; i < STEPS.length; i++) lastCall().step()
+    await settle()
+    await byText(w, 'Stop')!.trigger('click')
+    await settle()
+    expect(w.get('[data-testid="review-status"]').text()).toBe('Review stopped')
+    await vi.advanceTimersByTimeAsync(5000)
+    await settle()
+    expect(w.get('[data-testid="review-status"]').text()).toBe('Review stopped')
+    expect(card(w, GLAND_ID).exists()).toBe(false)
+  })
 })
 
 describe('Transcripts view: Jev review availability', () => {

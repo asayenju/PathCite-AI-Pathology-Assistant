@@ -2,6 +2,8 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ReviewMargin from './ReviewMargin.vue'
 import { EMPTY_TRIAGE_STATE, type ReviewThread } from '@/composables/useTranscriptReview'
+import { CARD_SLIDE_MS } from '@/lib/reviewMotion'
+import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 
 function thread(id: string, over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -195,6 +197,61 @@ describe('ReviewMargin', () => {
       const w = mountMargin({ mode: 'auto' })
       expect(w.find('[data-testid="review-margin-list"]').exists()).toBe(true)
     })
+  })
+})
+
+describe('ReviewMargin: card reveal animation (issue #39)', () => {
+  afterEach(() => unstubMatchMedia())
+
+  // Two cards in t0001 (plus an accurate comment, which has no card) and one in t0002.
+  const staggered = [
+    thread('a'),
+    thread('ok', { verdict: 'accurate', issue: null }),
+    thread('b', { verdict: 'incomplete', start: 10, end: 15 }),
+    thread('c', { turn_id: 't0002' }),
+  ]
+  const staggerOf = (el: { attributes: (name: string) => string | undefined }) =>
+    el.attributes('style')?.match(/--review-stagger:\s*(\d+)/)?.[1]
+  const frame = () => new Promise((resolve) => setTimeout(resolve, 50))
+
+  it('slides placed cards in on their inner element, staggered by order within the turn', async () => {
+    stubHeights()
+    const container = transcript({ a: 0, b: 200, c: 400 })
+    container.dataset.testid = 'container'
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'margin', container })
+    await flushPromises()
+    await frame()
+    for (const [id, n] of [['a', '0'], ['b', '1'], ['c', '0']] as const) {
+      const outer = w.get(`[data-card-for="${id}"]`)
+      const inner = outer.get('[data-testid="card-reveal"]')
+      expect(inner.classes()).toContain('review-card-in')
+      expect(staggerOf(inner)).toBe(n)
+      // The positioned wrapper keeps only its translateY: the animation never touches layout.
+      expect(outer.classes()).not.toContain('review-card-in')
+      expect(inner.find(`#comment-${id}`).exists()).toBe(true)
+    }
+    expect(w.get('[data-testid="review-margin"]').attributes('style')).toContain(`--review-card-ms: ${CARD_SLIDE_MS}ms`)
+  })
+
+  it('fades list cards in with the same stagger below lg', () => {
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'list' })
+    expect(staggerOf(w.get('li[data-card-for="b"]'))).toBe('1')
+    expect(staggerOf(w.get('li[data-card-for="c"]'))).toBe('0')
+  })
+
+  it('does not animate or stagger with prefers-reduced-motion', async () => {
+    stubReducedMotion(true)
+    stubHeights()
+    const container = transcript({ a: 0, b: 200, c: 400 })
+    container.dataset.testid = 'container'
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'margin', container })
+    await flushPromises()
+    await frame()
+    const inner = w.get('[data-card-for="b"] [data-testid="card-reveal"]')
+    expect(inner.classes()).not.toContain('review-card-in')
+    expect(staggerOf(inner)).toBeUndefined()
+    const list = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'list' })
+    expect(staggerOf(list.get('li[data-card-for="b"]'))).toBeUndefined()
   })
 })
 

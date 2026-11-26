@@ -4,6 +4,8 @@ import TranscriptView from './TranscriptView.vue'
 import { EMPTY_TRIAGE_STATE, type CommentStatus, type ReviewThread } from '@/composables/useTranscriptReview'
 import { anchorComment } from '@/lib/review'
 import { formatClock } from '@/lib/transcripts'
+import { HIGHLIGHT_FADE_MS, MARKER_TRANSITION_MS } from '@/lib/reviewMotion'
+import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 import { breastIdc } from '@/mocks/review/breastIdc'
 import { crcAdenocarcinoma } from '@/mocks/review/crcAdenocarcinoma'
 import type { MockComment } from '@/mocks/review/types'
@@ -307,5 +309,55 @@ describe('TranscriptView review progress', () => {
     expect(list.classes()).not.toContain('max-h-[32rem]')
     expect(list.classes()).not.toContain('overflow-y-auto')
     expect(list.attributes('tabindex')).toBeUndefined()
+  })
+})
+
+describe('TranscriptView reveal animation (issue #39)', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    unstubMatchMedia()
+  })
+
+  const fadingIds = (w: ReturnType<typeof mount>) =>
+    w.findAll('mark.review-mark-in').flatMap((m) => m.attributes('data-comment-ids')!.split(' '))
+
+  it('carries the shared timings as CSS custom properties', () => {
+    const style = mountReview().get('[data-testid="transcript-view"]').attributes('style')
+    expect(style).toContain(`--review-mark-ms: ${HIGHLIGHT_FADE_MS}ms`)
+    expect(style).toContain(`--review-marker-ms: ${MARKER_TRANSITION_MS}ms`)
+  })
+
+  it('fades a highlight in only when it first appears, not on re-render or status changes', async () => {
+    vi.useFakeTimers()
+    const first = crcComments.filter((c) => c.id === 'crc-2')
+    const w = mountReview({}, crc, first)
+    expect(fadingIds(w)).toContain('crc-2')
+    await vi.advanceTimersByTimeAsync(HIGHLIGHT_FADE_MS + 100)
+    expect(w.findAll('mark.review-mark-in')).toHaveLength(0)
+
+    // A status change (Show resolved, Resolve) re-renders the marks without animating them again.
+    await w.setProps({ comments: first.map((c) => ({ ...c, status: 'resolved' as CommentStatus })) })
+    expect(w.findAll('mark.review-mark-in')).toHaveLength(0)
+
+    // A newly arrived comment fades in, and only it.
+    const added = crcComments.find((c) => c.id !== 'crc-2' && c.start !== null && c.turn_id !== first[0]!.turn_id)!
+    await w.setProps({ comments: [...first, added] })
+    expect(fadingIds(w)).toContain(added.id)
+    expect(fadingIds(w)).not.toContain('crc-2')
+  })
+
+  it('does not fade highlights in with prefers-reduced-motion', () => {
+    stubReducedMotion(true)
+    expect(mountReview().findAll('mark.review-mark-in')).toHaveLength(0)
+  })
+
+  it('gives each doctor turn a review state that transitions between waiting, reviewing and done', () => {
+    const w = mountReview({ reviewing: true, currentTurnId: 't0007', doneTurnIds: ['t0001', 't0003', 't0005'] })
+    const state = (id: string) => w.get(`[data-testid="turn-${id}"]`).attributes('data-review-state')
+    expect(state('t0005')).toBe('done')
+    expect(state('t0007')).toBe('reviewing')
+    expect(state('t0009')).toBe('waiting')
+    expect(state('t0008')).toBeUndefined() // patient
+    for (const li of w.findAll('[data-turn-id]')) expect(li.classes()).toContain('review-turn')
   })
 })

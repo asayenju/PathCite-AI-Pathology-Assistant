@@ -4,6 +4,7 @@ import { useEventListener, useMediaQuery } from '@vueuse/core'
 import CommentCard from './CommentCard.vue'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import { layoutCards } from '@/lib/layoutCards'
+import { reviewMotionStyle } from '@/lib/reviewMotion'
 
 /**
  * The comment margin beside the transcript. At lg and up, cards are absolutely positioned next to their highlights
@@ -158,11 +159,32 @@ onBeforeUnmount(() => observer?.disconnect())
 
 const isPlaced = (id: string) => placed.value.has(id)
 
+/**
+ * Reveal animation (issue #39): each card slides in once, delayed by its arrival order among the cards of its turn
+ * (`--review-stagger`, times CARD_STAGGER_MS in CSS). The animation is on the card's inner element, so the
+ * absolutely positioned wrapper, its measured height and the ResizeObserver are untouched. None with reduced motion.
+ */
+const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+const motionStyle = reviewMotionStyle()
+const staggerIndex = computed(() => {
+  const perTurn = new Map<string, number>()
+  const index = new Map<string, number>()
+  for (const c of props.comments) {
+    if (c.verdict === 'accurate') continue
+    const n = perTurn.get(c.turn_id) ?? 0
+    index.set(c.id, n)
+    perTurn.set(c.turn_id, n + 1)
+  }
+  return index
+})
+const staggerStyle = (id: string) => (reduceMotion.value ? undefined : { '--review-stagger': staggerIndex.value.get(id) ?? 0 })
+const revealClass = (id: string) => (isPlaced(id) && !reduceMotion.value ? 'review-card-in' : undefined)
+
 defineExpose({ measure })
 </script>
 
 <template>
-  <section aria-label="Review comments" data-testid="review-margin">
+  <section aria-label="Review comments" :style="motionStyle" data-testid="review-margin">
     <div
       v-if="positioned"
       ref="root"
@@ -186,7 +208,7 @@ defineExpose({ measure })
           :data-top="tops[comment.id] ?? 0"
           :data-placed="isPlaced(comment.id) ? '' : undefined"
         >
-          <div :class="isPlaced(comment.id) && 'review-card-in'">
+          <div :class="revealClass(comment.id)" :style="staggerStyle(comment.id)" data-testid="card-reveal">
             <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
               <template #actions><slot name="actions" :comment="comment" /></template>
               <template #thread><slot name="thread" :comment="comment" /></template>
@@ -198,8 +220,12 @@ defineExpose({ measure })
     </div>
 
     <ol v-else class="space-y-3" data-testid="review-margin-list">
-      <TransitionGroup enter-active-class="review-card-in" leave-active-class="review-card-leave" leave-to-class="opacity-0">
-        <li v-for="comment in visible" :key="comment.id" :data-card-for="comment.id">
+      <TransitionGroup
+        :enter-active-class="reduceMotion ? '' : 'review-card-in'"
+        leave-active-class="review-card-leave"
+        leave-to-class="opacity-0"
+      >
+        <li v-for="comment in visible" :key="comment.id" :data-card-for="comment.id" :style="staggerStyle(comment.id)">
           <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
             <template #actions><slot name="actions" :comment="comment" /></template>
             <template #thread><slot name="thread" :comment="comment" /></template>

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { useTranscriptImport } from '@/composables/useTranscriptImport'
 import { useTranscriptReview } from '@/composables/useTranscriptReview'
 import { jevReviewSource } from '@/lib/jevReviewSource'
+import { pacedReviewSource } from '@/lib/pacedReviewSource'
+import { prefersReducedMotion } from '@/lib/reviewMotion'
 import { JEV_REVIEW_LABEL, downloadJson } from '@/lib/review'
 import { TRANSCRIPT_MIME, findSample } from '@/lib/transcriptSamples'
 import { TRANSCRIPT_ACCEPT } from '@/lib/transcripts'
@@ -112,11 +114,13 @@ function startReview() {
   const turns = roledTurns.value
   if (!turns || !hasDoctor.value) return
   discardReview()
-  // Made per run, so it uses the fetch in place now. It sends only the doctor turns.
-  void startReviewRun(turns, { sampleId: sample.value?.id ?? null, source: jevReviewSource() })
+  // Made per run, so it uses the fetch in place now. It sends only the doctor turns. Jev answers at full speed;
+  // the reveal is paced turn by turn (issue #39), except with reduced motion.
+  const reduce = prefersReducedMotion()
+  const source = pacedReviewSource(jevReviewSource(), reduce ? { turnMs: 0 } : {})
+  void startReviewRun(turns, { sampleId: sample.value?.id ?? null, source })
   // The review opens below the roles; bring it up so the agent's progress is in view.
   void nextTick(() => {
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     reviewPanel.value?.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
   })
 }
