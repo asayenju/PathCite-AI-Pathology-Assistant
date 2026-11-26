@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { h, nextTick } from 'vue'
 import CommentActions from './CommentActions.vue'
 import CommentCard from './CommentCard.vue'
-import type { ReviewThread } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type ReviewThread } from '@/composables/useTranscriptReview'
 
 function thread(over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -19,6 +19,7 @@ function thread(over: Partial<ReviewThread> = {}): ReviewThread {
     status: 'open',
     disagreeReason: null,
     thread: [],
+    ...EMPTY_TRIAGE_STATE,
     ...over,
   }
 }
