@@ -173,7 +173,7 @@ PubMed/Supabase retrieval and real verdicts (next PRD), checking plans or recomm
 
 Then repeat with an uploaded transcript.
 
-## Issues (label `jev-triage`; dependencies: 1 → 2 → {3, 4} → 5 → 6)
+## Issues (GitHub #33–#38, label `jev-triage`; dependencies: 1 → 2 → {3, 4} → 5 → 6)
 **1. Config, span splitting, decision rule and Jev client**
 - [ ] `.env` is gitignored, and the settings above exist. A missing key leaves the app running.
 - [ ] `split_spans` and `decide` are pure functions with the unit tests above.
