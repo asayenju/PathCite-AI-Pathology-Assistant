@@ -16,6 +16,7 @@
   --color-amber: #b7791f;
   --color-moss: #2f7d4f; /* "accurate" only, never alone: 5:1 on glass */
   --color-quiet: #565478; /* secondary text, 6:1 on bench */
+  --color-hema: #3a5aa8; /* hematoxylin blue: Jev "claim" highlights and cards, 6:1 on glass */
 
   /* shadcn-vue semantic tokens mapped onto the palette */
   --color-background: var(--color-bench);

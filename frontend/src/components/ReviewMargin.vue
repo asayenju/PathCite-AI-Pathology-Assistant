@@ -9,7 +9,9 @@ import { layoutCards } from '@/lib/layoutCards'
  * The comment margin beside the transcript. At lg and up, cards are absolutely positioned next to their highlights
  * (found in `container` via `[data-anchor-for="<id>"]`) and laid out by layoutCards; below lg they are a plain list.
  * Either way orphans (no highlight) come first, then the rest in `order`. Accurate comments never get a card, and
- * resolved/disagreed ones only show when `showResolved` is on.
+ * resolved/disagreed ones only show when `showResolved` is on, except a Jev transcription card the doctor just
+ * answered: while it stays the active card it shows collapsed ("Not a claim"), so the answer is visible and focus
+ * has somewhere to stay.
  */
 const props = withDefaults(
   defineProps<{
@@ -37,6 +39,7 @@ const emit = defineEmits<{ activate: [commentId: string] }>()
 defineSlots<{
   actions?: (props: { comment: ReviewThread }) => unknown
   thread?: (props: { comment: ReviewThread }) => unknown
+  answer?: (props: { comment: ReviewThread }) => unknown
 }>()
 
 const isLg = useMediaQuery('(min-width: 1024px)')
@@ -44,12 +47,18 @@ const positioned = computed(() => (props.mode === 'auto' ? isLg.value : props.mo
 
 const isOrphan = (c: ReviewThread) => c.start === null
 
+/** Shown: open comments, closed ones with Show resolved, and the active answered transcription card. */
+const isShown = (c: ReviewThread) =>
+  props.showResolved ||
+  c.status === 'open' ||
+  (c.id === props.activeCommentId && c.verdict === 'transcription' && c.confirmed !== null)
+
 /** Visible cards: orphans first, then transcript order; comments missing from `order` go last in arrival order. */
 const visible = computed<ReviewThread[]>(() => {
   const rank = new Map(props.order.map((id, i) => [id, i]))
   return props.comments
     .map((comment, arrival) => ({ comment, arrival }))
-    .filter(({ comment }) => comment.verdict !== 'accurate' && (props.showResolved || comment.status === 'open'))
+    .filter(({ comment }) => comment.verdict !== 'accurate' && isShown(comment))
     .sort(
       (a, b) =>
         Number(isOrphan(b.comment)) - Number(isOrphan(a.comment)) ||
@@ -135,7 +144,7 @@ watch(
 
 watch(
   () => [
-    visible.value.map((c) => `${c.id}:${c.status}:${c.thread.length}`).join('|'),
+    visible.value.map((c) => `${c.id}:${c.status}:${c.verdict}:${c.thread.length}`).join('|'),
     props.activeCommentId,
     props.container,
     positioned.value,
@@ -181,6 +190,7 @@ defineExpose({ measure })
             <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
               <template #actions><slot name="actions" :comment="comment" /></template>
               <template #thread><slot name="thread" :comment="comment" /></template>
+              <template #answer><slot name="answer" :comment="comment" /></template>
             </CommentCard>
           </div>
         </div>
@@ -193,6 +203,7 @@ defineExpose({ measure })
           <CommentCard :comment="comment" :active="comment.id === activeCommentId" @activate="emit('activate', $event)">
             <template #actions><slot name="actions" :comment="comment" /></template>
             <template #thread><slot name="thread" :comment="comment" /></template>
+            <template #answer><slot name="answer" :comment="comment" /></template>
           </CommentCard>
         </li>
       </TransitionGroup>

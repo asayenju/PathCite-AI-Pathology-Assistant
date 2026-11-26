@@ -197,3 +197,31 @@ describe('ReviewMargin', () => {
     })
   })
 })
+
+describe('ReviewMargin: Jev transcription cards', () => {
+  const triage = { kind: 'transcription', base_kind: 'skip', p_claim: 0.1, p_asr: 0.9 } as const
+  const open = thread('x', { verdict: 'transcription', issue: null, triage })
+  const answered = thread('x', { verdict: 'transcription', issue: null, triage, status: 'resolved', confirmed: true })
+
+  it('passes the answer slot through for each card', () => {
+    const w = mount(ReviewMargin, {
+      props: { comments: [open], order: ['x'], activeCommentId: 'x', showResolved: false, container: null, mode: 'list' },
+      slots: { answer: ({ comment }: { comment: ReviewThread }) => `answer for ${comment.id}` },
+    })
+    expect(w.get('#comment-x').text()).toContain('answer for x')
+  })
+
+  it('keeps the active card visible, collapsed, right after it was answered and resolved', async () => {
+    const w = mountMargin({ comments: [answered], order: ['x'], activeCommentId: 'x' })
+    expect(ids(w)).toEqual(['x'])
+    expect(w.get('[data-testid="comment-status"]').text()).toBe('Not a claim')
+    // Once another card (or none) is active it is hidden like any resolved card.
+    await w.setProps({ activeCommentId: null })
+    expect(ids(w)).toEqual([])
+  })
+
+  it('does not keep an active fact-check comment that was resolved', () => {
+    const w = mountMargin({ comments: [thread('a', { status: 'resolved' })], order: ['a'], activeCommentId: 'a' })
+    expect(ids(w)).toEqual([])
+  })
+})

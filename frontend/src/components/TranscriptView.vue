@@ -63,16 +63,16 @@ const MARK_STYLES: Record<ReviewVerdict, { open: string; stacked: string; faded:
     stacked: 'border-b border-moss/50 bg-moss/10',
     faded: 'border-b border-moss/25 bg-transparent',
   },
-  // Jev triage (#36): neutral placeholders until the triage highlights are styled (#37).
+  // Jev triage: claims in hematoxylin blue; possible transcription errors only get a dashed underline (and a ?).
   claim: {
-    open: 'border-b-2 border-ink bg-ink/10',
-    stacked: 'border-b-2 border-ink bg-ink/20',
-    faded: 'border-b-2 border-ink/30 bg-ink/5',
+    open: 'border-b-2 border-hema bg-hema/15',
+    stacked: 'border-b-2 border-hema bg-hema/30',
+    faded: 'border-b-2 border-hema/30 bg-hema/5',
   },
   transcription: {
-    open: 'border-b-2 border-dashed border-quiet',
-    stacked: 'border-b-2 border-dashed border-quiet bg-quiet/10',
-    faded: 'border-b border-dashed border-quiet/30',
+    open: 'border-b-2 border-dashed border-ink',
+    stacked: 'border-b-2 border-dashed border-ink bg-ink/10',
+    faded: 'border-b-2 border-dashed border-ink/30',
   },
 }
 
@@ -87,8 +87,16 @@ const VERDICT_ICON_COLOURS: Record<ReviewVerdict, string> = {
   inaccurate: 'text-eosin',
   incomplete: 'text-amber',
   accurate: 'text-moss',
-  claim: 'text-ink',
-  transcription: 'text-quiet',
+  claim: 'text-hema',
+  transcription: 'text-ink',
+}
+/** What a screen reader hears after a highlighted span: the verdict is never conveyed by colour alone. */
+const VERDICT_LABELS: Record<ReviewVerdict, string> = {
+  inaccurate: 'inaccurate statement',
+  incomplete: 'incomplete statement',
+  accurate: 'accurate statement',
+  claim: 'claim',
+  transcription: 'possible transcription error',
 }
 
 const styleFor = (role: Role | null | undefined) => ROLE_STYLES[role ?? 'none']
@@ -294,7 +302,7 @@ const liveMessage = computed(() => {
                     class="ml-0.5 inline size-3 align-baseline"
                     :class="VERDICT_ICON_COLOURS[c.verdict]"
                     :stroke-width="3"
-                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ VERDICT_LABELS[c.verdict] }})</span></template
                 ></span
                   ></template
                 >
@@ -306,7 +314,7 @@ const liveMessage = computed(() => {
                     class="ml-0.5 inline size-3 align-baseline"
                     :class="VERDICT_ICON_COLOURS[c.verdict]"
                     :stroke-width="3"
-                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ VERDICT_LABELS[c.verdict] }})</span></template
                 ></template>
               </component>
             </template>

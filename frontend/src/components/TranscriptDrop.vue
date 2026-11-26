@@ -5,8 +5,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useTranscriptImport } from '@/composables/useTranscriptImport'
 import { useTranscriptReview } from '@/composables/useTranscriptReview'
-import { DEMO_REVIEW_LABEL, downloadJson } from '@/lib/review'
-import { hasMockReview, mockClarify, mockReviewSource } from '@/mocks/review'
+import { jevReviewSource } from '@/lib/jevReviewSource'
+import { JEV_REVIEW_LABEL, downloadJson } from '@/lib/review'
 import { TRANSCRIPT_MIME, findSample } from '@/lib/transcriptSamples'
 import { TRANSCRIPT_ACCEPT } from '@/lib/transcripts'
 import type { Role, TranscriptManifest, TranscriptSample } from '@/types'
@@ -19,13 +19,16 @@ import TranscriptFolders from './TranscriptFolders.vue'
 import TranscriptSummary from './TranscriptSummary.vue'
 import TranscriptReviewLayout from './TranscriptReviewLayout.vue'
 import TranscriptView from './TranscriptView.vue'
+import TranscriptionAnswer from './TranscriptionAnswer.vue'
 
 /**
  * The Transcripts view: drop or pick a diarized transcript JSON (or a bundled synthetic sample) and check the speaker
  * roles. Memory only. Without a manifest the sample folders are simply not shown.
  *
- * With at least one doctor, "Review with agent" streams a review of the doctor turns (today the hand-written mock in
- * src/mocks/review, only for the samples it covers). Clear, a new file or sample, and a role change discard it.
+ * With at least one doctor, "Review with agent" streams Jev triage of the doctor turns (POST /api/triage, see
+ * docs/PRD-jev-triage.md) for any transcript, samples and uploads alike: claims go to the (stub) claim checker and
+ * possible transcription errors ask the doctor "Is this correct?". Only doctor turns are sent. Clear, a new file or
+ * sample, and a role change discard the review. The hand-written mock in src/mocks/review is test data only.
  */
 const props = withDefaults(defineProps<{ manifest?: TranscriptManifest | null }>(), { manifest: null })
 
@@ -53,6 +56,7 @@ const {
   activeCommentId,
   hasResults,
   counts,
+  triageCounts,
   issueOrder,
   start: startReviewRun,
   stop: stopReview,
@@ -62,22 +66,19 @@ const {
   disagree,
   setActive,
   reply,
+  canReply,
+  confirmTranscription,
+  correctTranscription,
   nextIssue,
   prevIssue,
   exportReview,
-} = useTranscriptReview({ clarify: mockClarify, sourceName: 'mock' })
+} = useTranscriptReview({ sourceName: 'jev' })
 
 const showResolved = ref(false)
 /** A review was started for the transcript in place (running, done, stopped or error). */
 const reviewing = computed(() => reviewStatus.value !== 'idle')
-const canReview = computed(() => !!roledTurns.value && hasDoctor.value && hasMockReview(sample.value?.id))
-const reviewUnavailable = computed(() =>
-  !sample.value
-    ? "Agent review isn't available for uploaded transcripts yet."
-    : !hasMockReview(sample.value.id)
-      ? 'Agent review is only mocked for 3 samples so far.'
-      : 'Mark at least one speaker as the doctor to run a review.',
-)
+const canReview = computed(() => !!roledTurns.value && hasDoctor.value)
+const reviewUnavailable = 'Mark at least one speaker as the doctor to run a review.'
 
 /**
  * Where to scroll after an activation: clicking a highlight goes to its comment, clicking a comment goes to its
@@ -109,10 +110,10 @@ function discardReview() {
 /** Start, or restart (the run in place is discarded), the review of the turns with their current roles. */
 function startReview() {
   const turns = roledTurns.value
-  const id = sample.value?.id
-  if (!turns || !id || !hasMockReview(id)) return
+  if (!turns || !hasDoctor.value) return
   discardReview()
-  void startReviewRun(turns, { sampleId: id, source: mockReviewSource(id) })
+  // Made per run, so it uses the fetch in place now. It sends only the doctor turns.
+  void startReviewRun(turns, { sampleId: sample.value?.id ?? null, source: jevReviewSource() })
   // The review opens below the roles; bring it up so the agent's progress is in view.
   void nextTick(() => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -121,6 +122,30 @@ function startReview() {
 }
 
 const reviewPanel = ref<HTMLElement | null>(null)
+
+/**
+ * After an answer the Yes / Submit control goes away (the card turns into a claim, or collapses to "Not a claim"),
+ * so focus goes to the card itself, unless the person has moved focus elsewhere in the meantime.
+ */
+async function keepFocusOnCard(id: string) {
+  await nextTick()
+  const card = document.getElementById(`comment-${id}`)
+  if (!card) return
+  const current = document.activeElement
+  if (!current || current === document.body || card.contains(current)) card.focus({ preventScroll: true })
+}
+
+function onConfirm(id: string) {
+  confirmTranscription(id)
+  void keepFocusOnCard(id)
+}
+
+async function onCorrect(id: string, text: string) {
+  await correctTranscription(id, text)
+  // On failure the form stays, with focus in it and the error shown.
+  if (comments.value.find((c) => c.id === id)?.correctionError) return
+  await keepFocusOnCard(id)
+}
 
 function onExport() {
   const { filename, data } = exportReview()
@@ -268,11 +293,12 @@ function onPick(event: Event) {
             <ReviewHeader
               :status="reviewStatus"
               :counts="counts"
+              :triage-counts="triageCounts"
               :error-message="reviewError"
               :show-resolved="showResolved"
               :has-open="counts.open > 0"
               :can-export="hasResults"
-              :demo-label="DEMO_REVIEW_LABEL"
+              :demo-label="JEV_REVIEW_LABEL"
               @update:show-resolved="showResolved = $event"
               @prev="goTo(prevIssue)"
               @next="goTo(nextIssue)"
@@ -313,8 +339,16 @@ function onPick(event: Event) {
                       @disagree="disagree(comment.id, $event)"
                     />
                   </template>
+                  <!-- Jev only labels spans and can't answer questions, so triage cards have no reply thread. -->
                   <template #thread="{ comment }">
-                    <CommentThread :comment="comment" @reply="reply(comment.id, $event)" />
+                    <CommentThread v-if="canReply(comment)" :comment="comment" @reply="reply(comment.id, $event)" />
+                  </template>
+                  <template #answer="{ comment }">
+                    <TranscriptionAnswer
+                      :comment="comment"
+                      @confirm="onConfirm(comment.id)"
+                      @correct="onCorrect(comment.id, $event)"
+                    />
                   </template>
                 </ReviewMargin>
               </template>

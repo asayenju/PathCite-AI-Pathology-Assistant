@@ -5,6 +5,8 @@ import CommentActions from './CommentActions.vue'
 import CommentThread from './CommentThread.vue'
 import ReviewHeader from './ReviewHeader.vue'
 import ReviewMargin from './ReviewMargin.vue'
+import TranscriptionAnswer from './TranscriptionAnswer.vue'
+import { jevReviewSource, triageSpan } from '@/lib/jevReviewSource'
 import { useTranscriptReview, type ReviewThread } from '@/composables/useTranscriptReview'
 import type { ClarifySource, ReviewComment, ReviewEvent, ReviewSource, RoledTurn } from '@/types'
 
@@ -94,7 +96,7 @@ function mountHost(mode: 'list' | 'margin' = 'list', container: HTMLElement | nu
   return { w, review: () => review }
 }
 
-const card = (w: ReturnType<typeof mount>, id: string) => w.find(`#comment-${id}`)
+const card = (w: ReturnType<typeof mount>, id: string) => w.find(`[id="comment-${id}"]`)
 const counts = (w: ReturnType<typeof mount>) => w.get('[data-testid="review-counts"]').text()
 
 let wrapper: ReturnType<typeof mount> | null = null
@@ -236,5 +238,171 @@ describe('review actions with useTranscriptReview', () => {
     callback!()
     await nextTick()
     expect(topOf('b')).toBe('228')
+  })
+})
+
+/*
+ * The same components on a Jev triage review: jevReviewSource reads a fake POST /triage NDJSON stream and the span
+ * triager a fake POST /triage/span, both through an injected fetch (no network).
+ */
+describe('review actions on a Jev triage review', () => {
+  const JEV_TURNS = [
+    { id: 't0', speaker: 'S0', role: 'doctor', text: 'Hello there. Staging tells us a lot. Your colin is fine.', words: [] },
+    { id: 't1', speaker: 'S1', role: 'patient', text: 'Okay.', words: [] },
+  ] as unknown as RoledTurn[]
+  const text = JEV_TURNS[0]!.text
+  const spanOf = (quote: string, kind: 'skip' | 'claim' | 'transcription', base: 'skip' | 'claim') => {
+    const start = text.indexOf(quote)
+    return { type: 'span', turn_id: 't0', start, end: start + quote.length, quote, kind, base_kind: base, p_claim: 0.5, p_asr: 0.5 }
+  }
+  const STREAM = [
+    { type: 'turn_started', turn_id: 't0' },
+    spanOf('Hello there.', 'skip', 'skip'),
+    spanOf('Staging tells us a lot.', 'claim', 'claim'),
+    spanOf('Your colin is fine.', 'transcription', 'claim'),
+    { type: 'turn_done', turn_id: 't0' },
+    { type: 'done', model: 'jev-1.14.0' },
+  ]
+  const CLAIM = `t0:${text.indexOf('Staging')}`
+  const ASR = `t0:${text.indexOf('Your colin')}`
+
+  const encoder = new TextEncoder()
+  const requests: { url: string; body: unknown }[] = []
+  const fetchImpl = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+    requests.push({ url: String(url), body: JSON.parse(init!.body as string) })
+    if (String(url).endsWith('/triage/span')) return new Response(JSON.stringify({ kind: 'claim', p_claim: 0.8 }))
+    const body = new ReadableStream<Uint8Array>({
+      start(c) {
+        // Split mid-line, as a real network would.
+        const all = STREAM.map((e) => JSON.stringify(e) + '\n').join('')
+        c.enqueue(encoder.encode(all.slice(0, 50)))
+        c.enqueue(encoder.encode(all.slice(50)))
+        c.close()
+      },
+    })
+    return new Response(body, { status: 200 })
+  }) as unknown as typeof fetch
+
+  function mountJevHost() {
+    let review!: ReturnType<typeof useTranscriptReview>
+    const Host = defineComponent({
+      setup() {
+        review = useTranscriptReview({
+          source: jevReviewSource({ fetchImpl }),
+          sourceName: 'jev',
+          checker: async () => ({ status: 'not_checked' }),
+          triageSpan: (t, prev, signal) => triageSpan(t, prev, signal, { fetchImpl }),
+        })
+        const showResolved = ref(false)
+        return () => [
+          h(ReviewHeader, {
+            status: review.status.value,
+            counts: review.counts.value,
+            triageCounts: review.triageCounts.value,
+            showResolved: showResolved.value,
+            hasOpen: review.counts.value.open > 0,
+            canExport: review.hasResults.value,
+            'onUpdate:showResolved': (v: boolean) => (showResolved.value = v),
+            onNext: review.nextIssue,
+            onPrev: review.prevIssue,
+          }),
+          h(
+            ReviewMargin,
+            {
+              comments: review.comments.value,
+              order: review.issueOrder.value,
+              activeCommentId: review.activeCommentId.value,
+              showResolved: showResolved.value,
+              container: null,
+              mode: 'list',
+              onActivate: review.setActive,
+            },
+            {
+              actions: ({ comment: c }: { comment: ReviewThread }) =>
+                h(CommentActions, {
+                  comment: c,
+                  onResolve: () => review.resolve(c.id),
+                  onReopen: () => review.reopen(c.id),
+                  onDisagree: (reason: string | null) => review.disagree(c.id, reason),
+                }),
+              thread: ({ comment: c }: { comment: ReviewThread }) =>
+                review.canReply(c) ? h(CommentThread, { comment: c, onReply: (q: string) => review.reply(c.id, q) }) : null,
+              answer: ({ comment: c }: { comment: ReviewThread }) =>
+                h(TranscriptionAnswer, {
+                  comment: c,
+                  onConfirm: () => review.confirmTranscription(c.id),
+                  onCorrect: (t: string) => review.correctTranscription(c.id, t),
+                }),
+            },
+          ),
+        ]
+      },
+    })
+    const w = mount(Host, { attachTo: document.body })
+    return { w, review: () => review }
+  }
+
+  async function startedJev() {
+    requests.length = 0
+    const host = mountJevHost()
+    wrapper = host.w
+    await host.review().start(JEV_TURNS, { sampleId: null })
+    await flushPromises()
+    return host
+  }
+
+  it('streams triage into claim and transcription cards with triage counts, and sends only doctor turns', async () => {
+    const { w } = await startedJev()
+    expect(requests[0]!.body).toEqual({ turns: [{ id: 't0', text }] })
+    expect(w.get('[data-testid="review-status"]').text()).toBe('Review complete')
+    expect(w.get('[data-testid="review-triage-counts"]').text()).toBe(
+      '1 claim · 1 open transcription check · 1 skipped span',
+    )
+    expect(card(w, CLAIM).get('[data-testid="comment-verdict"]').text()).toBe('Claim')
+    expect(card(w, CLAIM).get('[data-testid="claim-check"]').text()).toBe(
+      "Not fact-checked yet (the checker isn't built yet)",
+    )
+    expect(card(w, ASR).get('[data-testid="transcription-question"]').text()).toBe('Is this correct?')
+  })
+
+  it('has no reply box on triage cards; Disagree with a reason still works', async () => {
+    const { w, review } = await startedJev()
+    review().setActive(CLAIM)
+    await nextTick()
+    expect(card(w, CLAIM).find('[data-testid="reply-form"]').exists()).toBe(false)
+    await card(w, CLAIM).get('[data-testid="disagree"]').trigger('click')
+    await card(w, CLAIM).get('[data-testid="disagree-reason"]').setValue('Not a claim.')
+    await card(w, CLAIM).get('[data-testid="disagree-form"]').trigger('submit')
+    expect(review().comments.value.find((c) => c.id === CLAIM)).toMatchObject({
+      status: 'disagreed',
+      disagreeReason: 'Not a claim.',
+    })
+  })
+
+  it('Yes on a claim-based span turns the card into a claim', async () => {
+    const { w, review } = await startedJev()
+    review().setActive(ASR)
+    await nextTick()
+    await card(w, ASR).get('[data-testid="transcription-yes"]').trigger('click')
+    await flushPromises()
+    expect(card(w, ASR).get('[data-testid="comment-verdict"]').text()).toBe('Claim')
+    expect(w.get('[data-testid="review-triage-counts"]').text()).toBe(
+      '2 claims · 0 open transcription checks · 1 skipped span',
+    )
+  })
+
+  it('No → correction goes to /triage/span with the earlier doctor turns and comes back a claim', async () => {
+    const { w, review } = await startedJev()
+    review().setActive(ASR)
+    await nextTick()
+    await card(w, ASR).get('[data-testid="transcription-no"]').trigger('click')
+    await card(w, ASR).get('[data-testid="correction-input"]').setValue('Your colon is fine.')
+    await card(w, ASR).get('[data-testid="correction-form"]').trigger('submit')
+    await flushPromises()
+    expect(requests[1]).toEqual({
+      url: '/api/triage/span',
+      body: { text: 'Your colon is fine.', previous_doctor_turns: [] },
+    })
+    expect(card(w, ASR).get('[data-testid="claim-checked-as"]').text()).toBe('Checked as: “Your colon is fine.”')
   })
 })

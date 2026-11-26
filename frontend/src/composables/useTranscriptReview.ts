@@ -2,7 +2,7 @@ import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
 import { PredictError } from '@/lib/api'
 import { defaultClaimChecker } from '@/lib/claimChecker'
 import { defaultSpanTriager } from '@/lib/jevReviewSource'
-import { REVIEW_EXPORT_NOTICE, reviewFilename } from '@/lib/review'
+import { reviewExportNotice, reviewFilename } from '@/lib/review'
 import type {
   CheckResult,
   ClaimChecker,
@@ -568,7 +568,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     return {
       filename: reviewFilename(id, now),
       data: {
-        notice: REVIEW_EXPORT_NOTICE,
+        notice: reviewExportNotice(options.sourceName ?? 'mock'),
         source: options.sourceName ?? 'mock',
         sample_id: id,
         exported_at: now.toISOString(),

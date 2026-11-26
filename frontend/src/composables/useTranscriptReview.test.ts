@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { REVIEW_EXPORT_NOTICE } from '@/lib/review'
+import { JEV_REVIEW_EXPORT_NOTICE, REVIEW_EXPORT_NOTICE } from '@/lib/review'
 import { mockClarify, mockReviewSource } from '@/mocks/review'
 import crcImport from '@/mocks/review/__fixtures__/crc_adenocarcinoma.import.json'
 import { messageFor, PredictError } from '@/lib/api'
@@ -822,6 +822,7 @@ describe('useTranscriptReview triage', () => {
     const { data } = r.exportReview({ now: new Date(2026, 10, 25) })
     expect(data.source).toBe('jev')
     expect(data.model).toBe('jev-1.14.0')
+    expect(data.notice).toBe(JEV_REVIEW_EXPORT_NOTICE)
     const row = (id: string) => data.comments.find((c) => c.id === id)!
     expect(row('c')).toMatchObject({
       verdict: 'claim',

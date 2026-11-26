@@ -218,6 +218,65 @@ describe('TranscriptView highlights', () => {
   })
 })
 
+describe('TranscriptView Jev triage highlights', () => {
+  const simple: TranscriptTurn[] = [
+    { id: 't1', speaker: 'S1', start: null, end: null, text: 'Staging tells us a lot. Your sigmoid colin is fine.', is_final: true, words: [], min_confidence: null },
+  ]
+  const triaged = (id: string, verdict: 'claim' | 'transcription', start: number, end: number, over: Partial<ReviewThread> = {}): ReviewThread => ({
+    id,
+    turn_id: 't1',
+    quote: simple[0]!.text.slice(start, end),
+    start,
+    end,
+    verdict,
+    issue: null,
+    suggestion: null,
+    source: null,
+    triage: { kind: verdict, base_kind: 'claim', p_claim: 0.9, p_asr: verdict === 'transcription' ? 0.9 : 0.1 },
+    status: 'open',
+    disagreeReason: null,
+    thread: [],
+    ...EMPTY_TRIAGE_STATE,
+    ...over,
+  })
+  const mountTriage = (comments: ReviewThread[]) =>
+    mount(TranscriptView, { props: { turns: simple, roles: { S1: 'doctor' }, comments } })
+
+  it('marks a claim in hematoxylin blue with an icon, a label and the DOM contract', () => {
+    const w = mountTriage([triaged('t1:0', 'claim', 0, 23)])
+    const mark = w.get('[data-anchor-for="t1:0"]')
+    expect(mark.element.tagName).toBe('MARK')
+    expect(mark.attributes('aria-describedby')).toBe('comment-t1:0')
+    expect(mark.attributes('tabindex')).toBe('0')
+    expect(mark.classes()).toEqual(expect.arrayContaining(['border-hema', 'bg-hema/15']))
+    expect(mark.find('[data-testid="verdict-icon"]').classes()).toContain('text-hema')
+    expect(mark.text()).toBe('Staging tells us a lot. (claim)')
+  })
+
+  it('marks a possible transcription error with a dashed underline, a ? icon and a label', () => {
+    const w = mountTriage([triaged('t1:24', 'transcription', 24, 51)])
+    const mark = w.get('[data-anchor-for="t1:24"]')
+    expect(mark.attributes('aria-describedby')).toBe('comment-t1:24')
+    expect(mark.classes()).toEqual(expect.arrayContaining(['border-b-2', 'border-dashed']))
+    expect(mark.classes().some((c) => c.startsWith('bg-'))).toBe(false)
+    expect(mark.find('[data-testid="verdict-icon"]').classes()).toContain('lucide-circle-question-mark')
+    expect(mark.text()).toBe('Your sigmoid colin is fine. (possible transcription error)')
+  })
+
+  it('fades a resolved triage highlight but keeps it focusable', () => {
+    const w = mountTriage([triaged('t1:24', 'transcription', 24, 51, { status: 'resolved', confirmed: true })])
+    const mark = w.get('[data-anchor-for="t1:24"]')
+    expect(mark.classes()).toContain('border-ink/30')
+    expect(mark.attributes('tabindex')).toBe('0')
+  })
+
+  it('never changes the transcript text', () => {
+    const w = mountTriage([triaged('t1:24', 'claim', 24, 51, { checkedAs: 'Your sigmoid colon is fine.', correction: 'x' })])
+    expect(w.get('[data-testid="turn-t1"]').text()).toContain('Your sigmoid colin is fine.')
+    expect(w.get('[data-testid="turn-t1"]').text()).not.toContain('colon')
+  })
+})
+
 describe('TranscriptView review progress', () => {
   it('dims doctor turns not reviewed yet and marks the current one', () => {
     const w = mountReview({ reviewing: true, currentTurnId: 't0007', doneTurnIds: ['t0001', 't0003', 't0005'] })

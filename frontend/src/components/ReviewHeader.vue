@@ -8,6 +8,9 @@ import type { ReviewStatus } from '@/composables/useTranscriptReview'
  * The bar above a review: status, counts, Previous/Next issue, Show resolved, Stop and Export. Presentational: the
  * host wires the events to useTranscriptReview (prevIssue / nextIssue / stop / exportReview + downloadJson).
  * Every control is a native button or checkbox, so it all works from the keyboard.
+ *
+ * With `triageCounts` (a Jev review) the counts are claims, open transcription checks and skipped spans, and
+ * Previous/Next are named for claims and transcription checks.
  */
 const props = defineProps<{
   status: ReviewStatus
@@ -18,8 +21,10 @@ const props = defineProps<{
   canExport: boolean
   /** Shown when the review is in error (useTranscriptReview().errorMessage). */
   errorMessage?: string
-  /** A badge such as DEMO_REVIEW_LABEL from lib/review; nothing is rendered when it's absent. */
+  /** A badge such as JEV_REVIEW_LABEL from lib/review; nothing is rendered when it's absent. */
   demoLabel?: string
+  /** useTranscriptReview().triageCounts, for a Jev review. */
+  triageCounts?: { claims: number; openTranscriptions: number; skipped: number }
 }>()
 
 const emit = defineEmits<{
@@ -33,6 +38,18 @@ const emit = defineEmits<{
 const toggleId = `show-resolved-${useId()}`
 
 const closed = computed(() => props.counts.resolved + props.counts.disagreed)
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+const triageText = computed(() => {
+  const t = props.triageCounts
+  if (!t) return ''
+  return [
+    plural(t.claims, 'claim', 'claims'),
+    plural(t.openTranscriptions, 'open transcription check', 'open transcription checks'),
+    plural(t.skipped, 'skipped span', 'skipped spans'),
+  ].join(' · ')
+})
+const stepNoun = computed(() => (props.triageCounts ? 'claim or transcription check' : 'issue'))
 
 const statusText = computed(() => {
   switch (props.status) {
@@ -76,7 +93,10 @@ function onToggle(event: Event) {
         {{ statusText }}
       </p>
 
-      <p class="text-sm text-quiet tabular-nums" data-testid="review-counts">
+      <p v-if="triageCounts" class="text-sm text-quiet tabular-nums" data-testid="review-triage-counts">
+        {{ triageText }}
+      </p>
+      <p v-else class="text-sm text-quiet tabular-nums" data-testid="review-counts">
         {{ counts.open }} open · {{ counts.resolved }} resolved · {{ counts.disagreed }} disagreed
       </p>
 
@@ -85,8 +105,8 @@ function onToggle(event: Event) {
           type="button"
           size="icon-sm"
           variant="outline"
-          aria-label="Previous issue"
-          title="Previous issue"
+          :aria-label="`Previous ${stepNoun}`"
+          :title="`Previous ${stepNoun}`"
           :disabled="!hasOpen"
           data-testid="review-prev"
           @click="emit('prev')"
@@ -97,8 +117,8 @@ function onToggle(event: Event) {
           type="button"
           size="icon-sm"
           variant="outline"
-          aria-label="Next issue"
-          title="Next issue"
+          :aria-label="`Next ${stepNoun}`"
+          :title="`Next ${stepNoun}`"
           :disabled="!hasOpen"
           data-testid="review-next"
           @click="emit('next')"
