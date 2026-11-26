@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     jev_model: str = "jev-1.14.0"  # pinned, not jev-latest, so results don't change under us
     jev_base_url: str = "https://api.typesafe.ai"
     jev_timeout_s: float = 15
+    # Kept after the 2026-11-25 `pytest -m jev` eval (backend/evals/triage/README.md).
     triage_asr_flag: float = 0.5  # p_asr >= this -> possible transcription error
     triage_skip_min: float = 0.8  # P(small_talk) >= this -> skip; otherwise claim
     triage_max_turns: int = 500

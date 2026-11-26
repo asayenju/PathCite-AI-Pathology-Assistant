@@ -162,4 +162,14 @@ Uploaded images and transcripts are processed in memory only: never written to d
 ```
 pytest                # offline, synthetic images, no GPU needed
 pytest -m hf -s       # opt-in smoke eval on a Hugging Face dataset (needs network)
+pytest -m jev -s      # opt-in live Jev triage eval (needs JEV_KEY and network)
 ```
+
+### Evals
+
+`pytest -m jev -s` calls the real Jev API (about 9 requests for the samples plus about 370 for Cancer-Myth, a few cents) and writes `reports/jev_triage_samples.md` and `reports/jev_triage_cancer_myth.md` (gitignored):
+
+- **Samples vs gold:** the 9 sample transcripts go through `/transcripts/import` and the real `/triage`, and each span is compared with the gold labels in `evals/triage/keys/`. It asserts claim recall >= 0.95 and transcription recall >= 0.8.
+- **Cancer-Myth** (`Cancer-Myth/Cancer-Myth`, CC-BY-4.0): each myth statement is triaged alone. It asserts that >= 95% of them are claims. The rows are cached in `.cache/cancer_myth/`.
+
+Without `JEV_KEY` both tests skip. `JEV_EVAL_CM_STEP=3` sends every 3rd Cancer-Myth statement only. Latest results and the threshold decision are in [`evals/triage/README.md`](evals/triage/README.md).
