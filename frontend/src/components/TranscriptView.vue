@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { Check, LoaderCircle, Plus, X } from 'lucide-vue-next'
+import { Check, CircleHelp, LoaderCircle, Plus, Quote, X } from 'lucide-vue-next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import { splitSegments, type Segment, type SegmentRange, type SplitResult } from '@/lib/segments'
 import { formatClock, roleLabel } from '@/lib/transcripts'
+import { HIGHLIGHT_FADE_MS, reviewMotionStyle } from '@/lib/reviewMotion'
+import { useMediaQuery } from '@vueuse/core'
 import type { ReviewVerdict, Role, TranscriptTurn } from '@/types'
 
 /**
@@ -63,13 +65,40 @@ const MARK_STYLES: Record<ReviewVerdict, { open: string; stacked: string; faded:
     stacked: 'border-b border-moss/50 bg-moss/10',
     faded: 'border-b border-moss/25 bg-transparent',
   },
+  // Jev triage: claims in hematoxylin blue; possible transcription errors only get a dashed underline (and a ?).
+  claim: {
+    open: 'border-b-2 border-hema bg-hema/15',
+    stacked: 'border-b-2 border-hema bg-hema/30',
+    faded: 'border-b-2 border-hema/30 bg-hema/5',
+  },
+  transcription: {
+    open: 'border-b-2 border-dashed border-ink',
+    stacked: 'border-b-2 border-dashed border-ink bg-ink/10',
+    faded: 'border-b-2 border-dashed border-ink/30',
+  },
 }
 
-const VERDICT_ICONS = { inaccurate: X, incomplete: Plus, accurate: Check } as const
+const VERDICT_ICONS: Record<ReviewVerdict, typeof X> = {
+  inaccurate: X,
+  incomplete: Plus,
+  accurate: Check,
+  claim: Quote,
+  transcription: CircleHelp,
+}
 const VERDICT_ICON_COLOURS: Record<ReviewVerdict, string> = {
   inaccurate: 'text-eosin',
   incomplete: 'text-amber',
   accurate: 'text-moss',
+  claim: 'text-hema',
+  transcription: 'text-ink',
+}
+/** What a screen reader hears after a highlighted span: the verdict is never conveyed by colour alone. */
+const VERDICT_LABELS: Record<ReviewVerdict, string> = {
+  inaccurate: 'inaccurate statement',
+  incomplete: 'incomplete statement',
+  accurate: 'accurate statement',
+  claim: 'claim',
+  transcription: 'possible transcription error',
 }
 
 const styleFor = (role: Role | null | undefined) => ROLE_STYLES[role ?? 'none']
@@ -81,7 +110,9 @@ const commentById = computed(() => new Map(props.comments.map((c) => [c.id, c]))
  * Comments that arrived in the last moment: their highlight tint fades in once. Tracking arrivals (instead of
  * animating every new <mark>) keeps existing highlights steady when a new span splits their runs.
  */
-const FRESH_MS = 700
+const FRESH_MS = HIGHLIGHT_FADE_MS + 100
+const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+const motionStyle = reviewMotionStyle()
 const fresh = ref<Set<string>>(new Set())
 const seen = new Set<string>()
 const timers = new Set<ReturnType<typeof setTimeout>>()
@@ -92,6 +123,7 @@ watch(
     const arrived = ids.filter((id) => !seen.has(id))
     if (!arrived.length) return
     for (const id of arrived) seen.add(id)
+    if (reduceMotion.value) return
     fresh.value = new Set([...fresh.value, ...arrived])
     const timer = setTimeout(() => {
       timers.delete(timer)
@@ -180,6 +212,12 @@ const isDoctor = (turn: TranscriptTurn) => props.roles[turn.speaker] === 'doctor
 const isCurrent = (turn: TranscriptTurn) => props.reviewing && props.currentTurnId === turn.id
 const isDimmed = (turn: TranscriptTurn) =>
   props.reviewing && isDoctor(turn) && !isCurrent(turn) && !props.doneTurnIds.includes(turn.id)
+/** waiting → reviewing → done, for doctor turns during a review; drives the marker transition. */
+const reviewState = (turn: TranscriptTurn) => {
+  if (!props.reviewing || !isDoctor(turn)) return undefined
+  if (isCurrent(turn)) return 'reviewing'
+  return props.doneTurnIds.includes(turn.id) ? 'done' : 'waiting'
+}
 
 const liveMessage = computed(() => {
   if (!props.reviewing || !props.currentTurnId) return ''
@@ -191,7 +229,7 @@ const liveMessage = computed(() => {
 </script>
 
 <template>
-  <section aria-labelledby="transcript-view-title" class="space-y-3" data-testid="transcript-view">
+  <section aria-labelledby="transcript-view-title" class="space-y-3" :style="motionStyle" data-testid="transcript-view">
     <h3 id="transcript-view-title" class="text-lg font-semibold">Conversation</h3>
     <p class="text-sm text-quiet">
       Dotted underlines mark words the speech-to-text was unsure of. Hover or focus one for its score.
@@ -209,11 +247,12 @@ const liveMessage = computed(() => {
         <li
           v-for="turn in turns"
           :key="turn.id"
-          class="rounded-glass border-l-4 bg-glass px-4 py-2 transition-opacity duration-500 ease-out"
+          class="review-turn rounded-glass border-l-4 bg-glass px-4 py-2"
           :class="[styleFor(roles[turn.speaker]).border, { 'opacity-50': isDimmed(turn) }]"
           :data-testid="`turn-${turn.id}`"
           :data-turn-id="turn.id"
           :data-dimmed="isDimmed(turn) ? '' : undefined"
+          :data-review-state="reviewState(turn)"
         >
           <p class="mb-1 flex flex-wrap items-center gap-2 text-sm">
             <span class="tnum text-quiet" data-testid="turn-time">{{ formatClock(turn.start) }}</span>
@@ -225,15 +264,17 @@ const liveMessage = computed(() => {
             >
               {{ roleLabel(roles[turn.speaker] ?? null) }}
             </span>
-            <!-- Steady pill with a turning icon: a pulsing pill read as flicker. -->
-            <span
-              v-if="isCurrent(turn)"
-              class="review-card-in inline-flex items-center gap-1 rounded-full border border-ink/30 bg-ink/5 px-2 py-0.5 text-xs font-medium"
-              data-testid="reviewing-pill"
-            >
-              <LoaderCircle class="size-3 motion-safe:animate-spin" aria-hidden="true" />
-              Reviewing…
-            </span>
+            <!-- Steady pill with a turning icon: a pulsing pill read as flicker. It fades in and out as it moves. -->
+            <Transition enter-active-class="review-marker-in" leave-active-class="review-marker-leave" leave-to-class="opacity-0">
+              <span
+                v-if="isCurrent(turn)"
+                class="inline-flex items-center gap-1 rounded-full border border-ink/30 bg-ink/5 px-2 py-0.5 text-xs font-medium"
+                data-testid="reviewing-pill"
+              >
+                <LoaderCircle class="size-3 motion-safe:animate-spin" aria-hidden="true" />
+                Reviewing…
+              </span>
+            </Transition>
           </p>
 
           <p class="leading-relaxed">
@@ -275,7 +316,7 @@ const liveMessage = computed(() => {
                     class="ml-0.5 inline size-3 align-baseline"
                     :class="VERDICT_ICON_COLOURS[c.verdict]"
                     :stroke-width="3"
-                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ VERDICT_LABELS[c.verdict] }})</span></template
                 ></span
                   ></template
                 >
@@ -287,7 +328,7 @@ const liveMessage = computed(() => {
                     class="ml-0.5 inline size-3 align-baseline"
                     :class="VERDICT_ICON_COLOURS[c.verdict]"
                     :stroke-width="3"
-                    data-testid="verdict-icon" /><span class="sr-only"> ({{ c.verdict }} statement)</span></template
+                    data-testid="verdict-icon" /><span class="sr-only"> ({{ VERDICT_LABELS[c.verdict] }})</span></template
                 ></template>
               </component>
             </template>

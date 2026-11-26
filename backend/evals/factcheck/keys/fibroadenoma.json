@@ -14,9 +14,9 @@
    "speaker": "doctor"
   },
   {
-   "span": "We'll just keep an eye on it.",
+   "span": "Most fibroadenomas can simply be watched over time.",
    "verdict": "incomplete",
-   "issue": "No follow-up plan is given.",
+   "issue": "Doesn't say what watching involves or when to come back.",
    "correct": "Follow-up usually means a clinical exam and/or ultrasound in a few months to check the size, and coming back sooner if it grows or changes.",
    "source_hint": "NCCN breast cancer screening and diagnosis",
    "speaker": "doctor"

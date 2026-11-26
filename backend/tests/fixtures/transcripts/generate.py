@@ -9,7 +9,9 @@ Shapes follow the vendors' public docs as of 2026-11 and are NOT real vendor out
 Treat them as our reading of the docs; swap in real outputs when available (issue #19).
 
 It also renders the sample conversations in scenarios.py to frontend/public/transcripts/
-(plus index.json) and their answer keys to backend/evals/factcheck/keys/.
+(plus index.json), their answer keys to backend/evals/factcheck/keys/, their triage gold labels
+to backend/evals/triage/keys/ (sentences cut by app.triage.segment.split_spans on the imported
+doctor turns) and the saved imports used by the frontend mock reviews.
 
 Deterministic: `python tests/fixtures/transcripts/generate.py` rewrites the same bytes.
 """
@@ -25,7 +27,11 @@ from pathlib import Path
 try:  # imported as tests.fixtures.transcripts.generate
     from . import scenarios
 except ImportError:  # run as a script
+    import sys
+
     import scenarios  # type: ignore[no-redef]
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))  # backend/, for `app`
 
 OUT = Path(__file__).resolve().parent
 REPO = OUT.parents[3]
@@ -33,6 +39,15 @@ SAMPLES_DIR = Path("frontend/public/transcripts")  # relative to REPO; served by
 KEYS_DIR = Path("backend/evals/factcheck/keys")  # relative to REPO; never shipped to the UI
 SAMPLES_NOTICE = "Synthetic, AI-written sample conversations. Not real patients. Not medical advice."
 KEYS_NOTICE = "Synthetic and AI-written. Needs review by a pathologist before being used to score anything (issue #22)."
+TRIAGE_KEYS_DIR = Path("backend/evals/triage/keys")  # relative to REPO; never shipped to the UI
+TRIAGE_NOTICE = (
+    "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything."
+)
+# Saved imports of the samples that have a hand-written mock review (frontend/src/mocks/review).
+MOCK_IMPORTS_DIR = Path("frontend/src/mocks/review/__fixtures__")
+MOCK_IMPORTS = ("crc_adenocarcinoma", "breast_idc", "melanoma")
+# Vendor label of speaker 0 (the doctor) after parsing.
+DOCTOR_LABEL = {"deepgram": "speaker_0", "aws_medical": "spk_0", "whisperx": "SPEAKER_00", "openai_diarized": "A"}
 
 # (speaker index, text). 0 = doctor, 1 = patient. Includes back-to-back doctor lines
 # (turn merging), a digit (WhisperX can't align it) and low-confidence medical terms.
@@ -68,20 +83,29 @@ def _tokens(text: str) -> list[tuple[str, str]]:
     return [PUNCT.match(t).groups() for t in text.split()]  # type: ignore[union-attr]
 
 
-def timed_dialogue(dialogue=DIALOGUE, seed: int = 42, low_confidence: dict[str, float] | None = None):
+def timed_dialogue(
+    dialogue=DIALOGUE,
+    seed: int = 42,
+    low_confidence: dict[str, float] | None = None,
+    word_confidence: dict[tuple[int, int], float] | None = None,
+):
     """[(speaker, text, start, end, [(word, punct, start, end, confidence)])]
 
-    low_confidence maps lowercased bare words to a fixed score (default: LOW_CONFIDENCE)."""
+    low_confidence maps lowercased bare words to a fixed score everywhere they occur (default:
+    LOW_CONFIDENCE). word_confidence maps (line index, word index) to a score for that one word
+    only, e.g. a planted transcription error."""
     low = LOW_CONFIDENCE if low_confidence is None else low_confidence
+    exact = word_confidence or {}
     rng = random.Random(seed)
     t = 0.3
     turns = []
-    for speaker, text in dialogue:
+    for li, (speaker, text) in enumerate(dialogue):
         words = []
         start = t
-        for word, punct in _tokens(text):
+        for wi, (word, punct) in enumerate(_tokens(text)):
             dur = round(0.12 + 0.045 * len(word), 2)
             conf = low.get(word.lower(), round(rng.uniform(0.86, 0.995), 3))
+            conf = exact.get((li, wi), conf)
             words.append((word, punct, round(t, 2), round(t + dur, 2), conf))
             t += dur + (0.25 if punct else 0.04)
         end = words[-1][3]
@@ -403,9 +427,25 @@ def build() -> dict[str, object]:
 # ---------------------------------------------------------------- sample conversations
 
 
+def asr_error_words(sc: "scenarios.Scenario") -> dict[tuple[int, int], float]:
+    """{(line index, word index): confidence} for the words of the planted transcription error."""
+    err = sc.asr_error
+    found = [(i, text) for i, (_, text) in enumerate(sc.dialogue) if err.wrong in text]
+    if len(found) != 1 or found[0][1].count(err.wrong) != 1 or sc.dialogue[found[0][0]][0] != scenarios.DOCTOR:
+        raise ValueError(f"{sc.id}: asr_error {err.wrong!r} must occur once, in a doctor line")
+    li, text = found[0]
+    first = len(text[: text.index(err.wrong)].split())
+    return {(li, first + k): err.confidence for k in range(len(err.wrong.split()))}
+
+
 def render_scenario(sc: "scenarios.Scenario") -> dict:
     """The scenario as its vendor's JSON. Seed is derived from the id so each sample differs."""
-    turns = timed_dialogue(sc.dialogue, seed=zlib.crc32(sc.id.encode()), low_confidence=sc.low_confidence)
+    turns = timed_dialogue(
+        sc.dialogue,
+        seed=zlib.crc32(sc.id.encode()),
+        low_confidence=sc.low_confidence,
+        word_confidence=asr_error_words(sc),
+    )
     if sc.vendor == "deepgram":
         return deepgram(turns)
     if sc.vendor == "aws_medical":
@@ -447,9 +487,60 @@ def answer_key(sc: "scenarios.Scenario") -> dict:
     }
 
 
+def imported(sc: "scenarios.Scenario"):
+    """The sample as the app imports it (POST /transcripts/import)."""
+    from app.config import Settings
+    from app.transcripts.service import import_transcript
+
+    return import_transcript(dump(render_scenario(sc)).encode("utf-8"), Settings())
+
+
+def triage_key(sc: "scenarios.Scenario") -> dict:
+    """Gold triage label for every non-filler span (split_spans) of every imported doctor turn.
+
+    claim: contains a fact-check key span, or is listed in sc.claims. transcription: contains the
+    planted asr_error (base_kind is what it would be otherwise). skip: everything else."""
+    from app.triage.segment import split_spans
+
+    imp = imported(sc)
+    doctor = next(s.id for s in imp.speakers if s.source_label == DOCTOR_LABEL[sc.vendor])
+    turns = [t for t in imp.turns if t.speaker == doctor]
+    err = sc.asr_error
+    spans: list[dict] = []
+    for i, turn in enumerate(turns):
+        for sp in split_spans(turn.text):
+            if sp.filler:
+                continue
+            quote = turn.text[sp.start : sp.end]
+            is_claim = quote in sc.claims or any(k.span in quote for k in sc.keys)
+            label = {"doctor_turn_index": i, "start": sp.start, "end": sp.end, "quote": quote}
+            if err.wrong in quote:
+                label |= {
+                    "label": "transcription",
+                    "base_kind": "claim" if is_claim else "skip",
+                    "wrong": err.wrong,
+                    "intended": err.intended,
+                    "intended_quote": quote.replace(err.wrong, err.intended),
+                }
+            else:
+                label["label"] = "claim" if is_claim else "skip"
+            spans.append(label)
+    quotes = [s["quote"] for s in spans]
+    for k in sc.keys:
+        if sum(k.span in q for q in quotes) != 1:
+            raise ValueError(f"{sc.id}: key span {k.span!r} must lie inside exactly one doctor sentence")
+    for c in sc.claims:
+        if quotes.count(c) != 1:
+            raise ValueError(f"{sc.id}: claim {c!r} must be exactly one doctor sentence")
+    if sum(err.wrong in q for q in quotes) != 1:
+        raise ValueError(f"{sc.id}: asr_error {err.wrong!r} must lie inside exactly one doctor sentence")
+    return {"notice": TRIAGE_NOTICE, "sample_id": sc.id, "file": sample_path(sc), "spans": spans}
+
+
 def build_samples() -> dict[str, object]:
     """{path relative to the repo root: JSON document} for the sample transcripts, the
-    manifest and the answer keys."""
+    manifest, the fact-check answer keys, the triage gold labels and the saved imports the
+    frontend mock reviews are tested against."""
     out: dict[str, object] = {}
     folders = []
     for name, slug in scenarios.FOLDERS:
@@ -457,6 +548,9 @@ def build_samples() -> dict[str, object]:
         for sc in (s for s in scenarios.SCENARIOS if s.folder == name):
             out[f"frontend/public/{sample_path(sc)}"] = render_scenario(sc)
             out[(KEYS_DIR / f"{sc.id}.json").as_posix()] = answer_key(sc)
+            out[(TRIAGE_KEYS_DIR / f"{sc.id}.json").as_posix()] = triage_key(sc)
+            if sc.id in MOCK_IMPORTS:
+                out[(MOCK_IMPORTS_DIR / f"{sc.id}.import.json").as_posix()] = imported(sc).model_dump(mode="json")
             items.append({"id": sc.id, "title": sc.title, "vendor": sc.vendor, "file": sample_path(sc)})
         folders.append({"name": name, "slug": slug, "items": items})
     out[(SAMPLES_DIR / "index.json").as_posix()] = {"notice": SAMPLES_NOTICE, "folders": folders}

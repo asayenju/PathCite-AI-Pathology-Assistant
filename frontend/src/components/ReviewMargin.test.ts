@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ReviewMargin from './ReviewMargin.vue'
-import type { ReviewThread } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type ReviewThread } from '@/composables/useTranscriptReview'
+import { CARD_SLIDE_MS } from '@/lib/reviewMotion'
+import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 
 function thread(id: string, over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -17,6 +19,7 @@ function thread(id: string, over: Partial<ReviewThread> = {}): ReviewThread {
     status: 'open',
     disagreeReason: null,
     thread: [],
+    ...EMPTY_TRIAGE_STATE,
     ...over,
   }
 }
@@ -194,5 +197,88 @@ describe('ReviewMargin', () => {
       const w = mountMargin({ mode: 'auto' })
       expect(w.find('[data-testid="review-margin-list"]').exists()).toBe(true)
     })
+  })
+})
+
+describe('ReviewMargin: card reveal animation (issue #39)', () => {
+  afterEach(() => unstubMatchMedia())
+
+  // Two cards in t0001 (plus an accurate comment, which has no card) and one in t0002.
+  const staggered = [
+    thread('a'),
+    thread('ok', { verdict: 'accurate', issue: null }),
+    thread('b', { verdict: 'incomplete', start: 10, end: 15 }),
+    thread('c', { turn_id: 't0002' }),
+  ]
+  const staggerOf = (el: { attributes: (name: string) => string | undefined }) =>
+    el.attributes('style')?.match(/--review-stagger:\s*(\d+)/)?.[1]
+  const frame = () => new Promise((resolve) => setTimeout(resolve, 50))
+
+  it('slides placed cards in on their inner element, staggered by order within the turn', async () => {
+    stubHeights()
+    const container = transcript({ a: 0, b: 200, c: 400 })
+    container.dataset.testid = 'container'
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'margin', container })
+    await flushPromises()
+    await frame()
+    for (const [id, n] of [['a', '0'], ['b', '1'], ['c', '0']] as const) {
+      const outer = w.get(`[data-card-for="${id}"]`)
+      const inner = outer.get('[data-testid="card-reveal"]')
+      expect(inner.classes()).toContain('review-card-in')
+      expect(staggerOf(inner)).toBe(n)
+      // The positioned wrapper keeps only its translateY: the animation never touches layout.
+      expect(outer.classes()).not.toContain('review-card-in')
+      expect(inner.find(`#comment-${id}`).exists()).toBe(true)
+    }
+    expect(w.get('[data-testid="review-margin"]').attributes('style')).toContain(`--review-card-ms: ${CARD_SLIDE_MS}ms`)
+  })
+
+  it('fades list cards in with the same stagger below lg', () => {
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'list' })
+    expect(staggerOf(w.get('li[data-card-for="b"]'))).toBe('1')
+    expect(staggerOf(w.get('li[data-card-for="c"]'))).toBe('0')
+  })
+
+  it('does not animate or stagger with prefers-reduced-motion', async () => {
+    stubReducedMotion(true)
+    stubHeights()
+    const container = transcript({ a: 0, b: 200, c: 400 })
+    container.dataset.testid = 'container'
+    const w = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'margin', container })
+    await flushPromises()
+    await frame()
+    const inner = w.get('[data-card-for="b"] [data-testid="card-reveal"]')
+    expect(inner.classes()).not.toContain('review-card-in')
+    expect(staggerOf(inner)).toBeUndefined()
+    const list = mountMargin({ comments: staggered, order: ['a', 'b', 'c'], mode: 'list' })
+    expect(staggerOf(list.get('li[data-card-for="b"]'))).toBeUndefined()
+  })
+})
+
+describe('ReviewMargin: Jev transcription cards', () => {
+  const triage = { kind: 'transcription', base_kind: 'skip', p_claim: 0.1, p_asr: 0.9 } as const
+  const open = thread('x', { verdict: 'transcription', issue: null, triage })
+  const answered = thread('x', { verdict: 'transcription', issue: null, triage, status: 'resolved', confirmed: true })
+
+  it('passes the answer slot through for each card', () => {
+    const w = mount(ReviewMargin, {
+      props: { comments: [open], order: ['x'], activeCommentId: 'x', showResolved: false, container: null, mode: 'list' },
+      slots: { answer: ({ comment }: { comment: ReviewThread }) => `answer for ${comment.id}` },
+    })
+    expect(w.get('#comment-x').text()).toContain('answer for x')
+  })
+
+  it('keeps the active card visible, collapsed, right after it was answered and resolved', async () => {
+    const w = mountMargin({ comments: [answered], order: ['x'], activeCommentId: 'x' })
+    expect(ids(w)).toEqual(['x'])
+    expect(w.get('[data-testid="comment-status"]').text()).toBe('Not a claim')
+    // Once another card (or none) is active it is hidden like any resolved card.
+    await w.setProps({ activeCommentId: null })
+    expect(ids(w)).toEqual([])
+  })
+
+  it('does not keep an active fact-check comment that was resolved', () => {
+    const w = mountMargin({ comments: [thread('a', { status: 'resolved' })], order: ['a'], activeCommentId: 'a' })
+    expect(ids(w)).toEqual([])
   })
 })

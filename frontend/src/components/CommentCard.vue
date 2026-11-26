@@ -1,23 +1,30 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check, Plus, X } from 'lucide-vue-next'
+import { Check, CircleHelp, LoaderCircle, Plus, Quote, X } from 'lucide-vue-next'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import type { ReviewVerdict } from '@/types'
 
 /**
- * One agent comment in the review margin. Display only: it emits `activate` on click or Enter and leaves the
- * Resolve / Disagree / Reply controls (#30) to the `actions` and `thread` slots.
+ * One review comment in the margin. Display only: it emits `activate` on click or Enter and leaves the controls to
+ * slots: `actions` (Resolve / Reopen / Disagree), `thread` (reply thread, fact-check comments only) and `answer`
+ * (the Yes / No answer of an unanswered Jev transcription card).
  * The root id `comment-<id>` is the target of the highlight's aria-describedby.
+ *
+ * Jev triage cards (docs/PRD-jev-triage.md): a claim shows its check state in a polite live region ("Checking…",
+ * then "Not fact-checked yet", or the error) and what it was checked as after a correction; a transcription card asks
+ * "Is this correct?" and, once answered as small talk, collapses to "Not a claim" with the correction if any.
  */
 const props = defineProps<{ comment: ReviewThread; active: boolean }>()
 
 const emit = defineEmits<{ activate: [commentId: string] }>()
 
 defineSlots<{
-  /** Resolve / Reopen / Disagree controls (#30). */
+  /** Resolve / Reopen / Disagree controls. */
   actions?: () => unknown
-  /** Reply thread and reply box (#30). */
+  /** Reply thread and reply box. */
   thread?: () => unknown
+  /** Yes / No answer for an unanswered transcription card. */
+  answer?: () => unknown
 }>()
 
 /** Full class strings so Tailwind sees them. Accurate never gets a card, but the map stays total. */
@@ -25,12 +32,36 @@ const VERDICTS: Record<ReviewVerdict, { label: string; icon: typeof X; text: str
   inaccurate: { label: 'Inaccurate', icon: X, text: 'text-eosin', border: 'border-l-eosin' },
   incomplete: { label: 'Incomplete', icon: Plus, text: 'text-amber', border: 'border-l-amber' },
   accurate: { label: 'Accurate', icon: Check, text: 'text-moss', border: 'border-l-moss' },
+  claim: { label: 'Claim', icon: Quote, text: 'text-hema', border: 'border-l-hema' },
+  transcription: { label: 'Possible transcription error', icon: CircleHelp, text: 'text-ink', border: 'border-l-ink' },
 }
+
+const CHECK_TEXT = {
+  checking: 'Checking…',
+  not_checked: "Not fact-checked yet (the checker isn't built yet)",
+} as const
 
 const verdict = computed(() => VERDICTS[props.comment.verdict])
 const collapsed = computed(() => props.comment.status !== 'open')
 const orphan = computed(() => props.comment.start === null)
-const statusLabel = computed(() => (props.comment.status === 'disagreed' ? 'Disagreed' : 'Resolved'))
+const isClaim = computed(() => props.comment.verdict === 'claim')
+const isTranscription = computed(() => props.comment.verdict === 'transcription')
+/** A transcription card the doctor has answered (Yes, or a correction that went through). */
+const answered = computed(() => isTranscription.value && props.comment.confirmed !== null)
+const statusLabel = computed(() => {
+  if (props.comment.status === 'disagreed') return 'Disagreed'
+  return answered.value ? 'Not a claim' : 'Resolved'
+})
+const checkText = computed(() => {
+  const status = props.comment.checkStatus
+  if (status === 'error') return props.comment.checkError ?? "This claim couldn't be checked."
+  return status ? CHECK_TEXT[status] : ''
+})
+const hint = computed(() => {
+  if (isTranscription.value && !answered.value) return 'Select to answer'
+  if (props.comment.triage) return 'Select to resolve or disagree'
+  return 'Select to see the suggestion and reply'
+})
 
 function activate() {
   emit('activate', props.comment.id)
@@ -65,6 +96,9 @@ function activate() {
           {{ statusLabel }}
         </span>
       </p>
+      <p v-if="isTranscription && comment.correction" class="mt-1 text-sm" data-testid="comment-correction">
+        Correction: “{{ comment.correction }}”
+      </p>
       <p v-if="comment.status === 'disagreed' && comment.disagreeReason" class="mt-1 text-sm text-quiet">
         {{ comment.disagreeReason }}
       </p>
@@ -82,7 +116,7 @@ function activate() {
 
       <blockquote
         class="border-l-2 border-frost pl-2 text-sm text-quiet"
-        :class="active ? 'line-clamp-2' : 'line-clamp-1'"
+        :class="[active ? 'line-clamp-2' : 'line-clamp-1', isTranscription && 'border-dashed']"
         :title="comment.quote"
       >
         “{{ comment.quote }}”
@@ -90,6 +124,33 @@ function activate() {
 
       <p v-if="comment.issue" class="text-sm" :class="!active && 'line-clamp-2'" data-testid="comment-issue">
         {{ comment.issue }}
+      </p>
+
+      <p v-if="isClaim && comment.checkedAs" class="text-sm" data-testid="claim-checked-as">
+        Checked as: “{{ comment.checkedAs }}”
+      </p>
+      <!-- Always rendered for a claim, so the change from Checking… to its result is announced. -->
+      <p
+        v-if="isClaim"
+        role="status"
+        aria-live="polite"
+        class="flex items-center gap-1.5 text-sm"
+        :class="comment.checkStatus === 'error' ? 'text-eosin' : 'text-quiet'"
+        data-testid="claim-check"
+      >
+        <LoaderCircle
+          v-if="comment.checkStatus === 'checking'"
+          class="size-3.5 shrink-0 motion-safe:animate-spin"
+          aria-hidden="true"
+        />
+        {{ checkText }}
+      </p>
+
+      <p v-if="isTranscription && !answered" class="text-sm font-medium" data-testid="transcription-question">
+        Is this correct?
+      </p>
+      <p v-else-if="answered" class="text-sm text-quiet" data-testid="transcription-answered">
+        Not a claim<template v-if="comment.correction">. Correction: “{{ comment.correction }}”</template>
       </p>
 
       <!--
@@ -114,11 +175,12 @@ function activate() {
             Source: {{ comment.source }}
           </p>
 
+          <slot v-if="isTranscription && !answered" name="answer" />
           <slot name="actions" />
           <slot name="thread" />
         </div>
       </div>
-      <p v-if="!active" class="text-xs text-quiet" aria-hidden="true">Select to see the suggestion and reply</p>
+      <p v-if="!active" class="text-xs text-quiet" aria-hidden="true">{{ hint }}</p>
     </template>
 
     <!-- Resolved / disagreed cards keep their controls (Reopen, reply count) on the single line's card. -->

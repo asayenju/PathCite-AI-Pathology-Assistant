@@ -30,11 +30,26 @@ export function anchorComment(turn: Pick<TranscriptTurn, 'text'>, quote: string)
   return { start: toOriginalOffset(text, at), end: toOriginalOffset(text, at + needle.length) }
 }
 
-/** Badge text shown in the review header while the review comes from the hand-written mock. */
+/** The research-use disclaimer that every exported review carries. */
+export const RESEARCH_USE_NOTICE = 'Research use only, not a diagnosis.'
+
+/** Badge text for a review from the hand-written mock (src/mocks/review, test data only). */
 export const DEMO_REVIEW_LABEL = 'Demo review: hand-written mock, not an AI agent'
 
-/** The notice at the top of an exported review. */
-export const REVIEW_EXPORT_NOTICE = `${DEMO_REVIEW_LABEL}. Research use only, not a diagnosis.`
+/** The notice at the top of an exported mock review. */
+export const REVIEW_EXPORT_NOTICE = `${DEMO_REVIEW_LABEL}. ${RESEARCH_USE_NOTICE}`
+
+/** Badge text shown in the review header for Jev triage (docs/PRD-jev-triage.md), the app's review source. */
+export const JEV_REVIEW_LABEL =
+  'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.'
+
+/** The notice at the top of an exported Jev review. */
+export const JEV_REVIEW_EXPORT_NOTICE = `${JEV_REVIEW_LABEL} ${RESEARCH_USE_NOTICE}`
+
+/** The export notice for a review source name (useTranscriptReview's `sourceName`): Jev's, else the mock's. */
+export function reviewExportNotice(sourceName: string | undefined): string {
+  return sourceName === 'jev' ? JEV_REVIEW_EXPORT_NOTICE : REVIEW_EXPORT_NOTICE
+}
 
 /** `review-<sampleId or "transcript">-<YYYYMMDD>.json`, using the local date. Unsafe id characters become `_`. */
 export function reviewFilename(sampleId: string | null, now: Date): string {

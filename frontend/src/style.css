@@ -16,6 +16,7 @@
   --color-amber: #b7791f;
   --color-moss: #2f7d4f; /* "accurate" only, never alone: 5:1 on glass */
   --color-quiet: #565478; /* secondary text, 6:1 on bench */
+  --color-hema: #3a5aa8; /* hematoxylin blue: Jev "claim" highlights and cards, 6:1 on glass */
 
   /* shadcn-vue semantic tokens mapped onto the palette */
   --color-background: var(--color-bench);
@@ -85,28 +86,52 @@
     animation: ring-pulse 1.4s ease-in-out infinite;
   }
 
-  /* Agent review: a new comment card slides in once, already at its place; a new highlight's tint fades in. */
+  /*
+   * Agent review reveal (issue #39): a new comment card slides up once, already at its place, staggered within its
+   * turn by --review-stagger; a new highlight's tint fades in; the "Reviewing…" marker and the turn dimming move
+   * between turns. The durations are set as custom properties from src/lib/reviewMotion.ts (the pacing waits for
+   * them); the fallbacks here only cover elements outside TranscriptView / ReviewMargin and mirror those values.
+   */
   .review-card-in {
-    animation: review-card-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: review-card-in var(--review-card-ms, 200ms) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--review-stagger, 0) * var(--review-stagger-ms, 120ms));
   }
 
   .review-mark-in {
-    animation: review-mark-in 600ms ease-out both;
+    animation: review-mark-in var(--review-mark-ms, 300ms) ease-out both;
   }
 
   .review-card-leave {
     transition: opacity 200ms ease-out;
+  }
+
+  .review-turn {
+    transition:
+      opacity var(--review-marker-ms, 180ms) ease-out,
+      box-shadow var(--review-marker-ms, 180ms) ease-out;
+  }
+
+  .review-turn[data-review-state="reviewing"] {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 18%, transparent);
+  }
+
+  .review-marker-in {
+    animation: reading-in var(--review-marker-ms, 180ms) ease-out both;
+  }
+
+  .review-marker-leave {
+    transition: opacity var(--review-marker-ms, 180ms) ease-out;
   }
 }
 
 @keyframes review-card-in {
   from {
     opacity: 0;
-    transform: translateX(12px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
@@ -153,7 +178,8 @@
   .reading-in,
   .ring-pulse,
   .review-card-in,
-  .review-mark-in {
+  .review-mark-in,
+  .review-marker-in {
     animation: none;
   }
 

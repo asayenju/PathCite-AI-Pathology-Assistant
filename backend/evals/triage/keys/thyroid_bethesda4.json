@@ -1,0 +1,74 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "thyroid_bethesda4",
+ "file": "transcripts/prostate-thyroid/thyroid_bethesda4.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 23,
+   "quote": "Hi, thanks for waiting.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 24,
+   "end": 35,
+   "quote": "Come on in.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 5,
+   "end": 108,
+   "quote": "The fine needle aspiration of your thyroid noodle came back, and the pathologist reviewed the cytology.",
+   "label": "transcription",
+   "base_kind": "skip",
+   "wrong": "noodle",
+   "intended": "nodule",
+   "intended_quote": "The fine needle aspiration of your thyroid nodule came back, and the pathologist reviewed the cytology."
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 69,
+   "quote": "The result is Bethesda category 4, which means a follicular neoplasm.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 24,
+   "quote": "Neoplasm means a growth.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 25,
+   "end": 82,
+   "quote": "A follicular neoplasm on a needle test means it's cancer.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 88,
+   "quote": "For a Bethesda 4 nodule, the usual next step is surgery to take out half of the thyroid.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 111,
+   "quote": "Many people don't after removing one side, but we'll check your thyroid levels with a blood test after surgery.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 97,
+   "quote": "Most people go home the same day or the next morning, and the surgeon will go over that with you.",
+   "label": "claim"
+  }
+ ]
+}

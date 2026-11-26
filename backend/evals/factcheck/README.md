@@ -39,9 +39,12 @@ change it there and run `python tests/fixtures/transcripts/generate.py` from `ba
     alternatives). `issue` says what is missing.
   - `inaccurate`: wrong. `issue` says what is wrong. Several repeat common misconceptions
     (grade read as stage, HER2-negative read as "no hormone therapy", Breslow as width,
-    Gleason 7 as "most aggressive", Bethesda IV as "it's cancer").
+    Gleason 7 as "most aggressive", a follicular neoplasm on FNA as "it's cancer").
   - Doctor statements with no key (greetings, scheduling, small talk) are `not_checkable`.
     Patient lines are never keyed.
+- Keys sit only on general medical facts (docs/PRD-jev-triage.md). Plans, recommendations and
+  patient-specific results with no general assertion are triaged as small talk and never reach
+  the checker, so they carry no key. The per-sentence triage labels are in `../triage/`.
 - `correct`: the fact a good answer states.
 - `source_hint`: where a checker should find support, e.g. "CAP cutaneous melanoma protocol",
   "NCCN prostate cancer". A pointer, not a citation.

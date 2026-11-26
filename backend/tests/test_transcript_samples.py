@@ -14,13 +14,7 @@ SAMPLES = generate.build_samples()
 IDS = [sc.id for sc in SCENARIOS]
 BY_ID = {sc.id: sc for sc in SCENARIOS}
 
-# Vendor label of speaker 0 (the doctor) after parsing.
-DOCTOR_LABEL = {
-    "deepgram": "speaker_0",
-    "aws_medical": "spk_0",
-    "whisperx": "SPEAKER_00",
-    "openai_diarized": "A",
-}
+DOCTOR_LABEL = generate.DOCTOR_LABEL  # vendor label of speaker 0 (the doctor) after parsing
 ALLOWED_TEXT = re.compile(r"^[A-Za-z0-9 '+\-.,?!]+$")
 
 

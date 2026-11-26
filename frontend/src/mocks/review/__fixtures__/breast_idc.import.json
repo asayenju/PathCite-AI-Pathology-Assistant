@@ -1,13 +1,13 @@
 {
  "source": "openai_diarized",
  "language": null,
- "duration_s": 70.02,
+ "duration_s": 72.85,
  "speakers": [
   {
    "id": "S1",
    "source_label": "A",
-   "word_count": 122,
-   "talk_time_s": 45.93,
+   "word_count": 130,
+   "talk_time_s": 48.76,
    "preview": [
     "Hi, thanks for coming in. Is it okay if your sister stays for this?",
     "Of course. The biopsy of the lump in your left breast shows an invasive ductal carcinoma."
@@ -92,7 +92,7 @@
    "speaker": "S1",
    "start": 27.62,
    "end": 36.31,
-   "text": "The pathologist also tested the tumor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
+   "text": "The pathologist also tested the humor for hormone receptors. It's estrogen receptor and progesterone receptor positive, and HER2 negative.",
    "is_final": true,
    "words": [],
    "min_confidence": null
@@ -131,8 +131,8 @@
    "id": "t0011",
    "speaker": "S1",
    "start": 47.11,
-   "end": 48.57,
-   "text": "It's a grade 2 tumor.",
+   "end": 51.4,
+   "text": "It's a grade 2 tumor. Breast cancers are graded from 1 to 3.",
    "is_final": true,
    "words": [],
    "min_confidence": null
@@ -140,8 +140,8 @@
   {
    "id": "t0012",
    "speaker": "S2",
-   "start": 49.17,
-   "end": 50.61,
+   "start": 52.0,
+   "end": 53.44,
    "text": "Is that good or bad?",
    "is_final": true,
    "words": [],
@@ -150,8 +150,8 @@
   {
    "id": "t0013",
    "speaker": "S1",
-   "start": 51.21,
-   "end": 59.6,
+   "start": 54.04,
+   "end": 62.43,
    "text": "It sits in the middle of the scale. The next step is to meet with the breast surgeon and the oncologist to plan treatment.",
    "is_final": true,
    "words": [],
@@ -160,8 +160,8 @@
   {
    "id": "t0014",
    "speaker": "S2",
-   "start": 60.2,
-   "end": 61.42,
+   "start": 63.03,
+   "end": 64.25,
    "text": "Will I need chemo?",
    "is_final": true,
    "words": [],
@@ -170,8 +170,8 @@
   {
    "id": "t0015",
    "speaker": "S1",
-   "start": 62.02,
-   "end": 67.73,
+   "start": 64.85,
+   "end": 70.56,
    "text": "That depends on a few more results, and we'll go through all of it at that visit.",
    "is_final": true,
    "words": [],
@@ -180,8 +180,8 @@
   {
    "id": "t0016",
    "speaker": "S2",
-   "start": 68.33,
-   "end": 69.52,
+   "start": 71.16,
+   "end": 72.35,
    "text": "Okay. Thank you.",
    "is_final": true,
    "words": [],

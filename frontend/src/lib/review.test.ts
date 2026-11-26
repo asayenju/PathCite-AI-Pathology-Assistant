@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { anchorComment, downloadJson, reviewFilename } from './review'
+import {
+  DEMO_REVIEW_LABEL,
+  JEV_REVIEW_EXPORT_NOTICE,
+  JEV_REVIEW_LABEL,
+  REVIEW_EXPORT_NOTICE,
+  anchorComment,
+  downloadJson,
+  reviewExportNotice,
+  reviewFilename,
+} from './review'
 
 const turn = (text: string) => ({ text })
 
@@ -85,5 +94,24 @@ describe('downloadJson', () => {
     expect(revoke).toHaveBeenCalledWith('blob:test')
     expect(blob!.type).toBe('application/json')
     expect(JSON.parse(await blob!.text())).toEqual({ a: 1 })
+  })
+})
+
+describe('review labels and notices', () => {
+  it('labels a Jev review as triage that is not fact-checked and is sent to TypeSafe', () => {
+    expect(JEV_REVIEW_LABEL).toBe(
+      'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.',
+    )
+  })
+
+  it('the Jev export notice repeats the label plus the research-use disclaimer', () => {
+    expect(JEV_REVIEW_EXPORT_NOTICE).toBe(`${JEV_REVIEW_LABEL} Research use only, not a diagnosis.`)
+    expect(reviewExportNotice('jev')).toBe(JEV_REVIEW_EXPORT_NOTICE)
+  })
+
+  it('the mock keeps its demo notice', () => {
+    expect(REVIEW_EXPORT_NOTICE).toBe(`${DEMO_REVIEW_LABEL}. Research use only, not a diagnosis.`)
+    expect(reviewExportNotice('mock')).toBe(REVIEW_EXPORT_NOTICE)
+    expect(reviewExportNotice(undefined)).toBe(REVIEW_EXPORT_NOTICE)
   })
 })

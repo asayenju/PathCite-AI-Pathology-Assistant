@@ -40,5 +40,10 @@ inside the tests, not stored here.
 vendors) with an answer key per doctor statement. `generate.py` also renders them to
 `frontend/public/transcripts/<folder>/<id>.json` plus `index.json` (the UI's sample panel) and
 writes the keys to `backend/evals/factcheck/keys/` (see `backend/evals/factcheck/README.md`).
-Each scenario has its own low-confidence word map and timing seed. Synthetic and AI-written;
-`tests/test_transcript_samples.py` checks they are up to date and import cleanly.
+Each scenario has its own low-confidence word map and timing seed, and one planted
+speech-to-text error in a doctor line (`asr_error`, e.g. "colin" for "colon"), scored low only at
+that spot. The generator also writes per-sentence triage gold labels to `backend/evals/triage/keys/`
+(see `backend/evals/triage/README.md`) and the saved imports in
+`frontend/src/mocks/review/__fixtures__/` that the mock reviews are tested against. Synthetic and
+AI-written. `tests/test_transcript_samples.py` and `tests/test_triage_gold.py` check that they are up to
+date, import cleanly and label every doctor sentence.

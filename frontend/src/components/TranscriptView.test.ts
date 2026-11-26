@@ -1,9 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TranscriptView from './TranscriptView.vue'
-import type { CommentStatus, ReviewThread } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type CommentStatus, type ReviewThread } from '@/composables/useTranscriptReview'
 import { anchorComment } from '@/lib/review'
 import { formatClock } from '@/lib/transcripts'
+import { HIGHLIGHT_FADE_MS, MARKER_TRANSITION_MS } from '@/lib/reviewMotion'
+import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 import { breastIdc } from '@/mocks/review/breastIdc'
 import { crcAdenocarcinoma } from '@/mocks/review/crcAdenocarcinoma'
 import type { MockComment } from '@/mocks/review/types'
@@ -94,7 +96,15 @@ function threads(imp: TranscriptImport, mocks: MockComment[], status: Record<str
   return mocks.map(({ clarification: _c, ...m }) => {
     const turn = imp.turns.find((t) => t.id === m.turn_id)!
     const a = anchorComment(turn, m.quote)
-    return { ...m, start: a?.start ?? null, end: a?.end ?? null, status: status[m.id] ?? 'open', disagreeReason: null, thread: [] }
+    return {
+      ...m,
+      start: a?.start ?? null,
+      end: a?.end ?? null,
+      status: status[m.id] ?? 'open',
+      disagreeReason: null,
+      thread: [],
+      ...EMPTY_TRIAGE_STATE,
+    }
   })
 }
 const rolesOf = (imp: TranscriptImport) =>
@@ -181,14 +191,14 @@ describe('TranscriptView highlights', () => {
   })
 
   it('keeps the low-confidence underline inside a highlight', () => {
-    // crc-1 is on t0005; put an issue over the low-confidence "sigmoid" there.
+    // crc-1 is on t0005; put an issue over the low-confidence "sigmoid" and the planted "colin" there.
     const turn = crc.turns.find((t) => t.id === 't0005')!
-    const a = anchorComment(turn, 'your sigmoid colon')!
+    const a = anchorComment(turn, 'your sigmoid colin')!
     const comment: ReviewThread = {
       ...crcComments[1]!,
       id: 'x-1',
       turn_id: 't0005',
-      quote: 'your sigmoid colon',
+      quote: 'your sigmoid colin',
       start: a.start,
       end: a.end,
     }
@@ -197,12 +207,75 @@ describe('TranscriptView highlights', () => {
     expect(mark.element.textContent).toBe('your ')
     // Spacing survives the split: the paragraph reads as the turn text plus screen-reader notes.
     const para = w.get('[data-testid="turn-t0005"] p.leading-relaxed').element.textContent
-    expect(para).toBe(turn.text.replace('sigmoid', 'sigmoid (transcription confidence 52%)').replace('colon ', 'colon (inaccurate statement) '))
+    expect(para).toBe(
+      turn.text
+        .replace('sigmoid', 'sigmoid (transcription confidence 52%)')
+        .replace('colin ', 'colin (transcription confidence 41%) (inaccurate statement) '),
+    )
     const low = w.get('[data-testid="turn-t0005"] [data-testid="low-confidence-word"]')
     expect(low.text()).toContain('sigmoid')
     expect(low.text()).toContain('transcription confidence 52%')
     expect(low.element.closest('mark')?.getAttribute('data-comment-ids')).toBe('x-1')
     expect(low.classes()).toContain('decoration-dotted')
+  })
+})
+
+describe('TranscriptView Jev triage highlights', () => {
+  const simple: TranscriptTurn[] = [
+    { id: 't1', speaker: 'S1', start: null, end: null, text: 'Staging tells us a lot. Your sigmoid colin is fine.', is_final: true, words: [], min_confidence: null },
+  ]
+  const triaged = (id: string, verdict: 'claim' | 'transcription', start: number, end: number, over: Partial<ReviewThread> = {}): ReviewThread => ({
+    id,
+    turn_id: 't1',
+    quote: simple[0]!.text.slice(start, end),
+    start,
+    end,
+    verdict,
+    issue: null,
+    suggestion: null,
+    source: null,
+    triage: { kind: verdict, base_kind: 'claim', p_claim: 0.9, p_asr: verdict === 'transcription' ? 0.9 : 0.1 },
+    status: 'open',
+    disagreeReason: null,
+    thread: [],
+    ...EMPTY_TRIAGE_STATE,
+    ...over,
+  })
+  const mountTriage = (comments: ReviewThread[]) =>
+    mount(TranscriptView, { props: { turns: simple, roles: { S1: 'doctor' }, comments } })
+
+  it('marks a claim in hematoxylin blue with an icon, a label and the DOM contract', () => {
+    const w = mountTriage([triaged('t1:0', 'claim', 0, 23)])
+    const mark = w.get('[data-anchor-for="t1:0"]')
+    expect(mark.element.tagName).toBe('MARK')
+    expect(mark.attributes('aria-describedby')).toBe('comment-t1:0')
+    expect(mark.attributes('tabindex')).toBe('0')
+    expect(mark.classes()).toEqual(expect.arrayContaining(['border-hema', 'bg-hema/15']))
+    expect(mark.find('[data-testid="verdict-icon"]').classes()).toContain('text-hema')
+    expect(mark.text()).toBe('Staging tells us a lot. (claim)')
+  })
+
+  it('marks a possible transcription error with a dashed underline, a ? icon and a label', () => {
+    const w = mountTriage([triaged('t1:24', 'transcription', 24, 51)])
+    const mark = w.get('[data-anchor-for="t1:24"]')
+    expect(mark.attributes('aria-describedby')).toBe('comment-t1:24')
+    expect(mark.classes()).toEqual(expect.arrayContaining(['border-b-2', 'border-dashed']))
+    expect(mark.classes().some((c) => c.startsWith('bg-'))).toBe(false)
+    expect(mark.find('[data-testid="verdict-icon"]').classes()).toContain('lucide-circle-question-mark')
+    expect(mark.text()).toBe('Your sigmoid colin is fine. (possible transcription error)')
+  })
+
+  it('fades a resolved triage highlight but keeps it focusable', () => {
+    const w = mountTriage([triaged('t1:24', 'transcription', 24, 51, { status: 'resolved', confirmed: true })])
+    const mark = w.get('[data-anchor-for="t1:24"]')
+    expect(mark.classes()).toContain('border-ink/30')
+    expect(mark.attributes('tabindex')).toBe('0')
+  })
+
+  it('never changes the transcript text', () => {
+    const w = mountTriage([triaged('t1:24', 'claim', 24, 51, { checkedAs: 'Your sigmoid colon is fine.', correction: 'x' })])
+    expect(w.get('[data-testid="turn-t1"]').text()).toContain('Your sigmoid colin is fine.')
+    expect(w.get('[data-testid="turn-t1"]').text()).not.toContain('colon')
   })
 })
 
@@ -236,5 +309,55 @@ describe('TranscriptView review progress', () => {
     expect(list.classes()).not.toContain('max-h-[32rem]')
     expect(list.classes()).not.toContain('overflow-y-auto')
     expect(list.attributes('tabindex')).toBeUndefined()
+  })
+})
+
+describe('TranscriptView reveal animation (issue #39)', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    unstubMatchMedia()
+  })
+
+  const fadingIds = (w: ReturnType<typeof mount>) =>
+    w.findAll('mark.review-mark-in').flatMap((m) => m.attributes('data-comment-ids')!.split(' '))
+
+  it('carries the shared timings as CSS custom properties', () => {
+    const style = mountReview().get('[data-testid="transcript-view"]').attributes('style')
+    expect(style).toContain(`--review-mark-ms: ${HIGHLIGHT_FADE_MS}ms`)
+    expect(style).toContain(`--review-marker-ms: ${MARKER_TRANSITION_MS}ms`)
+  })
+
+  it('fades a highlight in only when it first appears, not on re-render or status changes', async () => {
+    vi.useFakeTimers()
+    const first = crcComments.filter((c) => c.id === 'crc-2')
+    const w = mountReview({}, crc, first)
+    expect(fadingIds(w)).toContain('crc-2')
+    await vi.advanceTimersByTimeAsync(HIGHLIGHT_FADE_MS + 100)
+    expect(w.findAll('mark.review-mark-in')).toHaveLength(0)
+
+    // A status change (Show resolved, Resolve) re-renders the marks without animating them again.
+    await w.setProps({ comments: first.map((c) => ({ ...c, status: 'resolved' as CommentStatus })) })
+    expect(w.findAll('mark.review-mark-in')).toHaveLength(0)
+
+    // A newly arrived comment fades in, and only it.
+    const added = crcComments.find((c) => c.id !== 'crc-2' && c.start !== null && c.turn_id !== first[0]!.turn_id)!
+    await w.setProps({ comments: [...first, added] })
+    expect(fadingIds(w)).toContain(added.id)
+    expect(fadingIds(w)).not.toContain('crc-2')
+  })
+
+  it('does not fade highlights in with prefers-reduced-motion', () => {
+    stubReducedMotion(true)
+    expect(mountReview().findAll('mark.review-mark-in')).toHaveLength(0)
+  })
+
+  it('gives each doctor turn a review state that transitions between waiting, reviewing and done', () => {
+    const w = mountReview({ reviewing: true, currentTurnId: 't0007', doneTurnIds: ['t0001', 't0003', 't0005'] })
+    const state = (id: string) => w.get(`[data-testid="turn-${id}"]`).attributes('data-review-state')
+    expect(state('t0005')).toBe('done')
+    expect(state('t0007')).toBe('reviewing')
+    expect(state('t0009')).toBe('waiting')
+    expect(state('t0008')).toBeUndefined() // patient
+    for (const li of w.findAll('[data-turn-id]')) expect(li.classes()).toContain('review-turn')
   })
 })

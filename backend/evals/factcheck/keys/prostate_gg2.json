@@ -22,7 +22,7 @@
    "speaker": "doctor"
   },
   {
-   "span": "The treatment for this is surgery to remove the prostate.",
+   "span": "For this grade of prostate cancer, the standard treatment is surgery to remove the prostate.",
    "verdict": "incomplete",
    "issue": "Omits the other options.",
    "correct": "Options for Grade Group 2 also include radiation therapy and, for some carefully selected men, active surveillance. The choice depends on PSA, extent of disease and the patient's preferences.",

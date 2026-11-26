@@ -22,7 +22,7 @@
    "speaker": "doctor"
   },
   {
-   "span": "The treatment is usually chemotherapy.",
+   "span": "This type of lymphoma is usually treated with chemotherapy.",
    "verdict": "incomplete",
    "issue": "Incomplete regimen and no mention of staging first.",
    "correct": "Standard first treatment combines chemotherapy with the antibody rituximab, for example R-CHOP, after staging with PET-CT.",

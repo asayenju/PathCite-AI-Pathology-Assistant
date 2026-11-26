@@ -36,6 +36,13 @@ const MESSAGES: Record<string, string> = {
     'This transcript format is not supported. Use JSON from Deepgram, AWS Transcribe, WhisperX or OpenAI (diarized).',
   undiarized_transcript: 'This transcript has no speaker labels. Re-run it with speaker diarization turned on.',
   empty_transcript: 'This transcript has no words in it. Check that the audio was transcribed, then export again.',
+  // Jev triage (POST /triage and /triage/span). Mid-stream errors arrive as {type: "error", code} with the same codes.
+  triage_unavailable:
+    "Triage isn't available: the server has no TypeSafe key, or TypeSafe rejected it. Set JEV_KEY in the root .env and restart uvicorn.",
+  triage_rate_limited: 'TypeSafe is rate-limiting triage requests. Wait a minute, then try again.',
+  triage_upstream_error: "TypeSafe (Jev) didn't answer in time or sent a bad answer. Try again.",
+  invalid_triage_request:
+    'This transcript has no doctor turns to triage, or is too long. Check the roles, or use a shorter transcript.',
 }
 
 /** Every backend error code with a message, for tests. */
@@ -46,6 +53,24 @@ export function messageFor(code: string, fallback?: string): string {
 }
 
 type Describe = (code: string, fallback?: string) => string
+
+/**
+ * The error for a non-OK response: `{detail, code}` bodies are mapped with `describe`; a non-JSON 5xx (e.g. the dev
+ * proxy answering for a backend that is down) becomes `network`, any other non-JSON reply `unknown`.
+ */
+export async function errorFromResponse(response: Response, describe: Describe = messageFor): Promise<PredictError> {
+  let payload: { code?: string; detail?: string } | null = null
+  try {
+    payload = await response.json()
+  } catch {
+    // Not JSON.
+  }
+  if (!payload?.code) {
+    if (response.status >= 500) return new PredictError('network', describe('network'))
+    return new PredictError('unknown', `Request failed (${response.status}).`)
+  }
+  return new PredictError(payload.code, describe(payload.code, payload.detail))
+}
 
 /**
  * POST one file as multipart field `file` and parse the JSON reply.
@@ -70,18 +95,7 @@ export async function postFile<T>(
   }
 
   if (response.ok) return (await response.json()) as T
-
-  let payload: { code?: string; detail?: string } | null = null
-  try {
-    payload = await response.json()
-  } catch {
-    // Not JSON: e.g. the dev proxy answering for a backend that is down.
-  }
-  if (!payload?.code) {
-    if (response.status >= 500) throw new PredictError('network', describe('network'))
-    throw new PredictError('unknown', `Request failed (${response.status}).`)
-  }
-  throw new PredictError(payload.code, describe(payload.code, payload.detail))
+  throw await errorFromResponse(response, describe)
 }
 
 /** Cheap checks before uploading. The server stays the authority. */

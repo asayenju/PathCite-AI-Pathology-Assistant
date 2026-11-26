@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import ReviewHeader from './ReviewHeader.vue'
 import type { ReviewStatus } from '@/composables/useTranscriptReview'
-import { DEMO_REVIEW_LABEL } from '@/lib/review'
+import { DEMO_REVIEW_LABEL, JEV_REVIEW_LABEL } from '@/lib/review'
 
 type Props = InstanceType<typeof ReviewHeader>['$props']
 
@@ -96,5 +96,51 @@ describe('ReviewHeader', () => {
     expect(mountHeader().find('[data-testid="review-demo-label"]').exists()).toBe(false)
     const w = mountHeader({ demoLabel: DEMO_REVIEW_LABEL })
     expect(w.get('[data-testid="review-demo-label"]').text()).toBe('Demo review: hand-written mock, not an AI agent')
+  })
+})
+
+describe('ReviewHeader: Jev triage', () => {
+  const triage = (claims: number, openTranscriptions: number, skipped: number) => ({
+    triageCounts: { claims, openTranscriptions, skipped },
+  })
+
+  it('counts claims, open transcription checks and skipped spans instead of open/resolved/disagreed', () => {
+    const w = mountHeader(triage(3, 1, 7))
+    const counts = w.get('[data-testid="review-triage-counts"]')
+    expect(counts.text()).toBe('3 claims · 1 open transcription check · 7 skipped spans')
+    expect(counts.classes()).toContain('tabular-nums')
+    expect(w.find('[data-testid="review-counts"]').exists()).toBe(false)
+  })
+
+  it('uses singular and zero forms', () => {
+    expect(mountHeader(triage(1, 0, 1)).get('[data-testid="review-triage-counts"]').text()).toBe(
+      '1 claim · 0 open transcription checks · 1 skipped span',
+    )
+  })
+
+  it('Previous/Next move across claims and transcription checks', async () => {
+    const w = mountHeader(triage(2, 1, 0))
+    const prev = w.get('[data-testid="review-prev"]')
+    const next = w.get('[data-testid="review-next"]')
+    expect(prev.attributes('aria-label')).toBe('Previous claim or transcription check')
+    expect(next.attributes('aria-label')).toBe('Next claim or transcription check')
+    await next.trigger('click')
+    await prev.trigger('click')
+    expect(w.emitted('next')).toHaveLength(1)
+    expect(w.emitted('prev')).toHaveLength(1)
+  })
+
+  it('keeps Show resolved, Stop and Export', () => {
+    const w = mountHeader({ ...triage(2, 1, 0), status: 'running' })
+    for (const id of ['review-show-resolved', 'review-stop', 'review-export']) {
+      expect(w.find(`[data-testid="${id}"]`).exists()).toBe(true)
+    }
+  })
+
+  it('shows the Jev label', () => {
+    const w = mountHeader({ ...triage(0, 0, 0), demoLabel: JEV_REVIEW_LABEL })
+    expect(w.get('[data-testid="review-demo-label"]').text()).toBe(
+      'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.',
+    )
   })
 })

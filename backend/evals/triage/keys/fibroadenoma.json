@@ -1,0 +1,88 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "fibroadenoma",
+ "file": "transcripts/breast/fibroadenoma.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 20,
+   "quote": "Hi, good to see you.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 21,
+   "end": 48,
+   "quote": "Come on in and have a seat.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 0,
+   "end": 23,
+   "quote": "Well, I have good news.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 24,
+   "end": 89,
+   "quote": "The court biopsy of the lump in your breast shows a fibroadenoma.",
+   "label": "transcription",
+   "base_kind": "skip",
+   "wrong": "court",
+   "intended": "core",
+   "intended_quote": "The core biopsy of the lump in your breast shows a fibroadenoma."
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 121,
+   "quote": "A fibroadenoma is a benign, non-cancerous lump made of glandular and connective tissue, and it's common in younger women.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 22,
+   "quote": "Sometimes they shrink.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 23,
+   "end": 74,
+   "quote": "Most fibroadenomas can simply be watched over time.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 78,
+   "quote": "Fibroadenomas usually turn into cancer, so we have to remove it at some point.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 18,
+   "quote": "I know it's a lot.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 19,
+   "end": 81,
+   "quote": "The surgeon can talk you through the operation and the timing.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 67,
+   "quote": "Call the clinic if the lump gets bigger or you notice anything new.",
+   "label": "skip"
+  }
+ ]
+}

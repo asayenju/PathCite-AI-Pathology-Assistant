@@ -1,6 +1,20 @@
 import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
-import { REVIEW_EXPORT_NOTICE, reviewFilename } from '@/lib/review'
-import type { ClarifySource, ReviewComment, ReviewEvent, ReviewSource, ReviewVerdict, RoledTurn } from '@/types'
+import { PredictError } from '@/lib/api'
+import { defaultClaimChecker } from '@/lib/claimChecker'
+import { defaultSpanTriager } from '@/lib/jevReviewSource'
+import { reviewExportNotice, reviewFilename } from '@/lib/review'
+import type {
+  CheckResult,
+  ClaimChecker,
+  ClarifySource,
+  ReviewComment,
+  ReviewEvent,
+  ReviewSource,
+  ReviewVerdict,
+  RoledTurn,
+  SpanTriager,
+  TriageKind,
+} from '@/types'
 
 /** idle → running → done | stopped (stop()) | error. reset() goes back to idle from anywhere. */
 export type ReviewStatus = 'idle' | 'running' | 'done' | 'stopped' | 'error'
@@ -15,18 +29,55 @@ export interface ThreadMessage {
   pending: boolean
 }
 
-/** A received comment plus what the person did with it. */
+/**
+ * A claim's check: `checking` while the ClaimChecker runs, then the checker's status (only `not_checked` while it
+ * is a stub), or `error` if it failed. A check aborted by stop() ends as `not_checked`.
+ */
+export type CheckStatus = 'checking' | CheckResult['status'] | 'error'
+
+/**
+ * A received comment plus what the person did with it. The triage fields (confirmed … checkError) are null/false on
+ * fact-check comments. A transcription card answered "Yes" on a claim-based span, or "No" with a correction that
+ * Jev calls a claim, switches its `verdict` to `claim`; `triage.kind` keeps what Jev first said.
+ */
 export type ReviewThread = ReviewComment & {
   status: CommentStatus
   disagreeReason: string | null
   thread: ThreadMessage[]
+  /** Transcription cards: true after "Yes, it's correct", false after a "No" correction went through, else null. */
+  confirmed: boolean | null
+  /** The doctor's typed correction (trimmed), once triaged. The transcript text itself is never changed. */
+  correction: string | null
+  /** The text the claim is checked as when it differs from the quote (a correction triaged as a claim). */
+  checkedAs: string | null
+  /** True while a correction is being triaged; the card can't be answered again meanwhile. */
+  correctionPending: boolean
+  /** Why the last correction failed (the card stays answerable); null otherwise. */
+  correctionError: string | null
+  /** Null for anything that is not a claim. */
+  checkStatus: CheckStatus | null
+  /** Message for checkStatus `error`. */
+  checkError: string | null
 }
+
+/** The triage state of a comment nobody has answered: what every received comment starts with. */
+export const EMPTY_TRIAGE_STATE = {
+  confirmed: null,
+  correction: null,
+  checkedAs: null,
+  correctionPending: false,
+  correctionError: null,
+  checkStatus: null,
+  checkError: null,
+} as const satisfies Partial<ReviewThread>
 
 export interface ReviewExport {
   notice: string
   source: string
   sample_id: string | null
   exported_at: string
+  /** The triage model id from the stream's done event (e.g. jev-1.14.0); null for the mock. */
+  model: string | null
   comments: {
     id: string
     turn_id: string
@@ -38,20 +89,37 @@ export interface ReviewExport {
     status: CommentStatus
     disagree_reason: string | null
     thread: { author: 'you' | 'agent'; text: string }[]
+    /** Jev's original kind, p_claim and p_asr; null for fact-check comments. */
+    kind: TriageKind | null
+    p_claim: number | null
+    p_asr: number | null
+    /** The Yes/No answer on a transcription card. */
+    confirmed: boolean | null
+    correction: string | null
+    checked_as: string | null
+    check_status: CheckStatus | null
   }[]
 }
 
 export interface UseTranscriptReviewOptions {
-  /** Streams the review. Defaults to an error-only source, so callers pass e.g. mockReviewSource(sampleId). */
+  /** Streams the review. Defaults to an error-only source, so callers pass e.g. jevReviewSource(). */
   source?: ReviewSource
   /** Answers replies. Without one, replies get the failure message. */
   clarify?: ClarifySource
-  /** `source` field of the export. */
+  /** `source` field of the export, e.g. "jev" or "mock". */
   sourceName?: string
+  /** Checks claims. Defaults to the stub (lib/claimChecker.ts). */
+  checker?: ClaimChecker
+  /** Triages a typed correction. Defaults to POST /api/triage/span (lib/jevReviewSource.ts). */
+  triageSpan?: SpanTriager
 }
 
 export const REVIEW_ERROR_MESSAGE = 'The review stopped because of an error. Try again.'
 export const REPLY_ERROR_MESSAGE = "Couldn't get an answer. Try again."
+export const CHECK_ERROR_MESSAGE = "This claim couldn't be checked."
+export const CORRECTION_ERROR_MESSAGE = "Couldn't check your correction. Try again."
+/** How many earlier doctor turns go along as context for a correction or a check. */
+const CONTEXT_TURNS = 2
 const NO_SOURCE_MESSAGE = "Agent review isn't available for this transcript yet."
 
 const isAbort = (error: unknown) => error instanceof DOMException && error.name === 'AbortError'
@@ -73,11 +141,23 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
   const activeCommentId = ref<string | null>(null)
   /** sampleId passed to the last start(); the default for exportReview. */
   const sampleId = ref<string | null>(null)
+  /** Spans Jev triaged as small talk (span_skipped events): counted, never shown. */
+  const skippedSpans = ref(0)
+  /** The triage model from the done event, e.g. jev-1.14.0. */
+  const model = ref<string | null>(null)
+
+  const checker = options.checker ?? defaultClaimChecker
+  const triager = options.triageSpan ?? defaultSpanTriager
 
   /** Turn id → position in the transcript given to start(); turns only seen in events go after, in arrival order. */
   let turnIndex = new Map<string, number>()
+  /** The turns given to start(), for the context of checks and corrections. Read only, never modified. */
+  let reviewTurns: RoledTurn[] = []
   let runController: AbortController | null = null
   const replyControllers = new Set<AbortController>()
+  /** Comment id → its running check / correction. An answer only lands if its controller is still the one here. */
+  const checkControllers = new Map<string, AbortController>()
+  const correctionControllers = new Map<string, AbortController>()
   let messageSeq = 0
 
   const hasResults = computed(() => comments.value.length > 0)
@@ -86,6 +166,17 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     const c = { open: 0, resolved: 0, disagreed: 0 }
     for (const comment of comments.value) if (comment.verdict !== 'accurate') c[comment.status]++
     return c
+  })
+
+  /** For the triage header: claim comments, unanswered open transcription cards, and skipped spans. */
+  const triageCounts = computed(() => {
+    let claims = 0
+    let openTranscriptions = 0
+    for (const c of comments.value) {
+      if (c.verdict === 'claim') claims++
+      else if (c.verdict === 'transcription' && c.status === 'open' && c.confirmed === null) openTranscriptions++
+    }
+    return { claims, openTranscriptions, skipped: skippedSpans.value }
   })
 
   /** Non-accurate comments in transcript order: by turn, orphans first within a turn, then by start offset. */
@@ -112,13 +203,91 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     replyControllers.clear()
   }
 
+  /** Aborts every running check. With `markNotChecked` (stop), those claims end as not_checked. */
+  function abortChecks(markNotChecked: boolean) {
+    for (const [id, controller] of checkControllers) {
+      controller.abort()
+      const c = markNotChecked ? find(id) : undefined
+      if (c?.checkStatus === 'checking') c.checkStatus = 'not_checked'
+    }
+    checkControllers.clear()
+  }
+
+  function abortCorrections() {
+    for (const controller of correctionControllers.values()) controller.abort()
+    correctionControllers.clear()
+  }
+
+  /** Everything start() and reset() throw away: the run, replies, checks and corrections. */
+  function abortAll() {
+    runController?.abort()
+    runController = null
+    abortReplies()
+    abortChecks(false)
+    abortCorrections()
+  }
+
   function clearResults() {
     errorMessage.value = ''
     currentTurnId.value = null
     doneTurnIds.value = []
     comments.value = []
     activeCommentId.value = null
+    skippedSpans.value = 0
+    model.value = null
   }
+
+  /** Text of up to CONTEXT_TURNS doctor turns before `turnId`, oldest first. */
+  function previousDoctorTurns(turnId: string): string[] {
+    const at = reviewTurns.findIndex((t) => t.id === turnId)
+    if (at < 0) return []
+    return reviewTurns
+      .slice(0, at)
+      .filter((t) => t.role === 'doctor')
+      .slice(-CONTEXT_TURNS)
+      .map((t) => t.text)
+  }
+
+  /** Sends a claim comment to the checker: checking, then the checker's status, or error. */
+  function startCheck(id: string) {
+    const c = find(id)
+    if (!c) return
+    checkControllers.get(id)?.abort()
+    const controller = new AbortController()
+    checkControllers.set(id, controller)
+    c.checkStatus = 'checking'
+    c.checkError = null
+    const claim = { turn_id: c.turn_id, quote: c.checkedAs ?? c.quote, context: previousDoctorTurns(c.turn_id) }
+    // Looked up again on settle: stop/reset/start may have replaced the check or the comments meanwhile.
+    const settle = (update: (c: ReviewThread) => void) => {
+      if (checkControllers.get(id) !== controller) return
+      checkControllers.delete(id)
+      const current = find(id)
+      if (current) update(current)
+    }
+    let pending: Promise<CheckResult>
+    try {
+      pending = checker(claim, controller.signal)
+    } catch (error) {
+      pending = Promise.reject(error)
+    }
+    pending.then(
+      (result) => settle((t) => (t.checkStatus = result.status)),
+      (error) =>
+        settle((t) => {
+          if (isAbort(error)) {
+            t.checkStatus = 'not_checked'
+            return
+          }
+          t.checkStatus = 'error'
+          t.checkError = CHECK_ERROR_MESSAGE
+        }),
+    )
+  }
+
+  /** A transcription card that still waits for Yes / No. */
+  const answerable = (c: ReviewThread) =>
+    Boolean(c.triage) && c.verdict === 'transcription' && c.confirmed === null && !c.correctionPending
 
   function apply(event: ReviewEvent) {
     switch (event.type) {
@@ -128,7 +297,17 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
         break
       case 'comment':
         if (find(event.comment.id)) break
-        comments.value.push({ ...event.comment, status: 'open', disagreeReason: null, thread: [] })
+        comments.value.push({
+          ...event.comment,
+          status: 'open',
+          disagreeReason: null,
+          thread: [],
+          ...EMPTY_TRIAGE_STATE,
+        })
+        if (event.comment.verdict === 'claim') startCheck(event.comment.id)
+        break
+      case 'span_skipped':
+        skippedSpans.value++
         break
       case 'turn_done':
         if (!doneTurnIds.value.includes(event.turn_id)) doneTurnIds.value.push(event.turn_id)
@@ -136,6 +315,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
         break
       case 'done':
         currentTurnId.value = null
+        if (event.model) model.value = event.model
         status.value = 'done'
         break
       case 'error':
@@ -147,21 +327,21 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
   }
 
   /**
-   * Reviews `turns`, replacing any previous run and its results (pending replies are aborted too).
-   * Resolves when the run ends; never rejects.
+   * Reviews `turns`, replacing any previous run and its results (pending replies, checks and corrections are
+   * aborted too). Resolves when the run ends; never rejects.
    */
   async function start(
     turns: RoledTurn[],
     meta: { sampleId: string | null; source?: ReviewSource } = { sampleId: null },
   ): Promise<void> {
-    runController?.abort()
-    abortReplies()
+    abortAll()
     const controller = new AbortController()
     runController = controller
     const { signal } = controller
     clearResults()
     sampleId.value = meta.sampleId
     turnIndex = new Map(turns.map((t, i) => [t.id, i]))
+    reviewTurns = turns
     status.value = 'running'
 
     const source = meta.source ?? options.source
@@ -187,24 +367,95 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     }
   }
 
-  /** Stops a running review and keeps the comments received so far. */
+  /**
+   * Stops a running review and keeps the comments received so far. Running claim checks are aborted and end as
+   * not_checked; replies and corrections in flight carry on.
+   */
   function stop() {
     if (status.value !== 'running') return
     runController?.abort()
     runController = null
+    abortChecks(true)
     currentTurnId.value = null
     status.value = 'stopped'
   }
 
-  /** Invalidation (Clear, a new import, Edit roles): aborts the run and every pending reply, then clears to idle. */
+  /**
+   * Invalidation (Clear, a new import, Edit roles): aborts the run and every pending reply, check and correction,
+   * then clears to idle.
+   */
   function reset() {
-    runController?.abort()
-    runController = null
-    abortReplies()
+    abortAll()
     clearResults()
     sampleId.value = null
     turnIndex = new Map()
+    reviewTurns = []
     status.value = 'idle'
+  }
+
+  /** Reply is for fact-check comments only: Jev labels spans and can't answer questions. */
+  function canReply(comment: Pick<ReviewComment, 'triage'>): boolean {
+    return !comment.triage
+  }
+
+  /**
+   * "Yes, it's correct" on a transcription card: a claim-based span becomes a claim and goes to the checker, a
+   * small-talk span is resolved. Ignored for anything but an unanswered transcription card.
+   */
+  function confirmTranscription(id: string) {
+    const c = find(id)
+    if (!c || !answerable(c)) return
+    c.confirmed = true
+    c.correctionError = null
+    if (c.triage!.base_kind === 'claim') {
+      c.verdict = 'claim'
+      startCheck(id)
+    } else {
+      c.status = 'resolved'
+      c.disagreeReason = null
+    }
+  }
+
+  /**
+   * "No" with the doctor's correction: the trimmed text goes to triageSpan with up to 2 earlier doctor turns. A claim
+   * makes the card a claim checked as the typed text; small talk resolves it. On failure the card shows
+   * correctionError and stays answerable. Blank text, or a card that isn't an unanswered transcription card, is
+   * ignored with no call. Only the comment changes; the transcript text is never edited. reset() and start() abort
+   * it.
+   */
+  async function correctTranscription(id: string, text: string): Promise<void> {
+    const typed = text.trim()
+    const c = find(id)
+    if (!typed || !c || !answerable(c)) return
+    c.correctionPending = true
+    c.correctionError = null
+    const controller = new AbortController()
+    correctionControllers.set(id, controller)
+    const { signal } = controller
+    const current = () => (correctionControllers.get(id) === controller && !signal.aborted ? find(id) : undefined)
+    try {
+      const result = await triager(typed, previousDoctorTurns(c.turn_id), signal)
+      const t = current()
+      if (!t) return
+      t.correctionPending = false
+      t.confirmed = false
+      t.correction = typed
+      if (result.kind === 'claim') {
+        t.verdict = 'claim'
+        t.checkedAs = typed
+        startCheck(id)
+      } else {
+        t.status = 'resolved'
+        t.disagreeReason = null
+      }
+    } catch (error) {
+      const t = current()
+      if (!t || isAbort(error)) return
+      t.correctionPending = false
+      t.correctionError = error instanceof PredictError ? error.message : CORRECTION_ERROR_MESSAGE
+    } finally {
+      if (correctionControllers.get(id) === controller) correctionControllers.delete(id)
+    }
   }
 
   function resolve(id: string) {
@@ -236,13 +487,13 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
 
   /**
    * Asks the agent about a comment: appends your question and a pending agent message, then fills it with the
-   * answer (or REPLY_ERROR_MESSAGE). Blank questions are ignored. Works while the review is running; reset() and
-   * start() abort it and the pending message goes with the cleared comments.
+   * answer (or REPLY_ERROR_MESSAGE). Blank questions, and triage comments (see canReply), are ignored. Works while
+   * the review is running; reset() and start() abort it and the pending message goes with the cleared comments.
    */
   async function reply(id: string, question: string): Promise<void> {
     const text = question.trim()
     const c = find(id)
-    if (!text || !c) return
+    if (!text || !c || !canReply(c)) return
     c.thread.push({ id: `m${++messageSeq}`, author: 'you', text, pending: false })
     const pendingId = `m${++messageSeq}`
     c.thread.push({ id: pendingId, author: 'agent', text: '', pending: true })
@@ -317,10 +568,11 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     return {
       filename: reviewFilename(id, now),
       data: {
-        notice: REVIEW_EXPORT_NOTICE,
+        notice: reviewExportNotice(options.sourceName ?? 'mock'),
         source: options.sourceName ?? 'mock',
         sample_id: id,
         exported_at: now.toISOString(),
+        model: model.value,
         comments: comments.value.map((c) => ({
           id: c.id,
           turn_id: c.turn_id,
@@ -332,6 +584,13 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
           status: c.status,
           disagree_reason: c.disagreeReason,
           thread: c.thread.filter((m) => !m.pending).map((m) => ({ author: m.author, text: m.text })),
+          kind: c.triage?.kind ?? null,
+          p_claim: c.triage?.p_claim ?? null,
+          p_asr: c.triage?.p_asr ?? null,
+          confirmed: c.confirmed,
+          correction: c.correction,
+          checked_as: c.checkedAs,
+          check_status: c.checkStatus,
         })),
       },
     }
@@ -339,8 +598,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
 
   if (getCurrentInstance())
     onBeforeUnmount(() => {
-      runController?.abort()
-      abortReplies()
+      abortAll()
     })
 
   return {
@@ -351,8 +609,11 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     comments,
     activeCommentId,
     sampleId,
+    skippedSpans,
+    model,
     hasResults,
     counts,
+    triageCounts,
     issueOrder,
     start,
     stop,
@@ -362,6 +623,9 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     disagree,
     setActive,
     reply,
+    canReply,
+    confirmTranscription,
+    correctTranscription,
     nextIssue,
     prevIssue,
     exportReview,

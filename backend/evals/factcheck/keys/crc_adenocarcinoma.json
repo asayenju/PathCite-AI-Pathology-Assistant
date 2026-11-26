@@ -22,17 +22,9 @@
    "speaker": "doctor"
   },
   {
-   "span": "a CT scan of your chest, abdomen and pelvis to stage it",
-   "verdict": "accurate",
-   "issue": null,
-   "correct": "Staging of colon cancer includes CT of the chest, abdomen and pelvis.",
-   "source_hint": "NCCN colon cancer guidelines",
-   "speaker": "doctor"
-  },
-  {
-   "span": "We'll also test the tumor for mismatch repair proteins.",
+   "span": "Mismatch repair testing is a check for Lynch syndrome, an inherited condition.",
    "verdict": "incomplete",
-   "issue": "Doesn't say why the test is done.",
+   "issue": "Leaves out that it is recommended for every colorectal cancer and that the result can guide treatment such as immunotherapy.",
    "correct": "Mismatch repair (MMR) or MSI testing screens for Lynch syndrome, an inherited condition, and can guide treatment such as immunotherapy.",
    "source_hint": "CAP colorectal biomarker template",
    "speaker": "doctor"

@@ -1,0 +1,123 @@
+{
+ "notice": "Synthetic and AI-written triage gold labels. Needs review by a pathologist before being used to score anything.",
+ "sample_id": "tubular_adenoma",
+ "file": "transcripts/gi/tubular_adenoma.json",
+ "spans": [
+  {
+   "doctor_turn_index": 0,
+   "start": 0,
+   "end": 32,
+   "quote": "Hi there, nice to see you again.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 0,
+   "start": 33,
+   "end": 79,
+   "quote": "How have you been feeling since the procedure?",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 0,
+   "end": 20,
+   "quote": "Good, that's normal.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 1,
+   "start": 21,
+   "end": 98,
+   "quote": "I have the pathology report on the pollen we removed during your colonoscopy.",
+   "label": "transcription",
+   "base_kind": "skip",
+   "wrong": "pollen",
+   "intended": "polyp",
+   "intended_quote": "I have the pathology report on the polyp we removed during your colonoscopy."
+  },
+  {
+   "doctor_turn_index": 2,
+   "start": 0,
+   "end": 45,
+   "quote": "The pathologist didn't see anything worrying.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 0,
+   "end": 25,
+   "quote": "It was a tubular adenoma.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 3,
+   "start": 26,
+   "end": 133,
+   "quote": "A tubular adenoma is a benign polyp, but it could slowly turn into cancer over years if it were left alone.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 0,
+   "end": 13,
+   "quote": "Adenoma, yes.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 14,
+   "end": 92,
+   "quote": "The good news is it was removed completely and showed no high-grade dysplasia.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 4,
+   "start": 93,
+   "end": 154,
+   "quote": "Dysplasia means the cells look abnormal under the microscope.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 0,
+   "end": 10,
+   "quote": "That's it.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 5,
+   "start": 11,
+   "end": 96,
+   "quote": "Once an adenoma has been removed completely, there's no need for another colonoscopy.",
+   "label": "claim"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 0,
+   "end": 12,
+   "quote": "Nobody does.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 6,
+   "start": 13,
+   "end": 106,
+   "quote": "Keep up the fiber and let us know if you notice any bleeding or changes in your bowel habits.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 7,
+   "start": 0,
+   "end": 15,
+   "quote": "You're welcome.",
+   "label": "skip"
+  },
+  {
+   "doctor_turn_index": 7,
+   "start": 16,
+   "end": 26,
+   "quote": "Take care.",
+   "label": "skip"
+  }
+ ]
+}

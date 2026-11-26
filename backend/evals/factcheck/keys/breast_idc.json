@@ -22,9 +22,9 @@
    "speaker": "doctor"
   },
   {
-   "span": "It's a grade 2 tumor.",
+   "span": "Breast cancers are graded from 1 to 3.",
    "verdict": "incomplete",
-   "issue": "The grade is stated but not explained.",
+   "issue": "Gives the scale but not what grade describes, or that it is not the stage.",
    "correct": "The Nottingham grade, 1 to 3, describes how abnormal the cells look and how fast they are likely to grow. It is not the stage.",
    "source_hint": "CAP invasive breast carcinoma protocol (Nottingham grade)",
    "speaker": "doctor"
