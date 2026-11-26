@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check, Plus, X } from 'lucide-vue-next'
+import { Check, CircleHelp, Plus, Quote, X } from 'lucide-vue-next'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import type { ReviewVerdict } from '@/types'
 
@@ -25,6 +25,9 @@ const VERDICTS: Record<ReviewVerdict, { label: string; icon: typeof X; text: str
   inaccurate: { label: 'Inaccurate', icon: X, text: 'text-eosin', border: 'border-l-eosin' },
   incomplete: { label: 'Incomplete', icon: Plus, text: 'text-amber', border: 'border-l-amber' },
   accurate: { label: 'Accurate', icon: Check, text: 'text-moss', border: 'border-l-moss' },
+  // Jev triage (#36): neutral placeholders until the triage cards are styled (#37).
+  claim: { label: 'Claim', icon: Quote, text: 'text-ink', border: 'border-l-ink' },
+  transcription: { label: 'Possible transcription error', icon: CircleHelp, text: 'text-quiet', border: 'border-l-quiet' },
 }
 
 const verdict = computed(() => VERDICTS[props.comment.verdict])

@@ -4,8 +4,28 @@ import { mount } from '@vue/test-utils'
 import { REVIEW_EXPORT_NOTICE } from '@/lib/review'
 import { mockClarify, mockReviewSource } from '@/mocks/review'
 import crcImport from '@/mocks/review/__fixtures__/crc_adenocarcinoma.import.json'
-import type { ClarifySource, ReviewComment, ReviewEvent, ReviewSource, RoledTurn, TranscriptImport } from '@/types'
-import { REPLY_ERROR_MESSAGE, REVIEW_ERROR_MESSAGE, useTranscriptReview } from './useTranscriptReview'
+import { messageFor, PredictError } from '@/lib/api'
+import { STUB_CHECK_DELAY_MS } from '@/lib/claimChecker'
+import type {
+  CheckResult,
+  ClaimChecker,
+  ClaimToCheck,
+  ClarifySource,
+  ReviewComment,
+  ReviewEvent,
+  ReviewSource,
+  RoledTurn,
+  SpanTriage,
+  SpanTriager,
+  TranscriptImport,
+} from '@/types'
+import {
+  CHECK_ERROR_MESSAGE,
+  CORRECTION_ERROR_MESSAGE,
+  REPLY_ERROR_MESSAGE,
+  REVIEW_ERROR_MESSAGE,
+  useTranscriptReview,
+} from './useTranscriptReview'
 
 function crcTurns(): RoledTurn[] {
   // The saved backend import of the sample; roles from the importer's suggestions (S1 doctor, S2 patient).
@@ -396,11 +416,21 @@ describe('useTranscriptReview comment actions', () => {
     const now = new Date(2026, 10, 25, 9, 30)
     const { filename, data } = r.exportReview({ sampleId: 'crc_adenocarcinoma', now })
     expect(filename).toBe('review-crc_adenocarcinoma-20261125.json')
+    const noTriage = {
+      kind: null,
+      p_claim: null,
+      p_asr: null,
+      confirmed: null,
+      correction: null,
+      checked_as: null,
+      check_status: null,
+    }
     expect(data).toEqual({
       notice: REVIEW_EXPORT_NOTICE,
       source: 'mock',
       sample_id: 'crc_adenocarcinoma',
       exported_at: now.toISOString(),
+      model: null,
       comments: [
         {
           id: 'a',
@@ -417,6 +447,7 @@ describe('useTranscriptReview comment actions', () => {
             { author: 'agent', text: 'Because.' },
             { author: 'you', text: 'And?' },
           ],
+          ...noTriage,
         },
         {
           id: 'b',
@@ -429,12 +460,397 @@ describe('useTranscriptReview comment actions', () => {
           status: 'open',
           disagree_reason: null,
           thread: [],
+          ...noTriage,
         },
       ],
     })
     // Defaults to the sample of the last start(); null becomes "transcript".
     expect(r.exportReview({ now }).filename).toBe('review-crc_adenocarcinoma-20261125.json')
     expect(r.exportReview({ sampleId: null, now }).filename).toBe('review-transcript-20261125.json')
+  })
+})
+
+/** A promise the test settles by hand. */
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (error: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
+/** A ClaimChecker the test drives: each call is recorded and settled by hand; abort rejects with an AbortError. */
+function manualChecker() {
+  const calls: { claim: ClaimToCheck; signal: AbortSignal; d: ReturnType<typeof deferred<CheckResult>> }[] = []
+  const checker: ClaimChecker = (claim, signal) => {
+    const d = deferred<CheckResult>()
+    signal.addEventListener('abort', () => d.reject(new DOMException('aborted', 'AbortError')))
+    calls.push({ claim, signal, d })
+    return d.promise
+  }
+  return { checker, calls }
+}
+
+const triaged = (
+  id: string,
+  kind: 'claim' | 'transcription',
+  base: 'claim' | 'skip',
+  over: Partial<ReviewComment> = {},
+): ReviewComment =>
+  comment(id, {
+    quote: `quote ${id}`,
+    verdict: kind,
+    issue: null,
+    suggestion: null,
+    source: null,
+    triage: { kind, base_kind: base, p_claim: 0.9, p_asr: kind === 'transcription' ? 0.8 : null },
+    ...over,
+  })
+
+const roled = (id: string, role: RoledTurn['role'], text: string): RoledTurn => ({ ...turn(id), role, text })
+
+/** t1 doctor A, t2 patient P, t3 doctor B, t4 other O, t5 doctor C, t6 doctor D (the triaged turn). */
+const triageTurns = () => [
+  roled('t1', 'doctor', 'A'),
+  roled('t2', 'patient', 'P'),
+  roled('t3', 'doctor', 'B'),
+  roled('t4', 'other', 'O'),
+  roled('t5', 'doctor', 'C'),
+  roled('t6', 'doctor', 'D'),
+]
+
+describe('useTranscriptReview triage', () => {
+  const ev = (cm: ReviewComment): ReviewEvent => ({ type: 'comment', comment: cm })
+  const byId = (r: ReturnType<typeof useTranscriptReview>, id: string) => r.comments.value.find((x) => x.id === id)!
+
+  async function run(
+    events: ReviewEvent[],
+    options: Parameters<typeof useTranscriptReview>[0] = {},
+    turns: RoledTurn[] = triageTurns(),
+  ) {
+    const r = useTranscriptReview({ source: listSource(events), sourceName: 'jev', ...options })
+    await r.start(turns, { sampleId: 'crc_adenocarcinoma' })
+    return r
+  }
+
+  it('checks each claim: checking, then not_checked, with up to 2 previous doctor turns as context', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('c', 'claim', 'claim', { turn_id: 't6' })), { type: 'done', model: 'jev-1.14.0' }], {
+      checker: m.checker,
+    })
+    expect(byId(r, 'c').checkStatus).toBe('checking')
+    expect(m.calls).toHaveLength(1)
+    expect(m.calls[0]!.claim).toEqual({ turn_id: 't6', quote: 'quote c', context: ['B', 'C'] })
+
+    m.calls[0]!.d.resolve({ status: 'not_checked' })
+    await tick()
+    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'not_checked', checkError: null })
+  })
+
+  it('context is shorter at the start of the transcript', async () => {
+    const m = manualChecker()
+    await run([ev(triaged('c1', 'claim', 'claim', { turn_id: 't1' })), ev(triaged('c3', 'claim', 'claim', { turn_id: 't3' }))], {
+      checker: m.checker,
+    })
+    expect(m.calls.map((c) => c.claim.context)).toEqual([[], ['A']])
+  })
+
+  it('uses the stub checker by default', async () => {
+    vi.useFakeTimers()
+    const r = useTranscriptReview({ source: listSource([ev(triaged('c', 'claim', 'claim')), { type: 'done' }]) })
+    await r.start(triageTurns(), { sampleId: null })
+    expect(byId(r, 'c').checkStatus).toBe('checking')
+    await vi.advanceTimersByTimeAsync(STUB_CHECK_DELAY_MS)
+    expect(byId(r, 'c').checkStatus).toBe('not_checked')
+  })
+
+  it('a failing check shows an error state and message', async () => {
+    const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: () => Promise.reject(new Error('down')) })
+    await tick()
+    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'error', checkError: CHECK_ERROR_MESSAGE })
+  })
+
+  it('stop aborts running checks; they end as not checked and late answers change nothing', async () => {
+    const m = manualChecker()
+    const src = manualSource()
+    const r = useTranscriptReview({ source: src.source, checker: m.checker })
+    const done = r.start(triageTurns(), { sampleId: null })
+    await src.push({ type: 'comment', comment: triaged('c', 'claim', 'claim') })
+    expect(byId(r, 'c').checkStatus).toBe('checking')
+
+    r.stop()
+    expect(m.calls[0]!.signal.aborted).toBe(true)
+    expect(byId(r, 'c').checkStatus).toBe('not_checked')
+    await tick()
+    expect(byId(r, 'c').checkStatus).toBe('not_checked')
+    await src.end()
+    await done
+    expect(r.status.value).toBe('stopped')
+  })
+
+  it('reset aborts running checks and clears everything', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('c', 'claim', 'claim')), { type: 'span_skipped', turn_id: 't6', start: 0, end: 1 }, { type: 'done', model: 'jev' }], {
+      checker: m.checker,
+    })
+    r.reset()
+    expect(m.calls[0]!.signal.aborted).toBe(true)
+    await tick()
+    expect(r.comments.value).toEqual([])
+    expect(r.skippedSpans.value).toBe(0)
+    expect(r.model.value).toBeNull()
+  })
+
+  it('a restart aborts the old checks; an old answer never lands on the new comment with the same id', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: m.checker })
+    await r.start(triageTurns(), { sampleId: null, source: listSource([ev(triaged('c', 'claim', 'claim'))]) })
+    expect(m.calls[0]!.signal.aborted).toBe(true)
+    m.calls[0]!.d.resolve({ status: 'not_checked' })
+    await tick()
+    expect(byId(r, 'c').checkStatus).toBe('checking')
+  })
+
+  it('counts claims, open transcription checks and skipped spans; keeps the model', async () => {
+    const r = await run(
+      [
+        ev(triaged('c1', 'claim', 'claim')),
+        ev(triaged('c2', 'claim', 'claim')),
+        ev(triaged('x1', 'transcription', 'skip')),
+        ev(triaged('x2', 'transcription', 'claim')),
+        { type: 'span_skipped', turn_id: 't6', start: 0, end: 4 },
+        { type: 'span_skipped', turn_id: 't6', start: 5, end: 9 },
+        { type: 'span_skipped', turn_id: 't6', start: 10, end: 12 },
+        { type: 'done', model: 'jev-1.14.0' },
+      ],
+      { checker: async () => ({ status: 'not_checked' }) },
+    )
+    expect(r.triageCounts.value).toEqual({ claims: 2, openTranscriptions: 2, skipped: 3 })
+    expect(r.skippedSpans.value).toBe(3)
+    expect(r.model.value).toBe('jev-1.14.0')
+
+    r.confirmTranscription('x2') // becomes a claim
+    r.confirmTranscription('x1') // resolved
+    expect(r.triageCounts.value).toEqual({ claims: 3, openTranscriptions: 0, skipped: 3 })
+  })
+
+  it('confirm on a claim-based span makes it a claim and checks the original quote', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], { checker: m.checker })
+    expect(byId(r, 'x').checkStatus).toBeNull()
+    expect(m.calls).toHaveLength(0)
+
+    r.confirmTranscription('x')
+    expect(byId(r, 'x')).toMatchObject({ verdict: 'claim', confirmed: true, status: 'open', checkStatus: 'checking' })
+    expect(m.calls[0]!.claim).toEqual({ turn_id: 't1', quote: 'quote x', context: [] })
+    m.calls[0]!.d.resolve({ status: 'not_checked' })
+    await tick()
+    expect(byId(r, 'x').checkStatus).toBe('not_checked')
+  })
+
+  it('confirm on a skip-based span resolves it without a check', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('x', 'transcription', 'skip'))], { checker: m.checker })
+    r.confirmTranscription('x')
+    expect(byId(r, 'x')).toMatchObject({ verdict: 'transcription', confirmed: true, status: 'resolved', checkStatus: null })
+    expect(m.calls).toHaveLength(0)
+  })
+
+  it('confirm and correct ignore claims, mock comments and answered cards', async () => {
+    const triager = vi.fn<SpanTriager>(async () => ({ kind: 'claim', p_claim: 0.9 }))
+    const r = await run([ev(triaged('c', 'claim', 'claim')), ev(comment('mock')), ev(triaged('x', 'transcription', 'skip'))], {
+      triageSpan: triager,
+      checker: async () => ({ status: 'not_checked' }),
+    })
+    r.confirmTranscription('c')
+    r.confirmTranscription('mock')
+    await r.correctTranscription('c', 'text')
+    await r.correctTranscription('mock', 'text')
+    r.confirmTranscription('x')
+    await r.correctTranscription('x', 'text')
+    expect(triager).not.toHaveBeenCalled()
+    expect(byId(r, 'c').confirmed).toBeNull()
+    expect(byId(r, 'mock')).toMatchObject({ verdict: 'inaccurate', confirmed: null })
+    expect(byId(r, 'x')).toMatchObject({ confirmed: true, correction: null })
+  })
+
+  it('correct rejects blank text without a call', async () => {
+    const triager = vi.fn<SpanTriager>()
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], { triageSpan: triager })
+    await r.correctTranscription('x', '   ')
+    expect(triager).not.toHaveBeenCalled()
+    expect(byId(r, 'x')).toMatchObject({ confirmed: null, correctionPending: false, correctionError: null })
+  })
+
+  it('a correction triaged as a claim becomes a claim, checked as the typed text', async () => {
+    const m = manualChecker()
+    const answer = deferred<SpanTriage>()
+    const triager = vi.fn<SpanTriager>(() => answer.promise)
+    const turns = triageTurns()
+    const before = structuredClone(turns)
+    const r = await run([ev(triaged('x', 'transcription', 'skip', { turn_id: 't6' }))], { checker: m.checker, triageSpan: triager }, turns)
+
+    const corrected = r.correctTranscription('x', '  The growth in your colon.  ')
+    expect(byId(r, 'x').correctionPending).toBe(true)
+    expect(triager).toHaveBeenCalledOnce()
+    expect(triager.mock.calls[0]![0]).toBe('The growth in your colon.')
+    expect(triager.mock.calls[0]![1]).toEqual(['B', 'C'])
+    // A second submit while pending is ignored.
+    await r.correctTranscription('x', 'again')
+    expect(triager).toHaveBeenCalledOnce()
+
+    answer.resolve({ kind: 'claim', p_claim: 0.95 })
+    await corrected
+    expect(byId(r, 'x')).toMatchObject({
+      verdict: 'claim',
+      confirmed: false,
+      correction: 'The growth in your colon.',
+      checkedAs: 'The growth in your colon.',
+      correctionPending: false,
+      correctionError: null,
+      status: 'open',
+      checkStatus: 'checking',
+      quote: 'quote x',
+    })
+    expect(m.calls[0]!.claim).toEqual({ turn_id: 't6', quote: 'The growth in your colon.', context: ['B', 'C'] })
+    // The transcript itself is never edited.
+    expect(turns).toEqual(before)
+  })
+
+  it('a correction triaged as small talk resolves the card', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], {
+      checker: m.checker,
+      triageSpan: async () => ({ kind: 'skip', p_claim: 0.1 }),
+    })
+    await r.correctTranscription('x', 'Please sit down.')
+    expect(byId(r, 'x')).toMatchObject({
+      verdict: 'transcription',
+      status: 'resolved',
+      confirmed: false,
+      correction: 'Please sit down.',
+      checkedAs: null,
+      checkStatus: null,
+    })
+    expect(m.calls).toHaveLength(0)
+  })
+
+  it('a failed correction shows the error and leaves the card answerable', async () => {
+    let fail = true
+    const triager = vi.fn<SpanTriager>(async () => {
+      if (fail) throw new PredictError('triage_rate_limited', messageFor('triage_rate_limited'))
+      return { kind: 'skip', p_claim: 0.1 }
+    })
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], { triageSpan: triager })
+    await r.correctTranscription('x', 'colon')
+    expect(byId(r, 'x')).toMatchObject({
+      verdict: 'transcription',
+      status: 'open',
+      confirmed: null,
+      correction: null,
+      correctionPending: false,
+      correctionError: messageFor('triage_rate_limited'),
+    })
+
+    fail = false
+    await r.correctTranscription('x', 'colon')
+    expect(byId(r, 'x')).toMatchObject({ status: 'resolved', correctionError: null, correction: 'colon' })
+  })
+
+  it('an unexpected correction failure gets a generic message', async () => {
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], {
+      triageSpan: () => Promise.reject(new Error('boom')),
+    })
+    await r.correctTranscription('x', 'colon')
+    expect(byId(r, 'x').correctionError).toBe(CORRECTION_ERROR_MESSAGE)
+  })
+
+  it('reset during a correction aborts it and the late answer changes nothing', async () => {
+    let signal!: AbortSignal
+    const answer = deferred<SpanTriage>()
+    const r = await run([ev(triaged('x', 'transcription', 'claim'))], {
+      triageSpan: (_t, _p, s) => {
+        signal = s
+        return answer.promise
+      },
+    })
+    const corrected = r.correctTranscription('x', 'colon')
+    r.reset()
+    expect(signal.aborted).toBe(true)
+    answer.resolve({ kind: 'claim', p_claim: 1 })
+    await corrected
+    expect(r.comments.value).toEqual([])
+  })
+
+  it('reply is not offered on triage comments; disagree, resolve and reopen still work', async () => {
+    const clarify = vi.fn<ClarifySource>(async () => 'answer')
+    const r = await run([ev(triaged('c', 'claim', 'claim')), ev(comment('mock'))], {
+      clarify,
+      checker: async () => ({ status: 'not_checked' }),
+    })
+    expect(r.canReply(byId(r, 'c'))).toBe(false)
+    expect(r.canReply(byId(r, 'mock'))).toBe(true)
+    await r.reply('c', 'Why?')
+    expect(clarify).not.toHaveBeenCalled()
+    expect(byId(r, 'c').thread).toEqual([])
+
+    r.disagree('c', ' Not a claim. ')
+    expect(byId(r, 'c')).toMatchObject({ status: 'disagreed', disagreeReason: 'Not a claim.' })
+    r.reopen('c')
+    r.resolve('c')
+    expect(byId(r, 'c').status).toBe('resolved')
+  })
+
+  it('exports the triage fields and the model', async () => {
+    const r = await run(
+      [
+        ev(triaged('c', 'claim', 'claim')),
+        ev(triaged('x', 'transcription', 'claim')),
+        ev(triaged('y', 'transcription', 'claim')),
+        ev(triaged('z', 'transcription', 'skip')),
+        { type: 'done', model: 'jev-1.14.0' },
+      ],
+      { checker: async () => ({ status: 'not_checked' }), triageSpan: async () => ({ kind: 'claim', p_claim: 0.9 }) },
+    )
+    r.confirmTranscription('x')
+    await r.correctTranscription('y', 'colon')
+    r.disagree('c', 'small talk')
+    await tick()
+
+    const { data } = r.exportReview({ now: new Date(2026, 10, 25) })
+    expect(data.source).toBe('jev')
+    expect(data.model).toBe('jev-1.14.0')
+    const row = (id: string) => data.comments.find((c) => c.id === id)!
+    expect(row('c')).toMatchObject({
+      verdict: 'claim',
+      kind: 'claim',
+      p_claim: 0.9,
+      p_asr: null,
+      confirmed: null,
+      correction: null,
+      checked_as: null,
+      check_status: 'not_checked',
+      status: 'disagreed',
+      disagree_reason: 'small talk',
+    })
+    expect(row('x')).toMatchObject({ verdict: 'claim', kind: 'transcription', p_asr: 0.8, confirmed: true, check_status: 'not_checked' })
+    expect(row('y')).toMatchObject({ verdict: 'claim', confirmed: false, correction: 'colon', checked_as: 'colon', check_status: 'not_checked' })
+    expect(row('z')).toMatchObject({ verdict: 'transcription', confirmed: null, check_status: null, status: 'open' })
+  })
+
+  it('never writes to web storage during a triage review', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+    const r = await run([ev(triaged('c', 'claim', 'claim')), ev(triaged('x', 'transcription', 'claim')), ev(triaged('y', 'transcription', 'skip'))], {
+      checker: async () => ({ status: 'not_checked' }),
+      triageSpan: async () => ({ kind: 'claim', p_claim: 0.9 }),
+    })
+    r.confirmTranscription('x')
+    await r.correctTranscription('y', 'colon')
+    r.exportReview()
+    r.reset()
+    expect(setItem).not.toHaveBeenCalled()
   })
 })
 

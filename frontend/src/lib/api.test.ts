@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PredictError, predict, validateFile } from './api'
+import { MESSAGE_CODES, PredictError, errorFromResponse, messageFor, predict, validateFile } from './api'
 
 const png = () => new File([new Uint8Array([1, 2, 3])], 'a.png', { type: 'image/png' })
 
@@ -79,5 +79,32 @@ describe('predict', () => {
     })
     const error = await predict(png()).catch((e) => e)
     expect(error.name).toBe('AbortError')
+  })
+})
+
+describe('triage error messages', () => {
+  it.each([
+    ['triage_unavailable', /JEV_KEY/],
+    ['triage_rate_limited', /rate-limit/],
+    ['triage_upstream_error', /TypeSafe/],
+    ['invalid_triage_request', /doctor turns/],
+  ])('%s has its own message', (code, pattern) => {
+    expect(MESSAGE_CODES).toContain(code)
+    expect(messageFor(code)).toMatch(pattern)
+  })
+})
+
+describe('errorFromResponse', () => {
+  it('maps a {detail, code} body with messageFor', async () => {
+    const response = new Response(JSON.stringify({ detail: 'raw', code: 'triage_rate_limited' }), { status: 429 })
+    const error = await errorFromResponse(response)
+    expect(error).toBeInstanceOf(PredictError)
+    expect(error.code).toBe('triage_rate_limited')
+    expect(error.message).toBe(messageFor('triage_rate_limited'))
+  })
+
+  it('treats a non-JSON 5xx as unreachable and a non-JSON 4xx as unknown', async () => {
+    expect((await errorFromResponse(new Response('proxy error', { status: 502 }))).code).toBe('network')
+    expect((await errorFromResponse(new Response('nope', { status: 404 }))).code).toBe('unknown')
   })
 })

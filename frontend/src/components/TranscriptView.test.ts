@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TranscriptView from './TranscriptView.vue'
-import type { CommentStatus, ReviewThread } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type CommentStatus, type ReviewThread } from '@/composables/useTranscriptReview'
 import { anchorComment } from '@/lib/review'
 import { formatClock } from '@/lib/transcripts'
 import { breastIdc } from '@/mocks/review/breastIdc'
@@ -94,7 +94,15 @@ function threads(imp: TranscriptImport, mocks: MockComment[], status: Record<str
   return mocks.map(({ clarification: _c, ...m }) => {
     const turn = imp.turns.find((t) => t.id === m.turn_id)!
     const a = anchorComment(turn, m.quote)
-    return { ...m, start: a?.start ?? null, end: a?.end ?? null, status: status[m.id] ?? 'open', disagreeReason: null, thread: [] }
+    return {
+      ...m,
+      start: a?.start ?? null,
+      end: a?.end ?? null,
+      status: status[m.id] ?? 'open',
+      disagreeReason: null,
+      thread: [],
+      ...EMPTY_TRIAGE_STATE,
+    }
   })
 }
 const rolesOf = (imp: TranscriptImport) =>

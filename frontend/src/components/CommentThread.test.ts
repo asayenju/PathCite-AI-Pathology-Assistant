@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import CommentThread from './CommentThread.vue'
-import type { ReviewThread, ThreadMessage } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type ReviewThread, type ThreadMessage } from '@/composables/useTranscriptReview'
 
 function thread(over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -17,6 +17,7 @@ function thread(over: Partial<ReviewThread> = {}): ReviewThread {
     status: 'open',
     disagreeReason: null,
     thread: [],
+    ...EMPTY_TRIAGE_STATE,
     ...over,
   }
 }

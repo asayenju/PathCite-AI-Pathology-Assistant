@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ReviewMargin from './ReviewMargin.vue'
-import type { ReviewThread } from '@/composables/useTranscriptReview'
+import { EMPTY_TRIAGE_STATE, type ReviewThread } from '@/composables/useTranscriptReview'
 
 function thread(id: string, over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -17,6 +17,7 @@ function thread(id: string, over: Partial<ReviewThread> = {}): ReviewThread {
     status: 'open',
     disagreeReason: null,
     thread: [],
+    ...EMPTY_TRIAGE_STATE,
     ...over,
   }
 }

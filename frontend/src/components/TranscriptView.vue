@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { Check, LoaderCircle, Plus, X } from 'lucide-vue-next'
+import { Check, CircleHelp, LoaderCircle, Plus, Quote, X } from 'lucide-vue-next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import { splitSegments, type Segment, type SegmentRange, type SplitResult } from '@/lib/segments'
@@ -63,13 +63,32 @@ const MARK_STYLES: Record<ReviewVerdict, { open: string; stacked: string; faded:
     stacked: 'border-b border-moss/50 bg-moss/10',
     faded: 'border-b border-moss/25 bg-transparent',
   },
+  // Jev triage (#36): neutral placeholders until the triage highlights are styled (#37).
+  claim: {
+    open: 'border-b-2 border-ink bg-ink/10',
+    stacked: 'border-b-2 border-ink bg-ink/20',
+    faded: 'border-b-2 border-ink/30 bg-ink/5',
+  },
+  transcription: {
+    open: 'border-b-2 border-dashed border-quiet',
+    stacked: 'border-b-2 border-dashed border-quiet bg-quiet/10',
+    faded: 'border-b border-dashed border-quiet/30',
+  },
 }
 
-const VERDICT_ICONS = { inaccurate: X, incomplete: Plus, accurate: Check } as const
+const VERDICT_ICONS: Record<ReviewVerdict, typeof X> = {
+  inaccurate: X,
+  incomplete: Plus,
+  accurate: Check,
+  claim: Quote,
+  transcription: CircleHelp,
+}
 const VERDICT_ICON_COLOURS: Record<ReviewVerdict, string> = {
   inaccurate: 'text-eosin',
   incomplete: 'text-amber',
   accurate: 'text-moss',
+  claim: 'text-ink',
+  transcription: 'text-quiet',
 }
 
 const styleFor = (role: Role | null | undefined) => ROLE_STYLES[role ?? 'none']
