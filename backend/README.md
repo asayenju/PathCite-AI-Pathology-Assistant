@@ -78,8 +78,47 @@ curl -F file=@visit.json http://localhost:8000/transcripts/import
 - `warnings` (the import still succeeds): language other than English; a speaker labelled `unknown`; only one speaker; more than 4 speakers; overlapping speech (a turn starts over 0.5 s before the previous one ends); more than 20% of words below `ASR_LOW_CONFIDENCE`.
 - Vendor metadata (AWS `jobName`, `accountId`, S3 URIs, Deepgram `request_id`) is never returned.
 
+### `POST /triage`
+JSON body: doctor turns only, in transcript order (at most `TRIAGE_MAX_TURNS` turns of up to `TRIAGE_MAX_TURN_CHARS` characters each, with unique ids). `words` is optional. Needs `JEV_KEY`. Works while the image model is not loaded.
+
+```
+curl -N -H 'content-type: application/json' http://localhost:8000/triage \
+  -d '{"turns": [{"id": "t0001", "text": "Good morning. The growth in your sigmoid colin is small.",
+                  "words": [{"text": "colin", "confidence": 0.31}]}]}'
+```
+
+Each turn is split into sentence spans, and [Jev](https://docs.typesafe.ai/models) (TypeSafe AI) labels each span. The response streams NDJSON (`application/x-ndjson`), one event per line. For each turn, in request order:
+
+```
+{"type": "turn_started", "turn_id": "t0001"}
+{"type": "span", "turn_id": "t0001", "start": 0, "end": 13, "quote": "Good morning.", "kind": "skip", "base_kind": "skip", "p_claim": 0.03, "p_asr": 0.01}
+{"type": "span", "turn_id": "t0001", "start": 14, "end": 56, "quote": "The growth in your sigmoid colin is small.", "kind": "transcription", "base_kind": "claim", "p_claim": 0.41, "p_asr": 0.93}
+{"type": "turn_done", "turn_id": "t0001"}
+{"type": "done", "model": "jev-1.14.0"}
+```
+
+- `start`/`end` are character offsets into the turn text, and `quote` is `text[start:end]`.
+- `kind` is `transcription` when `p_asr >= TRIAGE_ASR_FLAG`. In that case `base_kind` is what the span becomes if the doctor confirms the words. Otherwise the span is `skip` when `1 - p_claim >= TRIAGE_SKIP_MIN`, and `claim` if not. When unsure, a span is a claim.
+- Filler spans ("Um, okay.") are never sent to Jev. They come back as `skip` with `p_claim: 0` and `p_asr: null`. Empty and all-filler turns make no Jev call but still emit `turn_started` and `turn_done`.
+- Each turn is one Jev request (split above 40 spans). The request includes the 2 earlier turns of the request as context, and, as a hint, the words below `ASR_LOW_CONFIDENCE` that occur in each span. Only text is sent: no ids, speaker labels or file names.
+- Turns run one after another, and the run stops when the client disconnects.
+- Errors before the stream starts are the usual JSON (see below). Once it has started, an error arrives as a final `{"type": "error", "code": "..."}` line with `triage_unavailable`, `triage_rate_limited` or `triage_upstream_error`. The events before it still stand.
+
+### `POST /triage/span`
+JSON body `{"text": "...", "previous_doctor_turns": ["..."]}` (only the last 2 turns are used). It classifies a doctor's typed correction as a single span, without the transcription question.
+
+```
+curl -H 'content-type: application/json' http://localhost:8000/triage/span -d '{"text": "The growth in your sigmoid colon is small."}'
+```
+
+```json
+{"kind": "claim", "p_claim": 0.41}
+```
+
+`kind` is `skip` or `claim`. Errors are JSON, with the codes below.
+
 ### Errors
-Always JSON: `{"detail": "...", "code": "..."}`.
+Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the stream starts).
 
 | Status | code | When |
 |---|---|---|
@@ -90,8 +129,12 @@ Always JSON: `{"detail": "...", "code": "..."}`.
 | 422 | `unsupported_transcript_format` | unrecognised transcript, AWS Call Analytics or HealthScribe |
 | 422 | `undiarized_transcript` | no speaker labels (plain Whisper, WhisperX without `--diarize`) |
 | 422 | `empty_transcript` | transcript contains no speech |
+| 422 | `invalid_triage_request` | triage body malformed, no turns, more than `TRIAGE_MAX_TURNS` turns, a turn over `TRIAGE_MAX_TURN_CHARS`, duplicate turn ids, or blank `/triage/span` text |
+| 429 | `triage_rate_limited` | Jev still rate-limits after 2 retries |
 | 500 | `internal_error` | unexpected error (no details are returned) |
+| 502 | `triage_upstream_error` | Jev timed out, returned a 5xx, or sent a malformed answer |
 | 503 | `model_unavailable` | model not loaded |
+| 503 | `triage_unavailable` | no `JEV_KEY` configured ("Set JEV_KEY in .env"), or Jev rejected the key |
 
 ## Configuration (environment variables or `.env`)
 
@@ -103,9 +146,16 @@ Always JSON: `{"detail": "...", "code": "..."}`.
 | `MAX_IMAGE_PIXELS` | `25000000` | max width x height, guards against decompression bombs |
 | `MAX_TRANSCRIPT_MB` | `20` | max transcript JSON upload size |
 | `ASR_LOW_CONFIDENCE` | `0.6` | transcript words with speech-to-text confidence below this are low-confidence (warning if over 20% of words) |
+| `JEV_KEY` | unset | TypeSafe AI key for Jev. Without it `/triage` and `/triage/span` return 503, and the rest of the app works |
+| `JEV_MODEL` | `jev-1.14.0` | pinned Jev model |
+| `JEV_TIMEOUT_S` | `15` | Jev request timeout in seconds |
+| `TRIAGE_ASR_FLAG` | `0.5` | `p_asr` at or above this marks a possible transcription error |
+| `TRIAGE_SKIP_MIN` | `0.8` | P(small talk) at or above this skips a span; below it the span is a claim |
+| `TRIAGE_MAX_TURNS` | `500` | max turns per `/triage` request |
+| `TRIAGE_MAX_TURN_CHARS` | `5000` | max characters per turn (and per `/triage/span` text) |
 
 ## Privacy
-Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type.
+Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored.
 
 ## Tests
 
