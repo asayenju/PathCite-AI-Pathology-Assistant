@@ -1,2 +1,7 @@
 # macOS Finder metadata
 .DS_Store
+
+# Local secrets (e.g. backend/.env with TYPESAFE_API_KEY)
+.env
+.env.*
+!.env.example

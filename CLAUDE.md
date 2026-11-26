@@ -11,6 +11,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `docs/PRD.md`: backend PRD.
 - `docs/PRD-transcript-import.md`: doctor–patient transcript import (step 1 of the RAG fact checker; issues labelled `transcript-import`).
 - `docs/PRD-transcript-review-ui.md`: agent review UI (highlights, Docs-style comments, resolve/disagree/reply) on a hand-written mock agent; issues labelled `transcript-review`.
+- `docs/PRD-jev-triage.md`: Jev (TypeSafe decision model) triage of doctor sentences into small talk / possible transcription error / medical claim, feeding a stubbed checker; issues labelled `jev-triage`.
 
 ## Commands
 
