@@ -39,18 +39,26 @@ Only doctor lines carry a `key`:
 
 - Keys point at a quoted `span`, not at a turn id. Turn ids change when consecutive same-speaker lines merge, and the future checker reports spans anyway.
 - A doctor line without a key (greetings, scheduling) counts as `not_checkable`.
-- Each scenario has at least one accurate, one incomplete and one inaccurate key. A few inaccurate keys repeat common real misconceptions:
-  - grade mistaken for stage
-  - HER2-negative mistaken for "no hormone therapy"
-  - Breslow described as width rather than depth
-  - Gleason 7 described as "the most aggressive"
-  - Bethesda IV described as "it's cancer"
-- Patient lines include realistic questions, fillers and one low-confidence medical term per scenario.
+- Keys sit on general medical facts only, never on plans, recommendations or patient-specific results with no general assertion (docs/PRD-jev-triage.md). Those are triaged as small talk and never reach the checker. Since #35, sentences that used to be plans ("we'll take out half of the thyroid") are worded as general facts ("For a Bethesda 4 nodule, the usual next step is surgery to take out half of the thyroid."). Unkeyed doctor sentences that are general facts are listed in the scenario's `claims`.
+- Each scenario has at least one accurate, one incomplete and one inaccurate key. Each inaccurate key repeats a common real misconception:
+  - crc_adenocarcinoma: grade mistaken for stage ("Because it's moderately differentiated, that tells us it hasn't spread.")
+  - tubular_adenoma: no more colonoscopies once an adenoma is removed
+  - ulcerative_colitis: ulcerative colitis "mostly affects your small intestine"
+  - breast_idc: HER2-negative mistaken for "hormone-blocking pills won't work"
+  - fibroadenoma: fibroadenomas "usually turn into cancer"
+  - melanoma: Breslow thickness described as width rather than depth
+  - dlbcl: lymphoma "only lives in the lymph nodes"
+  - prostate_gg2: Gleason 7 described as "the most aggressive kind there is"
+  - thyroid_bethesda4: a follicular neoplasm (Bethesda IV) on a needle test described as "it's cancer"
+- Each scenario plants exactly one speech-to-text error in a doctor sentence without a key (`asr_error`, e.g. "colin" for "colon", "prostrate" for "prostate", "Breast low" for "Breslow"). In formats with word confidences only the planted words get a low score; the two OpenAI diarized samples (`breast_idc`, `prostate_gg2`) have no confidences, so they test text-only detection.
+- Each scenario also keeps one correctly transcribed medical term with a low score everywhere it appears (`low_confidence`, e.g. "sigmoid" at 0.52), which should not be flagged as a transcription error.
+- Patient lines include realistic questions and fillers.
 
 **Generation:** `generate.py` renders each script with the existing vendor renderers (deterministic):
 - Transcript JSON → `frontend/public/transcripts/<folder-slug>/<id>.json`
 - Manifest → `frontend/public/transcripts/index.json`: `[{folder, items: [{id, title, vendor, file}]}]`
 - Answer key → `backend/evals/factcheck/keys/<id>.json`. It is kept out of `public/`, so the UI never shows or ships the answers.
+- Triage gold labels → `backend/evals/triage/keys/<id>.json` (`skip | claim | transcription` per doctor sentence; scored by `pytest -m jev`, see `backend/evals/triage/README.md`). Also kept out of `public/`.
 
 **Frontend:**
 - A `TranscriptFolders.vue` panel beside the drop zone, in the same style as `SlideFolders.vue`: folders expand to show titled samples with a small vendor badge.
