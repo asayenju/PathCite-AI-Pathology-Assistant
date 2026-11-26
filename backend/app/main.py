@@ -14,6 +14,8 @@ from app.model import ModelMissingError, load_model, pick_device
 from app.predict import build_response, predict_probs
 from app.schemas import PredictResponse
 from app.transcripts.router import router as transcripts_router
+from app.triage.router import default_jev_client_factory
+from app.triage.router import router as triage_router
 
 logger = logging.getLogger("pathcite")
 
@@ -33,6 +35,8 @@ async def lifespan(app: FastAPI):
     device = pick_device()
     app.state.settings = settings
     app.state.device = device
+    # Builds the Jev client for /triage; tests swap in a fake. Without JEV_KEY, /triage returns 503.
+    app.state.jev_client_factory = default_jev_client_factory
     # A missing weights file only disables /predict (transcript import doesn't need it).
     # A present but mismatched or corrupt file is a real bug: startup still fails fast.
     try:
@@ -49,6 +53,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="PathCite API", lifespan=lifespan)
 register_error_handlers(app)
 app.include_router(transcripts_router)
+app.include_router(triage_router)
 
 
 @app.get("/health")
