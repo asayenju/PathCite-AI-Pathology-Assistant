@@ -91,6 +91,9 @@ def _prob(value: Any) -> float:
     return p
 
 
+prob = _prob  # public alias for app/check/jev_check.py
+
+
 def _retry_after(response: httpx.Response) -> float:
     try:
         wait = float(response.headers.get("retry-after", RETRY_AFTER_DEFAULT_S))
@@ -156,6 +159,21 @@ class JevClient:
             data = await self._post(body)
             out.extend(self._parse(data, len(batch), ask_asr))
         return out
+
+    async def ask(self, state: dict, questions: dict[str, dict]) -> dict[str, Any]:
+        """Send one raw Jev request (same transport, retries and errors as classify_spans) and return its `answers`
+        dict, unvalidated beyond being a dict. Records the answering model in `model_used`. Used by the claim
+        checker (app/check/jev_check.py); the caller validates each answer."""
+        data = await self._post({"model": self.model, "state": state, "questions": questions})
+        if not isinstance(data, dict):
+            raise _malformed()
+        answers = data.get("answers")
+        if not isinstance(answers, dict):
+            raise _malformed()
+        model = data.get("model")
+        if isinstance(model, str):
+            self.model_used = model
+        return answers
 
     # --- request -----------------------------------------------------------
 

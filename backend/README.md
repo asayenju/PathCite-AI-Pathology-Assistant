@@ -117,6 +117,34 @@ curl -H 'content-type: application/json' http://localhost:8000/triage/span -d '{
 
 `kind` is `skip` or `claim`. Errors are JSON, with the codes below.
 
+### `POST /check`
+Fact-checks one doctor claim against the evidence corpus (`docs/PRD-rag-checker.md`). JSON body `{"turn_id": "t0005", "quote": "...", "context": ["..."]}`: `quote` is the claim sentence (1-2000 characters, not blank), `context` the previous doctor turns, oldest first (only the last 2 are used, each at most 5000 characters).
+
+```
+curl -H 'content-type: application/json' http://localhost:8000/check \
+  -d '{"turn_id": "t1", "quote": "Colon cancers are tested for mismatch repair proteins.", "context": []}'
+```
+
+```json
+{"status": "checked", "verdict": "incomplete", "issue": "...", "suggestion": "...",
+ "needs_review": true, "review_reasons": ["models_disagree"],
+ "sources": [{"chunk_id": 812, "title": "Molecular testing strategies for Lynch syndrome ...", "section": "...",
+              "url": "https://...", "trust": "high", "year": null, "quote": "Offer testing to all people with ...",
+              "stance": "supports", "luna_stance": "supports", "jev_stance": "supports", "jev_p": 0.99}],
+ "model": "gpt-6-luna", "jev_model": "jev-1.14.0"}
+```
+
+1. **Search:** hybrid `match_chunks` over the corpus, top `CHECK_TOP_K` (8), at most 2 per document. The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
+2. **Judge each passage**, at the same time: GPT-6 Luna (OpenAI Responses API, word-for-word quotes, groundedness guard: a quote not found in its passage makes the stance `unclear`) and Jev (one Choice per passage in one TypeSafe request).
+3. **Combine per passage:** both models say supports (or both contradicts) and Jev's p >= `CHECK_JEV_MIN` (0.6): that stance. Both say irrelevant: irrelevant. Anything else: `unclear`. If Jev failed, Luna's stance is used.
+4. **Verdict** over the supporting/contradicting passages: none `unverified`; all support `accurate` (`incomplete` if Luna says a qualifier is missing); all contradict `inaccurate`; a mix `disputed`. No majority vote.
+
+- `sources`: every retrieved passage, in search order (the frontend hides irrelevant ones). `quote` is Luna's grounded quote, `""` when there is none. `stance` is the combined one; `luna_stance`, `jev_stance` and `jev_p` are each model's (Jev's are `null` when Jev failed).
+- `issue` / `suggestion`: Luna's, for `inaccurate`, `incomplete` and `disputed`; `null` otherwise.
+- `needs_review` is true when the verdict is `disputed`, any passage is `unclear`, or Jev failed. `review_reasons`, in this order: `sources_disagree` (disputed), `models_disagree` (with Jev available, some passage is unclear: the models differ, Jev's p is too low, or Luna's quote wasn't found), `jev_unavailable` (no `JEV_KEY`, or Jev failed: the verdict rests on Luna alone, `jev_model` is `null`).
+- No search results: `verdict: "unverified"`, `sources: []`, `needs_review: false`, and no model is called.
+- A missing `JEV_KEY` is not an error. Errors are JSON with the codes below.
+
 ### Errors
 Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the stream starts).
 
@@ -130,9 +158,13 @@ Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the 
 | 422 | `undiarized_transcript` | no speaker labels (plain Whisper, WhisperX without `--diarize`) |
 | 422 | `empty_transcript` | transcript contains no speech |
 | 422 | `invalid_triage_request` | triage body malformed, no turns, more than `TRIAGE_MAX_TURNS` turns, a turn over `TRIAGE_MAX_TURN_CHARS`, duplicate turn ids, or blank `/triage/span` text |
+| 422 | `invalid_check_request` | `/check` body malformed, blank or over-long `quote`, or a context turn over 5000 characters |
+| 429 | `check_rate_limited` | OpenAI or Supabase still rate-limits after retries (`/check`) |
 | 429 | `triage_rate_limited` | Jev still rate-limits after 2 retries |
 | 500 | `internal_error` | unexpected error (no details are returned) |
 | 502 | `triage_upstream_error` | Jev timed out, returned a 5xx, or sent a malformed answer |
+| 502 | `check_upstream_error` | OpenAI or Supabase timed out, returned a 5xx, or sent a malformed answer (`/check`) |
+| 503 | `check_unavailable` | `OPEN_AI_KEY`, `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL` or `SUPABASE_SECRET_KEY` missing, or a key was rejected (`/check`) |
 | 503 | `model_unavailable` | model not loaded |
 | 503 | `triage_unavailable` | no `JEV_KEY` configured ("Set JEV_KEY in .env"), or Jev rejected the key |
 
@@ -153,9 +185,14 @@ Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the 
 | `TRIAGE_SKIP_MIN` | `0.8` | P(small talk) at or above this skips a span; below it the span is a claim |
 | `TRIAGE_MAX_TURNS` | `500` | max turns per `/triage` request |
 | `TRIAGE_MAX_TURN_CHARS` | `5000` | max characters per turn (and per `/triage/span` text) |
+| `OPEN_AI_KEY` | unset | OpenAI key for the Luna verdict in `/check` (503 without it) |
+| `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | unset | claim embedding and evidence search for `/check` (503 without them); see Evidence corpus |
+| `CHECKER_MODEL` | `gpt-6-luna` | OpenAI model for the per-passage stance |
+| `CHECK_TOP_K` | `8` | passages retrieved per claim |
+| `CHECK_JEV_MIN` | `0.6` | Jev's probability needed for an agreed supports/contradicts to count |
 
 ## Privacy
-Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored.
+Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored. `/check` sends the claim and up to 2 previous doctor turns to OpenAI (embedding and the Luna verdict, `store: false`), Supabase (as the keyword query) and TypeSafe (Jev); patient turns are never sent. The claim, context, verdict, keys and request/response bodies are never logged or stored: failures log only the exception type. The Supabase secret key is read by the API server for `/check` and never leaves the backend.
 
 ## Evidence corpus (Supabase)
 
@@ -193,6 +230,7 @@ pytest                # offline, synthetic images, no GPU needed
 pytest -m hf -s       # opt-in smoke eval on a Hugging Face dataset (needs network)
 pytest -m jev -s      # opt-in live Jev triage eval (needs JEV_KEY and network)
 pytest -m corpus -s   # opt-in live ingest smoke test (needs the corpus keys and the real chunk plan)
+pytest -m check -s    # opt-in live claim checker tests: search, Luna, and 3 claims through POST /check (about a cent; CHECK_ENV overrides the .env path)
 ```
 
 `pytest -m corpus -s` deletes the first 3 documents of the real (quality-filtered) plan, re-ingests them with `--limit 3` and checks their stored chunk hashes against the plan, then checks a second run embeds nothing. It never uses `--rebuild`, so it is safe after a full ingest. `CORPUS_DIR` and `CORPUS_ENV` override the corpus folder and the `.env` path.

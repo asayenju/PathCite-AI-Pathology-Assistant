@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     openai_key: SecretStr | None = Field(default=None, validation_alias=AliasChoices("OPEN_AI_KEY", "openai_key"))
     checker_model: str = "gpt-6-luna"
     checker_timeout_s: float = 60  # a reasoning model; 8 passages usually answer in a few seconds
+    check_top_k: int = 8  # passages retrieved per claim (match_chunks k)
+    check_jev_min: float = 0.6  # Jev's probability must reach this for an agreed supports/contradicts to count
 
 
 def get_settings() -> Settings:
