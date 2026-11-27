@@ -72,6 +72,20 @@ describe('CheckSources', () => {
     expect(w.find('[data-testid="source-year"]').exists()).toBe(false)
   })
 
+  it('draws no empty quote marks when a source has no quote (irrelevant or unclear)', () => {
+    const w = mountSources([source({ stance: 'irrelevant', luna_stance: 'irrelevant', quote: '' }), source({ quote: '  ' })])
+    expect(w.find('blockquote').exists()).toBe(false)
+    expect(w.text()).not.toContain('“”')
+  })
+
+  it('hides the section line when it only repeats the title (PubMed abstracts)', () => {
+    const w = mountSources([
+      source({ title: 'Three Pathways of Colonic Carcinogenesis in Rats.', section: 'Three Pathways of Colonic Carcinogenesis in Rats.' }),
+      source({ title: 'Hereditary nonpolyposis colorectal cancer', section: 'Hereditary nonpolyposis colorectal cancer' }),
+    ])
+    expect(w.find('[data-testid="source-section"]').exists()).toBe(false)
+  })
+
   it('never links a non-http(s) url', () => {
     const w = mountSources([source({ url: 'javascript:alert(1)' })])
     expect(w.find('a').exists()).toBe(false)

@@ -19,12 +19,22 @@ const TRUST_STYLES: Record<SourceTrust, string> = {
 }
 
 const href = computed(() => safeUrl(props.source.url))
+
+/** Irrelevant sources (and unclear ones Luna gave no quote for) have an empty quote: draw nothing then. */
+const quote = computed(() => props.source.quote.trim())
+
+const norm = (s: string) => s.toLowerCase().replace(/[\s.:;,]+$/, '').trim()
+/** For PubMed abstracts and single-section pages the section path is just the title again. */
+const showSection = computed(() => {
+  const { title, section } = props.source
+  return Boolean(title && section && norm(title) !== norm(section))
+})
 </script>
 
 <template>
   <div class="space-y-1 rounded-glass bg-bench px-2 py-1.5" data-testid="check-source" :data-stance="source.stance">
     <p class="text-sm font-medium" data-testid="source-title">{{ source.title ?? source.section }}</p>
-    <p v-if="source.title && source.section" class="text-xs text-quiet" data-testid="source-section">
+    <p v-if="showSection" class="text-xs text-quiet" data-testid="source-section">
       {{ source.section }}
     </p>
     <p class="flex flex-wrap items-center gap-1.5">
@@ -33,7 +43,7 @@ const href = computed(() => safeUrl(props.source.url))
       </Badge>
       <span v-if="source.year !== null" class="text-xs text-quiet" data-testid="source-year">{{ source.year }}</span>
     </p>
-    <blockquote class="border-l-2 border-frost pl-2 text-sm">“{{ source.quote }}”</blockquote>
+    <blockquote v-if="quote" class="border-l-2 border-frost pl-2 text-sm">“{{ quote }}”</blockquote>
     <p v-if="source.stance === 'unclear'" class="text-xs text-quiet" data-testid="source-opinions">
       {{ UNCLEAR_SOURCE_TEXT }}
     </p>
