@@ -1,6 +1,6 @@
 """Chunk the cancer evidence corpus (docs/PRD-corpus-ingest.md). Run from backend/ with the venv:
 
-    python scripts/ingest_corpus.py --dry-run [--rechunk] [--corpus-dir PATH]
+    python scripts/ingest_corpus.py [--dry-run] [--limit N] [--rebuild] [--rechunk] [--env PATH] [--corpus-dir PATH]
 
 The logic lives in app/corpus/cli.py so it is importable and tested.
 """

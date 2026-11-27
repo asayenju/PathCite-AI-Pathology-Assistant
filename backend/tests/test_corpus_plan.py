@@ -159,7 +159,9 @@ def test_cli_dry_run_reads_an_existing_real_plan(tmp_path, capsys):
     assert "existing plan" in out and "approximate" not in out
 
 
-def test_cli_without_dry_run_is_issue_45(tmp_path):
+def test_cli_without_dry_run_needs_keys(tmp_path, capsys):
     write_corpus(tmp_path, [guideline("g1")], [])
-    with pytest.raises(NotImplementedError, match="#45"):
-        cli.main(["--corpus-dir", str(tmp_path)])
+    env = tmp_path / ".env"
+    env.write_text("")
+    assert cli.main(["--corpus-dir", str(tmp_path), "--env", str(env)]) == 2
+    assert "SUPABASE_URL" in capsys.readouterr().err
