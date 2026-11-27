@@ -119,10 +119,14 @@ class SupabaseCorpus:
         """Hybrid search (supabase/migrations/20261127010000_match_chunks.sql); returns the raw rows.
 
         The embedding goes as a JSON string ("[0.1,...]"), which PostgREST casts to vector(1536). Only the overrides
-        given (k, candidates, per_doc, rrf_k, min_similarity) are sent; the rest take the SQL defaults."""
+        given (k, candidates, per_doc, rrf_k, min_similarity) are sent; the rest take the SQL defaults.
+
+        Cold start: the first call after the project has been idle sometimes gets a JSON HTTP 500 from PostgREST
+        (likely a statement timeout, 57014) and then succeeds. It's a read, so one such 5xx is retried here; other
+        calls don't retry a JSON 5xx because it is usually a real error."""
         body = {"query_embedding": json.dumps(query_embedding, separators=(",", ":")), "query_text": query_text}
         body.update({name: value for name, value in overrides.items() if value is not None})
-        return self._json("POST", "/rpc/match_chunks", json=body)
+        return self._json("POST", "/rpc/match_chunks", json=body, retry_json_5xx=1)
 
     # --- corpus_meta -------------------------------------------------------
 
@@ -181,21 +185,26 @@ class SupabaseCorpus:
 
     # --- transport ---------------------------------------------------------
 
-    def _json(self, method: str, path: str, **kwargs) -> Any:
-        r = self._request(method, path, **kwargs)
+    def _json(self, method: str, path: str, *, retry_json_5xx: int = 0, **kwargs) -> Any:
+        r = self._request(method, path, retry_json_5xx=retry_json_5xx, **kwargs)
         try:
             return r.json()
         except ValueError:
             raise SupabaseRequestError(f"Supabase returned a non-JSON body for {path}") from None
 
-    def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
-        for attempt in range(self._max_retries + 1):
+    def _request(self, method: str, path: str, *, retry_json_5xx: int = 0, **kwargs) -> httpx.Response:
+        """`retry_json_5xx`: how many JSON (PostgREST) 5xx answers to retry, on top of the gateway statuses that
+        are always retried; used only by match_chunks (see there)."""
+        json_5xx_left = retry_json_5xx
+        attempt = 0  # retries used by the always-retried failures; the JSON-5xx retries have their own budget
+        while True:
             last = attempt >= self._max_retries
             try:
                 r = self._http.request(method, path, **kwargs)
             except (httpx.TimeoutException, httpx.NetworkError) as e:
                 if not last:
                     self._sleep(_backoff(attempt))
+                    attempt += 1
                     continue
                 raise SupabaseUnreachable(f"{UNREACHABLE} ({type(e).__name__})") from None
             except httpx.HTTPError as e:
@@ -205,10 +214,15 @@ class SupabaseCorpus:
             if code in RETRY_STATUSES or (code >= 500 and _is_html(r)):
                 if not last:
                     self._sleep(_backoff(attempt))
+                    attempt += 1
                     continue
                 if code == 429:
                     raise SupabaseRateLimited(f"Supabase rate limit (HTTP 429) after retries on {path}")
                 raise SupabaseUnreachable(f"{UNREACHABLE} (HTTP {code})")
+            if code >= 500 and json_5xx_left > 0:
+                json_5xx_left -= 1
+                self._sleep(_backoff(0))
+                continue
             if code in (401, 403):
                 raise SupabaseAuthError(f"Supabase rejected the key ({_detail(r)}): {KEY_HINT}")
             if 200 <= code < 300:
@@ -216,4 +230,3 @@ class SupabaseCorpus:
                     raise SupabaseUnreachable(f"{UNREACHABLE} (got an HTML page)")
                 return r
             raise SupabaseRequestError(f"{method} {path} failed: {_detail(r)}")
-        raise AssertionError("unreachable")  # pragma: no cover

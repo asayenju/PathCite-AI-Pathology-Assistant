@@ -305,3 +305,41 @@ async def test_async_context_manager_closes():
     search, _, _ = make()
     async with search:
         assert len(await search.search(CLAIM)) == 1
+
+
+# --- cold start: a JSON 5xx from PostgREST (statement timeout) is retried once on match_chunks -------------------
+
+COLD = {"code": "57014", "message": "canceling statement due to statement timeout"}
+
+
+@pytest.mark.anyio
+async def test_match_chunks_json_500_is_retried_once_then_succeeds():
+    calls = {"n": 0}
+
+    def cold(request):
+        calls["n"] += 1
+        return httpx.Response(500, json=COLD) if calls["n"] == 1 else httpx.Response(200, json=[ROW])
+
+    search, oa, sb = make(supabase=cold)
+    with search:
+        assert await search.search(CLAIM) == [Evidence(**ROW)]
+    assert len(sb.requests) == 2
+    assert len(oa.requests) == 1  # the embedding isn't redone
+
+
+@pytest.mark.anyio
+async def test_match_chunks_json_500_twice_is_an_upstream_error_after_one_retry():
+    search, _, sb = make(supabase=lambda r: httpx.Response(500, json=COLD))
+    with search, pytest.raises(SearchUpstreamError):
+        await search.search(CLAIM)
+    assert len(sb.requests) == 2
+
+
+def test_other_rpcs_do_not_retry_a_json_500():
+    from app.corpus.supabase import SupabaseCorpus, SupabaseRequestError
+
+    rec = Recorder(lambda r: httpx.Response(500, json=COLD))
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(rec), sleep=lambda s: None) as store:
+        with pytest.raises(SupabaseRequestError):
+            store.corpus_stats()
+    assert len(rec.requests) == 1

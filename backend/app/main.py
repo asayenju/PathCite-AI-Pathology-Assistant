@@ -7,6 +7,8 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from starlette.formparsers import MultiPartParser
 
+from app.check.router import default_llm_factory, default_search_factory
+from app.check.router import router as check_router
 from app.config import get_settings
 from app.errors import ApiError, register_error_handlers
 from app.images import load_image, read_upload
@@ -37,6 +39,10 @@ async def lifespan(app: FastAPI):
     app.state.device = device
     # Builds the Jev client for /triage; tests swap in a fake. Without JEV_KEY, /triage returns 503.
     app.state.jev_client_factory = default_jev_client_factory
+    # Clients for /check, built per request; tests swap in fakes. Without JEV_KEY, /check answers from Luna alone.
+    app.state.check_search_factory = default_search_factory
+    app.state.check_llm_factory = default_llm_factory
+    app.state.check_jev_factory = default_jev_client_factory
     # A missing weights file only disables /predict (transcript import doesn't need it).
     # A present but mismatched or corrupt file is a real bug: startup still fails fast.
     try:
@@ -54,6 +60,7 @@ app = FastAPI(title="PathCite API", lifespan=lifespan)
 register_error_handlers(app)
 app.include_router(transcripts_router)
 app.include_router(triage_router)
+app.include_router(check_router)
 
 
 @app.get("/health")
