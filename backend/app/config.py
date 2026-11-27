@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_secret_key: SecretStr | None = None
 
+    # RAG claim checker (docs/PRD-rag-checker.md): OpenAI Responses API for the Luna per-source stance.
+    openai_key: SecretStr | None = Field(default=None, validation_alias=AliasChoices("OPEN_AI_KEY", "openai_key"))
+    checker_model: str = "gpt-6-luna"
+    checker_timeout_s: float = 60  # a reasoning model; 8 passages usually answer in a few seconds
+
 
 def get_settings() -> Settings:
     return Settings()
