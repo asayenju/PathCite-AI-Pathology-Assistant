@@ -175,14 +175,16 @@ An offline pipeline, not part of the API, that stores the cancer evidence the cl
    python scripts/ingest_corpus.py --limit 3
    python scripts/ingest_corpus.py
    ```
-   The first real run builds the chunk plan `.cache/corpus/chunks.jsonl` with OpenAI breakpoints and reuses it after that (`--rechunk` rebuilds it). Each document is written atomically by the `ingest_document` RPC. Re-runs skip documents whose stored chunk hashes match the plan, so an interrupted run just continues and a second full run embeds nothing. A document that fails is reported, the others continue, and the exit code is 1 (re-run to retry it). Documents in Supabase that the plan no longer has are reported, not deleted.
+   The first real run builds the chunk plan `.cache/corpus/chunks.jsonl` with OpenAI breakpoints and reuses it after that (`--rechunk` rebuilds it). Each document is written atomically by the `ingest_document` RPC. Re-runs skip documents whose stored chunk hashes match the plan, so an interrupted run just continues and a second full run embeds nothing. A document that fails is reported, the others continue, and the exit code is 1 (re-run to retry it). Documents in Supabase that the plan no longer has are reported, and deleted (with their chunks) only with `--prune`.
+   - **Quality filter** (`app/corpus/quality.py`, issue #46): after chunking and dedupe, before embedding, it drops low-value chunks from the loaded plan: WikiDoc "Sandbox…" pages, NICE economic-modelling sections (matched on the section's own headings: model, utility values, comparators, extrapolation, end of life, Cancer Drugs Fund, severity/QALYs/ICERs, resource use, innovation, equality; a section with a clinical-effectiveness/evidence/efficacy heading is kept), research recommendations and short question-only chunks, cross-reference stubs ("Recommendations 1.2.1 to 1.2.8"), WikiDoc "click here" navigation and garbled tables. It only removes whole chunks, so the cached plan is reused and kept chunks keep their `ord`; documents that lost chunks are re-embedded and rewritten by the normal resume. Its config has its own hash, recorded as `quality_filter_hash` in `corpus_meta` (a change is not refused). The dry run prints the removed count per rule and per source, and the patterns. On the real corpus it removed 466 of 10,009 chunks (economic 307, sandbox 57, research 56, cross-reference 38, navigation 6, tables 2) and emptied the 4 Sandbox documents.
    - `corpus_meta` locks the embedding model, dimensions and chunker config. A run with a different one is refused (exit 2) unless `--rebuild`, which deletes every document, chunk and lock first.
+   - `--prune`: after the ingest, delete stored documents the (filtered) plan no longer has, for example documents the quality filter emptied.
    - Other flags: `--env PATH` (default: repo-root `.env`), `--corpus-dir PATH`.
    - Supabase free projects pause when idle: the CLI then says "Supabase project unreachable or paused — open the dashboard to resume it".
 
 **Keys** (repo-root `.env`, gitignored; see `.env.example`): `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`. The secret key bypasses row-level security, so it is for backend scripts only: never the frontend, never logged. Keys never appear in the CLI's output or errors.
 
-**Cost and size:** about 1.0M tokens for the semantic breakpoints (first run only) plus 2.3M for the chunks, so about $0.07 with `text-embedding-3-small` ($0.02/1M). The report prints the actual tokens and cost, documents and chunks per cancer and per source, and `corpus_stats()`. The stored corpus (about 10K chunks) is well under the free plan's 500 MB.
+**Cost and size:** about 1.0M tokens for the semantic breakpoints (first run only) plus 2.3M for the chunks, so about $0.07 with `text-embedding-3-small` ($0.02/1M). The report prints the actual tokens and cost, documents and chunks per cancer and per source, and `corpus_stats()`. The stored corpus (2,151 documents, 9,543 chunks after the quality filter; `corpus_stats()` about 205 MB including not-yet-vacuumed space) is under the free plan's 500 MB.
 
 ## Tests
 
@@ -193,7 +195,7 @@ pytest -m jev -s      # opt-in live Jev triage eval (needs JEV_KEY and network)
 pytest -m corpus -s   # opt-in live ingest smoke test (needs the corpus keys and the real chunk plan)
 ```
 
-`pytest -m corpus -s` deletes the first 3 documents of the real plan, re-ingests them with `--limit 3` and checks their stored chunk hashes against the plan, then checks a second run embeds nothing. It never uses `--rebuild`, so it is safe after a full ingest. `CORPUS_DIR` and `CORPUS_ENV` override the corpus folder and the `.env` path.
+`pytest -m corpus -s` deletes the first 3 documents of the real (quality-filtered) plan, re-ingests them with `--limit 3` and checks their stored chunk hashes against the plan, then checks a second run embeds nothing. It never uses `--rebuild`, so it is safe after a full ingest. `CORPUS_DIR` and `CORPUS_ENV` override the corpus folder and the `.env` path.
 
 ### Evals
 

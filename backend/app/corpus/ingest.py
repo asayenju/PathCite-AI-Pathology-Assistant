@@ -8,7 +8,10 @@
   for several documents at a time (fewer requests), but each document is written on its own.
 - **Errors:** a document whose embedding or write fails is reported and the run continues (`failed` is non-empty).
   A rejected key or an unreachable project stops the run, since every later document would fail the same way.
-- Documents in the database but no longer in the plan are reported, never deleted (only `rebuild` deletes).
+- Documents in the database but no longer in the plan (for example emptied by the quality filter) are reported, and
+  deleted only with `prune` (after the writes) or `rebuild`.
+- Embeddings are never reused from the database: a document whose chunk list changed is re-embedded in full, kept
+  chunks too. Reading 1,536 floats per chunk back through PostgREST would cost more code than the cents it saves.
 """
 
 from __future__ import annotations
@@ -40,6 +43,8 @@ class IngestResult:
     """Document ids in the database that the plan no longer has."""
     stored_doc_ids: set[str] = field(default_factory=set)
     """Plan documents now stored with the plan's chunks (skipped as unchanged, or written)."""
+    pruned: list[str] = field(default_factory=list)
+    """Stale document ids deleted by `prune` (their chunks cascade)."""
 
 
 def meta_for(*, model: str, dims: int, config_hash: str) -> dict:
@@ -92,6 +97,7 @@ def ingest(
     limit: int | None = None,
     progress: Callable[[str], None] = lambda _: None,
     group_chunks: int = EMBED_GROUP_CHUNKS,
+    prune: bool = False,
 ) -> IngestResult:
     docs = documents_in_order(plan)
     if limit is not None:
@@ -142,6 +148,10 @@ def ingest(
         done = result.written + len(result.failed)
         progress(f"  {done:,}/{len(todo):,} documents processed ({result.chunks_written:,} chunks written, "
                  f"{len(result.failed)} failed)")  # fmt: skip
+    if prune and result.stale:
+        store.delete_documents(result.stale)
+        result.pruned = list(result.stale)
+        progress(f"--prune: deleted {len(result.pruned):,} documents not in the plan")
     return result
 
 

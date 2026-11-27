@@ -4,6 +4,7 @@
     python scripts/ingest_corpus.py --dry-run --rechunk       # ignore an existing plan
     python scripts/ingest_corpus.py --limit 3                 # ingest the first 3 planned documents
     python scripts/ingest_corpus.py                           # full ingest; re-runs skip unchanged documents
+    python scripts/ingest_corpus.py --prune                   # also delete stored documents the plan no longer has
     python scripts/ingest_corpus.py --rebuild                 # delete the corpus in Supabase and re-ingest
     python scripts/ingest_corpus.py --env PATH --corpus-dir PATH
 
@@ -23,6 +24,7 @@ from app.corpus.embed import EmbedAuthError, EmbedError, OpenAIEmbedder
 from app.corpus.ingest import GuardRefused, check_guards, ingest, meta_for, rebuild
 from app.corpus.local_embedder import HashingEmbedder
 from app.corpus.plan import PLAN_FILE, PlanMismatch, load_or_build_plan, read_plan
+from app.corpus.quality import QualityFilterConfig, apply_quality_filter, format_quality_report
 from app.corpus.report import format_ingest_report, format_report
 from app.corpus.supabase import SupabaseCorpus, SupabaseError
 
@@ -48,11 +50,14 @@ def main(
     parser.add_argument("--rechunk", action="store_true", help="rebuild the chunk plan")
     parser.add_argument("--limit", type=int, default=None, help="ingest only the first N planned documents")
     parser.add_argument("--rebuild", action="store_true", help="delete the corpus in Supabase, then re-ingest")
+    parser.add_argument("--prune", action="store_true",
+                        help="after ingest, delete stored documents (and their chunks) that the plan no longer has")
     args = parser.parse_args(argv)
     config = ChunkerConfig()
+    quality = QualityFilterConfig()
 
     if args.dry_run:
-        return _dry_run(args.corpus_dir, config, rechunk=args.rechunk)
+        return _dry_run(args.corpus_dir, config, quality, rechunk=args.rechunk)
     if args.limit is not None and args.limit < 1:
         parser.error("--limit must be at least 1")
     kwargs = {"sleep": sleep} if sleep else {}
@@ -62,7 +67,7 @@ def main(
         print(f"Refused: {e}", file=sys.stderr)
         return 2
     with embedder, store:
-        return _ingest(args, config, embedder, store)
+        return _ingest(args, config, quality, embedder, store)
 
 
 class _ConfigError(Exception):
@@ -86,7 +91,8 @@ def _clients(env: Path, openai_transport, supabase_transport, kwargs) -> tuple[O
     return embedder, store
 
 
-def _ingest(args, config: ChunkerConfig, embedder: OpenAIEmbedder, store: SupabaseCorpus) -> int:
+def _ingest(args, config: ChunkerConfig, quality: QualityFilterConfig, embedder: OpenAIEmbedder,
+            store: SupabaseCorpus) -> int:  # fmt: skip
     expected = meta_for(model=embedder.model, dims=embedder.dims, config_hash=config.config_hash())
     try:
         # Guards first: a refused run spends nothing on breakpoint embeddings.
@@ -101,10 +107,15 @@ def _ingest(args, config: ChunkerConfig, embedder: OpenAIEmbedder, store: Supaba
             return 2
         plan_source = f"{args.corpus_dir / PLAN_FILE} ({'reused' if reused else 'built this run'})"
         print(f"Plan: {plan_source}: {plan.stats.documents:,} documents, {plan.stats.chunks:,} chunks", flush=True)
+        plan, filtered = apply_quality_filter(plan, quality)
+        print(f"Quality filter: {filtered.chunks_before - filtered.chunks_after:,} chunks removed, "
+              f"{plan.stats.chunks:,} to store", flush=True)  # fmt: skip
         if args.rebuild:
             rebuild(store, expected)
             print("--rebuild: deleted every document, chunk and lock; wrote this run's locks.", flush=True)
-        result = ingest(plan, embedder, store, limit=args.limit, progress=lambda m: print(m, flush=True))
+        result = ingest(plan, embedder, store, limit=args.limit, prune=args.prune,
+                        progress=lambda m: print(m, flush=True))  # fmt: skip
+        filter_note = _record_filter_hash(store, filtered.filter_hash, complete=not result.failed and not args.limit)
         stats = store.corpus_stats()
     except GuardRefused as e:
         print(f"Refused: {e}", file=sys.stderr)
@@ -114,23 +125,45 @@ def _ingest(args, config: ChunkerConfig, embedder: OpenAIEmbedder, store: Supaba
         return 2
     print()
     print(format_ingest_report(plan.stats, plan.chunks, result, tokens_embedded=embedder.total_tokens,
-                               corpus_stats=stats, plan_source=plan_source))  # fmt: skip
+                               corpus_stats=stats, plan_source=plan_source,
+                               quality_lines=[*format_quality_report(filtered, quality), filter_note]))  # fmt: skip
     return 1 if result.failed else 0
 
 
-def _dry_run(corpus_dir: Path, config: ChunkerConfig, *, rechunk: bool) -> int:
+def _record_filter_hash(store: SupabaseCorpus, filter_hash: str, *, complete: bool) -> str:
+    """corpus_meta records the quality filter the stored corpus reflects. A different stored hash is not refused (the
+    filter only removes chunks, and resume re-ingests the documents it changed); it's overwritten once a full run
+    finishes with no failures."""
+    stored = store.read_meta().get("quality_filter_hash")
+    if stored == filter_hash:
+        return f"  quality_filter_hash {filter_hash[:12]} (unchanged in corpus_meta)"
+    if not complete:
+        return (f"  quality_filter_hash {filter_hash[:12]} not recorded (stored {str(stored)[:12]}): "
+                "a --limit run or failed documents")  # fmt: skip
+    store.write_meta({"quality_filter_hash": filter_hash})
+    return f"  quality_filter_hash {filter_hash[:12]} recorded in corpus_meta (was {str(stored)[:12]})"
+
+
+def _dry_run(corpus_dir: Path, config: ChunkerConfig, quality: QualityFilterConfig, *, rechunk: bool) -> int:
     real = corpus_dir / PLAN_FILE
     if real.exists() and not rechunk:
         plan = read_plan(real)
         embedder_id = plan.meta.get("breakpoint_embedder")
         if plan.meta.get("chunker_config_hash") == config.config_hash():
             source = f"existing plan {real} (breakpoints from {embedder_id})"
-            print(format_report(plan.stats, approximate=embedder_id == local_embedder.ID, source=source))
+            _print_dry_run(plan, quality, approximate=embedder_id == local_embedder.ID, source=source)
             return 0
         print(f"{real} was built with another chunker config; estimating from a fresh local plan instead.\n")
     path = corpus_dir / DRY_RUN_PLAN_FILE
     plan, _ = load_or_build_plan(
         corpus_dir, HashingEmbedder(), embedder_id=local_embedder.ID, config=config, rechunk=True, plan_path=path
     )
-    print(format_report(plan.stats, approximate=True, source=f"{path} (written for inspection; ingest ignores it)"))
+    _print_dry_run(plan, quality, approximate=True, source=f"{path} (written for inspection; ingest ignores it)")
     return 0
+
+
+def _print_dry_run(plan, quality: QualityFilterConfig, *, approximate: bool, source: str) -> None:
+    """The stats are after the quality filter (what ingest would store); its section says what it removed."""
+    filtered, result = apply_quality_filter(plan, quality)
+    lines = format_quality_report(result, quality, show_patterns=True)
+    print(format_report(filtered.stats, approximate=approximate, source=source, quality_lines=lines))

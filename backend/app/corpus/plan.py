@@ -129,7 +129,7 @@ def build_plan(docs: list[Document], embedder: Embedder, config: ChunkerConfig, 
     # Counted after dedupe: a document that lost every chunk to a more trusted copy is never ingested.
     stats.documents_without_chunks = len({d.id for d in kept} - {c.doc_id for c in chunks})
 
-    _fill_chunk_stats(stats, chunks, config)
+    fill_chunk_stats(stats, chunks, config.encoding)
     stats.breakpoint_tokens = counting.tokens
     meta = {
         "kind": "chunk_plan",
@@ -162,9 +162,10 @@ def _record(doc: Document, section: Section, content: str, config: ChunkerConfig
     )
 
 
-def _fill_chunk_stats(stats: PlanStats, chunks: list[ChunkRecord], config: ChunkerConfig) -> None:
+def fill_chunk_stats(stats: PlanStats, chunks: list[ChunkRecord], encoding: str) -> None:
+    """Per-chunk totals; also re-run by the quality filter on the chunks it keeps."""
     stats.chunks = len(chunks)
-    embed_tokens = [count_tokens(c.embed_text, config.encoding) for c in chunks]
+    embed_tokens = [count_tokens(c.embed_text, encoding) for c in chunks]
     stats.content_tokens = sum(c.token_count for c in chunks)
     stats.embed_tokens = sum(embed_tokens)
     stats.min_chunk_tokens = min((c.token_count for c in chunks), default=0)
