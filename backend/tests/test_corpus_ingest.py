@@ -12,6 +12,7 @@ from app.corpus import cli
 from app.corpus.config import ChunkerConfig
 from app.corpus.local_embedder import HashingEmbedder
 from app.corpus.plan import load_or_build_plan
+from app.corpus.quality import QualityFilterConfig
 from app.corpus.supabase import SupabaseAuthError, SupabaseCorpus, SupabaseUnreachable
 
 from .test_corpus_documents import abstract, guideline, write_corpus
@@ -22,6 +23,7 @@ SB_KEY = "sb_secret_test-key-do-not-leak"
 SB_URL = "https://fake-project.supabase.co"
 CFG = ChunkerConfig()
 GOOD_META = {"embedding_model": "text-embedding-3-small", "dims": 1536, "chunker_config_hash": CFG.config_hash()}
+QF_HASH = QualityFilterConfig().filter_hash()
 
 
 class FakePostgREST:
@@ -142,7 +144,7 @@ def test_first_run_ingests_every_document_and_writes_the_locks(corpus, capsys):
     _, _, plan = corpus
     sb, oa = FakePostgREST(), FakeOpenAI()
     assert run(corpus, sb, oa) == 0
-    assert sb.meta == GOOD_META
+    assert sb.meta == {**GOOD_META, "quality_filter_hash": QF_HASH}
     assert set(sb.ingested) == {"nice:a", "wikidoc:b", "pubmed:123"}
     assert len(oa.inputs) == len(plan.chunks)
     assert sorted(oa.inputs) == sorted(c.embed_text for c in plan.chunks)
@@ -220,7 +222,7 @@ def test_rebuild_clears_everything_then_ingests(corpus, capsys):
     sb.put("nice:a", ["old"])
     oa = FakeOpenAI()
     assert run(corpus, sb, oa, "--rebuild") == 0
-    assert sb.meta == GOOD_META
+    assert sb.meta == {**GOOD_META, "quality_filter_hash": QF_HASH}
     assert sorted(sb.documents) == ["nice:a", "pubmed:123", "wikidoc:b"]
     assert "old:gone" not in sb.chunks
     assert "--rebuild: deleted" in capsys.readouterr().out
@@ -231,7 +233,7 @@ def test_stale_documents_are_reported_not_deleted(corpus, capsys):
     sb.put("old:gone", ["x"])
     assert run(corpus, sb, FakeOpenAI()) == 0
     assert "old:gone" in sb.documents
-    assert "Not in the plan    1 documents in the database (kept; --rebuild removes them): old:gone" in (
+    assert "Not in the plan    1 documents in the database (kept; --prune or --rebuild removes them): old:gone" in (
         capsys.readouterr().out
     )
 
@@ -343,3 +345,109 @@ def test_keys_never_appear_in_output_or_logs(corpus, capsys, caplog):
     out = capsys.readouterr()
     for text in (out.out, out.err, caplog.text):
         assert SB_KEY not in text and OPENAI_KEY not in text
+
+
+# --- quality filter and --prune (issue #46) ------------------------------------------------------------------------
+
+JUNK_DOCS = [
+    guideline("nice:ta", text="# Clinical effectiveness\nIn CheckMate 067, nivolumab plus ipilimumab improved overall "
+                              "survival compared with ipilimumab alone in people with advanced melanoma.\n"
+                              "# Innovation\nThe company considered nivolumab to be innovative because it offers a "
+                              "new mechanism of action for people with advanced melanoma."),  # fmt: skip
+    {**guideline("wikidoc:sandbox", source="wikidoc", text="Breast abscess is a collection of pus in the breast that "
+                                                            "is treated with drainage and antibiotics."),
+     "title": "Sandbox: Breast Abscess"},  # fmt: skip
+]
+
+
+@pytest.fixture
+def junk_corpus(tmp_path):
+    d = write_corpus(tmp_path / "corpus", [*DOCS[:2], *JUNK_DOCS], DOCS[2:])
+    plan, _ = load_or_build_plan(d, HashingEmbedder(), embedder_id=cli.EMBEDDER_ID, config=CFG, rechunk=False)
+    env = tmp_path / ".env"
+    env.write_text(f"SUPABASE_URL={SB_URL}\nSUPABASE_SECRET_KEY={SB_KEY}\nOPEN_AI_VECTOR_KEY={OPENAI_KEY}\n")
+    return d, env, plan
+
+
+def test_filtered_chunks_are_never_embedded_and_the_filter_hash_is_recorded(junk_corpus, capsys):
+    _, _, plan = junk_corpus
+    assert any("Innovation" in c.section for c in plan.chunks)  # the cached plan is untouched
+    sb, oa = FakePostgREST(), FakeOpenAI()
+    assert run(junk_corpus, sb, oa) == 0
+    assert "wikidoc:sandbox" not in sb.documents
+    assert [c["section"] for c in sb.chunks["nice:ta"]] == ["Title nice:ta › Clinical effectiveness"]
+    assert not any("innovative" in t or "abscess" in t for t in oa.inputs)
+    assert sb.meta["quality_filter_hash"] == QF_HASH
+    out = capsys.readouterr().out
+    assert "Quality filter     2 chunks removed (7 -> 5)" in out
+    assert "sandbox               1  (wikidoc 1)" in out and "nice_economic         1  (nice 1)" in out
+    assert "documents emptied 1 (no longer planned): wikidoc:sandbox" in out
+    assert "recorded in corpus_meta (was None)" in out
+
+
+def test_a_changed_filter_reingests_only_the_documents_it_changes_and_is_not_refused(junk_corpus, monkeypatch, capsys):
+    from dataclasses import replace
+
+    lenient = replace(QualityFilterConfig(), nice_economic_headings=(), sandbox_title=r"^$")
+    monkeypatch.setattr(cli, "QualityFilterConfig", lambda: lenient)
+    sb = FakePostgREST()
+    assert run(junk_corpus, sb, FakeOpenAI()) == 0
+    assert sb.meta["quality_filter_hash"] == lenient.filter_hash() != QF_HASH
+    assert len(sb.chunks["nice:ta"]) == 2 and "wikidoc:sandbox" in sb.documents
+    capsys.readouterr()
+
+    monkeypatch.undo()
+    sb.ingested.clear()
+    oa = FakeOpenAI()
+    assert run(junk_corpus, sb, oa, "--prune") == 0
+    assert sb.ingested == ["nice:ta"]  # only the document whose chunk set changed
+    assert [c["ord"] for c in sb.chunks["nice:ta"]] == [0]
+    assert len(oa.inputs) == 1
+    assert "wikidoc:sandbox" not in sb.documents and "wikidoc:sandbox" not in sb.chunks
+    assert sb.meta["quality_filter_hash"] == QF_HASH and sb.meta["chunker_config_hash"] == CFG.config_hash()
+    out = capsys.readouterr().out
+    assert "1 written" in out and "deleted by --prune): wikidoc:sandbox" in out
+
+
+def test_prune_deletes_stale_documents_and_a_second_run_does_nothing(corpus, capsys):
+    sb = FakePostgREST(meta=GOOD_META)
+    sb.put("old:gone", ["x", "y"])
+    assert run(corpus, sb, FakeOpenAI(), "--prune") == 0
+    assert "old:gone" not in sb.documents and "old:gone" not in sb.chunks
+    assert sorted(sb.documents) == ["nice:a", "pubmed:123", "wikidoc:b"]
+    out = capsys.readouterr().out
+    assert "--prune: deleted 1 documents not in the plan" in out
+    assert "Not in the plan    1 documents in the database (deleted by --prune): old:gone" in out
+
+    oa = FakeOpenAI()
+    deletes = len([r for r in sb.requests if r.method == "DELETE"])
+    assert run(corpus, sb, oa, "--prune") == 0
+    assert oa.inputs == [] and len([r for r in sb.requests if r.method == "DELETE"]) == deletes
+    out = capsys.readouterr().out
+    assert "3 skipped (unchanged), 0 written" in out and "Not in the plan" not in out
+    assert "(unchanged in corpus_meta)" in out
+
+
+def test_without_prune_an_emptied_document_is_kept_and_reported(junk_corpus, capsys):
+    sb = FakePostgREST(meta=GOOD_META)
+    sb.put("wikidoc:sandbox", ["old"])
+    assert run(junk_corpus, sb, FakeOpenAI()) == 0
+    assert "wikidoc:sandbox" in sb.documents
+    assert "(kept; --prune or --rebuild removes them): wikidoc:sandbox" in capsys.readouterr().out
+
+
+def test_a_limit_run_does_not_record_a_new_filter_hash(junk_corpus, capsys):
+    sb = FakePostgREST(meta={**GOOD_META, "quality_filter_hash": "old"})
+    assert run(junk_corpus, sb, FakeOpenAI(), "--limit", "1") == 0
+    assert sb.meta["quality_filter_hash"] == "old"
+    assert "not recorded" in capsys.readouterr().out
+
+
+def test_dry_run_reports_the_filter_by_rule_and_source(junk_corpus, capsys):
+    d, _, _ = junk_corpus
+    assert cli.main(["--dry-run", "--corpus-dir", str(d)]) == 0
+    out = capsys.readouterr().out
+    assert "Quality filter     2 chunks removed (7 -> 5)" in out
+    assert "by source         nice 1, wikidoc 1" in out
+    assert "Chunks             5 " in out  # the stats are after the filter
+    assert "nice economic heading" in out and r"\binnovation\b" in out

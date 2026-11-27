@@ -18,6 +18,7 @@ from app.corpus import cli
 from app.corpus.config import ChunkerConfig
 from app.corpus.ingest import documents_in_order
 from app.corpus.plan import PLAN_FILE, read_plan
+from app.corpus.quality import apply_quality_filter
 from app.corpus.supabase import SupabaseCorpus
 
 pytestmark = pytest.mark.corpus
@@ -36,6 +37,7 @@ def test_live_ingest_of_three_documents(capsys):
     plan = read_plan(plan_path)
     if plan.meta.get("chunker_config_hash") != ChunkerConfig().config_hash():
         pytest.skip("the real plan was built with another chunker config")
+    plan, _ = apply_quality_filter(plan)  # what ingest stores
     first3 = documents_in_order(plan)[:3]
 
     with SupabaseCorpus(settings.supabase_url, settings.supabase_secret_key.get_secret_value()) as store:

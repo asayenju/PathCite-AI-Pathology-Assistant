@@ -100,6 +100,23 @@ Both steps live behind our own `app/corpus/chunking.py` interface.
 
 **Cost:** about 2.6M tokens for the chunks, plus the sentence-window embeddings used to find semantic breakpoints. Well under $1 with `text-embedding-3-small`.
 
+### Quality filter (issue #46)
+Profiling the first full ingest found chunks that would pollute search for clinical claims. `app/corpus/quality.py` drops them after chunk dedupe and before embedding, on the loaded plan, so nothing is re-chunked.
+- **Rules** (first match wins; counts on the real plan, 10,009 → 9,543 chunks):
+
+  | Rule | Drops | Removed |
+  |---|---|---|
+  | Sandbox | WikiDoc documents whose title starts with "Sandbox" | 57 (4 documents) |
+  | NICE economic | NICE sections whose own headings (path after the title) are about the model, utility values, comparators, decision problem, extrapolation, end of life, managed access, severity/QALYs/ICERs, resource use, innovation or equality; "Cancer Drugs Fund" only in the section's last heading, so a CDF reconsideration keeps its clinical subsections. Any heading about clinical effectiveness/evidence/efficacy, an indirect comparison or a network meta-analysis keeps the section | 307 |
+  | Research | "research recommendation(s)", "recommendations for (further) research", "research question(s)" headings, and chunks under 40 tokens that are only questions | 56 |
+  | Cross-reference | a chunk that is only "Recommendations 1.2.1 to 1.2.8", "Recommendation 1.3.4", "See 1.2" | 38 |
+  | Wiki navigation | WikiDoc chunks with under 10 tokens left once "click here" sentences are removed | 6 |
+  | Garbled table | over 50 characters, letters under 50% of the characters, and under half the text in lines of 60+ characters (so a numeric-heavy results sentence is kept) | 2 |
+
+  WikiDoc patient-information pages are kept.
+- **Hash:** the rules live in `QualityFilterConfig`, whose hash is stored as `quality_filter_hash` in `corpus_meta`. It is not part of `chunker_config_hash`, and a changed filter is not refused: it only removes chunks, and resume re-ingests (and re-embeds) the documents whose chunk list changed. Kept chunks keep their `ord`, so a document can have gaps.
+- **`--prune`** deletes stored documents the filtered plan no longer has (the 4 Sandbox documents). Without it they are only reported.
+
 ## Edge cases
 - **Document structure:**
   - A document with no headings.
@@ -155,3 +172,4 @@ Both steps live behind our own `app/corpus/chunking.py` interface.
 3. **OpenAI embedder client:** batching, retries, error mapping, the length check, and `OPEN_AI_VECTOR_KEY` added to `.env.example`.
 4. **Chunk-level near-duplicate dedupe:** MinHash with trust-ordered keep and the negation regression test.
 5. **Ingest CLI and the real run:** embed and write, resume, guards, the stats report, the live smoke test, the full ingest, and the docs.
+6. **Quality filter (#46, after 5):** drop low-value chunks before embedding with its own `quality_filter_hash`, `--prune`, and the real clean-up run.

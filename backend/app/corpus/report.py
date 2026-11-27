@@ -19,7 +19,7 @@ def estimate_mb(chunks: int, avg_text_bytes: float) -> float:
     return chunks * (DIMS * 4 + avg_text_bytes + ROW_OVERHEAD_BYTES) * INDEX_FACTOR / 1_000_000
 
 
-def format_report(stats: PlanStats, *, approximate: bool, source: str = "") -> str:
+def format_report(stats: PlanStats, *, approximate: bool, source: str = "", quality_lines=()) -> str:
     s = stats
     avg_bytes = s.text_bytes / s.chunks if s.chunks else 0.0
     avg_tokens = s.content_tokens / s.chunks if s.chunks else 0.0
@@ -45,7 +45,8 @@ def format_report(stats: PlanStats, *, approximate: bool, source: str = "") -> s
         f"max {s.max_chunk_tokens}; longest embed_text {s.max_embed_tokens})",
         f"  missing url      {s.chunks_missing_url:,}, missing section {s.chunks_missing_section:,}",
         f"  chunk dedupe     {dedupe}",
-        f"Tokens             {s.embed_tokens:,} to embed (section + content), {s.content_tokens:,} of content, "
+        *quality_lines,
+        f"Tokens            {s.embed_tokens:,} to embed (section + content), {s.content_tokens:,} of content, "
         f"{s.breakpoint_tokens:,} for semantic breakpoints",
         f"Estimated cost     ${estimate_cost_usd(total_tokens):.2f} at ${PRICE_PER_MILLION_TOKENS}/1M tokens "
         f"({total_tokens:,} tokens)",
@@ -68,6 +69,7 @@ def format_ingest_report(
     tokens_embedded: int,
     corpus_stats: dict | None,
     plan_source: str,
+    quality_lines=(),
 ) -> str:
     """The report after a real ingest. `chunks` are the plan's ChunkRecords; `result` an ingest.IngestResult."""
     stored = [c for c in chunks if c.doc_id in result.stored_doc_ids]
@@ -92,6 +94,7 @@ def format_ingest_report(
         f"Chunk dedupe       {stats.chunk_dedupe_skipped or 0:,} skipped as duplicates in the plan "
         f"({stats.chunk_dedupe_exact:,} exact, {stats.chunk_dedupe_near:,} near); "
         f"{stats.documents_without_chunks:,} documents left with no chunks are never ingested",
+        *quality_lines,
         f"Stored from plan   {len({c.doc_id for c in stored}):,} documents, {len(stored):,} chunks",
         "By cancer (a document can have several)",
         *rows(by_cancer),
@@ -102,8 +105,9 @@ def format_ingest_report(
     ]
     if result.stale:
         more = " ..." if len(result.stale) > 10 else ""
-        lines.append(f"Not in the plan    {len(result.stale):,} documents in the database (kept; --rebuild removes "
-                     f"them): {', '.join(result.stale[:10])}{more}")  # fmt: skip
+        what = "deleted by --prune" if result.pruned else "kept; --prune or --rebuild removes them"
+        lines.append(f"Not in the plan    {len(result.stale):,} documents in the database ({what}): "
+                     f"{', '.join(result.stale[:10])}{more}")  # fmt: skip
     for doc_id, why in result.failed:
         lines.append(f"FAILED             {doc_id}: {why}")
     if corpus_stats is not None:
