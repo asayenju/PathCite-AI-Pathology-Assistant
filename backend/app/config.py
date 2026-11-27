@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     triage_max_turns: int = 500
     triage_max_turn_chars: int = 5000
 
+    # OpenAI embeddings for the evidence corpus (docs/PRD-corpus-ingest.md). Backend scripts only.
+    openai_vector_key: SecretStr | None = Field(
+        default=None, validation_alias=AliasChoices("OPEN_AI_VECTOR_KEY", "openai_vector_key")
+    )
+    embed_model: str = "text-embedding-3-small"
+    embed_dims: int = 1536
+
 
 def get_settings() -> Settings:
     return Settings()
