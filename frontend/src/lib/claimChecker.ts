@@ -2,8 +2,10 @@ import { API_BASE, PredictError, errorFromResponse, messageFor } from '@/lib/api
 import type {
   CheckResult,
   CheckSource,
+  CheckConfidence,
   CheckVerdict,
   CheckedResult,
+  ConfidenceLabel,
   ClaimChecker,
   ClaimToCheck,
   SourceStance,
@@ -49,6 +51,7 @@ export function stubClaimChecker(
 const VERDICTS: readonly CheckVerdict[] = ['accurate', 'inaccurate', 'incomplete', 'unverified', 'disputed']
 const STANCES: readonly SourceStance[] = ['supports', 'contradicts', 'irrelevant', 'unclear']
 const TRUSTS: readonly SourceTrust[] = ['high', 'medium', 'low']
+const CONFIDENCE_LABELS: readonly ConfidenceLabel[] = ['supported', 'contradicted', 'insufficient']
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const optString = (v: unknown): string | null => (typeof v === 'string' ? v : null)
@@ -68,9 +71,18 @@ function parseSource(v: unknown): CheckSource | null {
     quote: v.quote,
     stance: v.stance as SourceStance,
     luna_stance: optString(v.luna_stance),
-    jev_stance: optString(v.jev_stance),
-    jev_p: optNumber(v.jev_p),
   }
+}
+
+const isProbability = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1
+
+/** Jev's confidence: null stays null (Jev unavailable); undefined means malformed or missing. */
+function parseConfidence(v: unknown): CheckConfidence | null | undefined {
+  if (v === null) return null
+  if (!isObject(v) || !CONFIDENCE_LABELS.includes(v.label as ConfidenceLabel) || !isProbability(v.p)) return undefined
+  if (v.p_verdict !== null && !isProbability(v.p_verdict)) return undefined
+  if (v.agrees !== null && typeof v.agrees !== 'boolean') return undefined
+  return { label: v.label as ConfidenceLabel, p: v.p, p_verdict: v.p_verdict, agrees: v.agrees }
 }
 
 /** The CheckedResult in a /check body, or null if it doesn't have the contract's shape. */
@@ -81,6 +93,9 @@ export function parseCheckedResult(v: unknown): CheckedResult | null {
   if (!Array.isArray(v.sources)) return null
   const sources = v.sources.map(parseSource)
   if (sources.some((s) => s === null)) return null
+  if (!Array.isArray(v.search_queries) || !v.search_queries.every((q) => typeof q === 'string')) return null
+  const confidence = parseConfidence(v.confidence)
+  if (confidence === undefined) return null
   return {
     status: 'checked',
     verdict: v.verdict as CheckVerdict,
@@ -91,6 +106,8 @@ export function parseCheckedResult(v: unknown): CheckedResult | null {
     sources: sources as CheckSource[],
     model: typeof v.model === 'string' ? v.model : '',
     jev_model: optString(v.jev_model),
+    search_queries: v.search_queries as string[],
+    confidence,
   }
 }
 

@@ -1,4 +1,4 @@
-import type { CheckVerdict, ReviewReason, SourceStance, SourceTrust } from '@/types'
+import type { CheckConfidence, CheckVerdict, ConfidenceLabel, ReviewReason, SourceStance, SourceTrust } from '@/types'
 
 /*
  * Words for the RAG checker's answer on a claim card (docs/PRD-rag-checker.md). Kept out of the components so tests
@@ -19,7 +19,8 @@ export const CHECK_VERDICT_TEXT: Record<CheckVerdict, string> = {
 
 const REVIEW_REASON_TEXT: Record<ReviewReason, string> = {
   sources_disagree: 'The sources disagree with each other.',
-  models_disagree: 'OpenAI (Luna) and Jev read at least one source differently.',
+  jev_disagrees: 'Jev disagrees with the verdict',
+  low_confidence: "Jev isn't confident in the verdict (under 70%)",
   jev_unavailable: "Jev didn't answer, so only OpenAI (Luna) judged the sources.",
 }
 
@@ -27,6 +28,31 @@ const REVIEW_REASON_TEXT: Record<ReviewReason, string> = {
 export function reviewReasonText(reason: string): string {
   return (REVIEW_REASON_TEXT as Record<string, string>)[reason] ?? `Other reason: ${reason.replace(/_/g, ' ')}`
 }
+
+/** Jev's answer about the whole claim, in plain words. */
+const CONFIDENCE_LABEL_TEXT: Record<ConfidenceLabel, string> = {
+  supported: 'supported',
+  contradicted: 'contradicted',
+  insufficient: 'not covered by the sources',
+}
+
+const percent = (p: number) => `${Math.round(p * 100)}%`
+
+/**
+ * Jev's confidence next to the verdict: "Jev 91% confident" (p_verdict) when it agrees, "Jev disagrees: thinks it's
+ * … (p%)" when it doesn't, "Jev leans … (p%)" on a disputed verdict (agrees is null), "Jev unavailable" when null.
+ */
+export function confidenceText(confidence: CheckConfidence | null): string {
+  if (!confidence) return 'Jev unavailable'
+  const { label, p, p_verdict, agrees } = confidence
+  const words = CONFIDENCE_LABEL_TEXT[label]
+  if (agrees === null) return `Jev leans ${words} (${percent(p)})`
+  if (!agrees) return `Jev disagrees: thinks it's ${words} (${percent(p)})`
+  return `Jev ${percent(p_verdict ?? p)} confident`
+}
+
+/** What an unclear source says: Luna's quote couldn't be found in the passage. */
+export const UNCLEAR_SOURCE_TEXT = 'Quote not found in the passage'
 
 export const TRUST_LABELS: Record<SourceTrust, string> = {
   high: 'High trust',

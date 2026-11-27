@@ -501,12 +501,12 @@ const CHECKED: CheckedResult = {
       quote: 'Grade does not determine stage.',
       stance: 'contradicts',
       luna_stance: 'contradicts',
-      jev_stance: 'contradicts',
-      jev_p: 0.9,
     },
   ],
   model: 'gpt-6-luna',
   jev_model: 'jev-1.14.0',
+  search_queries: ['the raw claim', 'grade and stage colorectal'],
+  confidence: { label: 'contradicted', p: 0.91, p_verdict: 0.91, agrees: true },
 }
 
 /** A ClaimChecker the test drives: each call is recorded and settled by hand; abort rejects with an AbortError. */
