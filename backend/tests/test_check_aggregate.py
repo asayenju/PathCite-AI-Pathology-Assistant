@@ -1,14 +1,18 @@
-"""Unit tests for the verdict rules (app/check/aggregate.py, docs/PRD-rag-checker.md section 4). Pure, no I/O."""
+"""Unit tests for the v2 verdict and review rules (app/check/aggregate.py, docs/PRD-rag-checker.md). Pure, no I/O."""
 
 import pytest
 
 from app.check.aggregate import (
+    JEV_DISAGREES,
     JEV_UNAVAILABLE,
-    MODELS_DISAGREE,
+    LOW_CONFIDENCE,
     SOURCES_DISAGREE,
+    Confidence,
     aggregate,
+    luna_class,
+    luna_verdict,
 )
-from app.check.jev_check import JevStance
+from app.check.jev_check import JevVerdict
 from app.check.verify import SourceStance
 
 
@@ -25,156 +29,141 @@ def luna(*stances):
     return out
 
 
-def jev(*stances, p=0.9):
-    return [JevStance(i, s, p) for i, s in enumerate(stances, 1)]
+def jev(supported=0.0, contradicted=0.0, insufficient=0.0):
+    probs = {"supported": supported, "contradicted": contradicted, "insufficient": insufficient}
+    label = max(probs, key=probs.get)
+    return JevVerdict(probs=probs, label=label, p=probs[label])
 
 
 def test_contract_strings():
-    assert (SOURCES_DISAGREE, MODELS_DISAGREE, JEV_UNAVAILABLE) == (
+    assert (SOURCES_DISAGREE, JEV_UNAVAILABLE, JEV_DISAGREES, LOW_CONFIDENCE) == (
         "sources_disagree",
-        "models_disagree",
         "jev_unavailable",
+        "jev_disagrees",
+        "low_confidence",
     )
 
 
-def test_all_support_and_models_agree_is_accurate():
-    r = aggregate(luna("supports", "supports", "irrelevant"), jev("supports", "supports", "irrelevant"), False)
+# --- Luna's verdict --------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "stances, missing, verdict",
+    [
+        (("irrelevant", "irrelevant"), False, "unverified"),
+        ((), False, "unverified"),
+        (("supports", "irrelevant", "supports"), False, "accurate"),
+        (("supports",), True, "incomplete"),
+        (("contradicts", "irrelevant"), False, "inaccurate"),
+        (("contradicts",), True, "inaccurate"),  # a missing qualifier doesn't soften a contradiction
+        (("supports", "supports", "supports", "supports", "contradicts"), False, "disputed"),
+        (("unclear", "unclear"), False, "unverified"),  # guard-unclear counts as not relevant
+        (("supports", "unclear"), False, "accurate"),
+        (("contradicts", "unclear"), False, "inaccurate"),
+    ],
+)
+def test_luna_verdict(stances, missing, verdict):
+    assert luna_verdict(luna(*stances), missing) == verdict
+
+
+@pytest.mark.parametrize(
+    "verdict, label",
+    [
+        ("accurate", "supported"),
+        ("incomplete", "supported"),
+        ("inaccurate", "contradicted"),
+        ("unverified", "insufficient"),
+        ("disputed", None),
+    ],
+)
+def test_luna_class(verdict, label):
+    assert luna_class(verdict) == label
+
+
+# --- review rules ----------------------------------------------------------------------------------------------------
+
+
+def test_confident_agreement_needs_no_review():
+    r = aggregate(luna("supports", "irrelevant"), False, jev(supported=0.85, insufficient=0.15))
     assert r.verdict == "accurate"
-    assert not r.needs_review
+    assert r.needs_review is False
     assert r.review_reasons == []
-    assert [c.stance for c in r.chunks] == ["supports", "supports", "irrelevant"]
+    assert r.confidence == Confidence(label="supported", p=0.85, p_verdict=0.85, agrees=True)
 
 
-def test_missing_qualifier_makes_support_incomplete():
-    r = aggregate(luna("supports"), jev("supports"), True)
-    assert r.verdict == "incomplete"
+def test_confident_agreement_on_unverified_needs_no_review():
+    r = aggregate(luna("irrelevant"), False, jev(insufficient=0.9, supported=0.1))
+    assert r.verdict == "unverified"
     assert not r.needs_review
+    assert r.confidence.agrees is True
 
 
-def test_all_contradict_is_inaccurate():
-    r = aggregate(luna("contradicts", "irrelevant"), jev("contradicts", "irrelevant"), False)
+def test_confident_agreement_on_inaccurate_needs_no_review():
+    r = aggregate(luna("contradicts"), False, jev(contradicted=0.75, supported=0.25))
     assert r.verdict == "inaccurate"
     assert not r.needs_review
 
 
-def test_missing_qualifier_does_not_soften_a_contradiction():
-    assert aggregate(luna("contradicts"), jev("contradicts"), True).verdict == "inaccurate"
+def test_incomplete_maps_to_supported():
+    r = aggregate(luna("supports"), True, jev(supported=0.9, insufficient=0.1))
+    assert r.verdict == "incomplete"
+    assert r.confidence.p_verdict == 0.9
+    assert not r.needs_review
 
 
-def test_four_supports_and_one_contradiction_is_disputed():
-    stances = ("supports", "supports", "supports", "supports", "contradicts")
-    r = aggregate(luna(*stances), jev(*stances), False)
+def test_jev_top_label_differs_is_jev_disagrees():
+    r = aggregate(luna("supports"), False, jev(supported=0.3, insufficient=0.7))
+    assert r.verdict == "accurate"  # Jev never changes the verdict
+    assert r.needs_review
+    assert r.review_reasons == [JEV_DISAGREES]
+    assert r.confidence == Confidence(label="insufficient", p=0.7, p_verdict=0.3, agrees=False)
+
+
+def test_jev_agrees_but_below_min_is_low_confidence():
+    r = aggregate(luna("supports"), False, jev(supported=0.6, insufficient=0.4), jev_min=0.7)
+    assert r.needs_review
+    assert r.review_reasons == [LOW_CONFIDENCE]
+    assert r.confidence.agrees is True and r.confidence.p_verdict == 0.6
+
+
+def test_jev_at_min_is_confident():
+    r = aggregate(luna("supports"), False, jev(supported=0.7, insufficient=0.3), jev_min=0.7)
+    assert not r.needs_review
+
+
+def test_default_jev_min_is_0_7():
+    assert aggregate(luna("supports"), False, jev(supported=0.69, insufficient=0.31)).review_reasons == [LOW_CONFIDENCE]
+
+
+def test_disputed_is_sources_disagree_with_no_p_verdict():
+    r = aggregate(luna("supports", "contradicts"), False, jev(supported=0.9, contradicted=0.1))
     assert r.verdict == "disputed"
     assert r.needs_review
     assert r.review_reasons == [SOURCES_DISAGREE]
+    assert r.confidence == Confidence(label="supported", p=0.9, p_verdict=None, agrees=None)
 
 
-def test_luna_and_jev_split_on_one_chunk_is_unclear():
-    r = aggregate(luna("supports", "supports"), jev("supports", "contradicts"), False)
-    assert [c.stance for c in r.chunks] == ["supports", "unclear"]
-    assert r.chunks[1].luna_stance == "supports"
-    assert r.chunks[1].jev_stance == "contradicts"
-    assert r.verdict == "accurate"  # the one agreed chunk still supports
-    assert r.needs_review
-    assert r.review_reasons == [MODELS_DISAGREE]
-
-
-def test_luna_irrelevant_jev_supports_is_unclear():
-    r = aggregate(luna("irrelevant"), jev("supports"), False)
-    assert r.chunks[0].stance == "unclear"
-    assert r.verdict == "unverified"
-    assert r.review_reasons == [MODELS_DISAGREE]
-
-
-def test_jev_probability_below_min_is_unclear():
-    r = aggregate(luna("supports"), jev("supports", p=0.55), False, jev_min=0.6)
-    assert r.chunks[0].stance == "unclear"
-    assert r.chunks[0].jev_p == 0.55
-    assert r.verdict == "unverified"
-    assert r.needs_review
-    assert r.review_reasons == [MODELS_DISAGREE]
-
-
-def test_jev_probability_at_min_counts():
-    assert aggregate(luna("supports"), jev("supports", p=0.6), False, jev_min=0.6).chunks[0].stance == "supports"
-
-
-def test_both_irrelevant_is_irrelevant_whatever_jev_p():
-    r = aggregate(luna("irrelevant"), jev("irrelevant", p=0.4), False)
-    assert r.chunks[0].stance == "irrelevant"
-    assert r.verdict == "unverified"
-    assert not r.needs_review
-    assert r.review_reasons == []
-
-
-def test_all_irrelevant_is_unverified_without_review():
-    r = aggregate(luna("irrelevant", "irrelevant"), jev("irrelevant", "irrelevant"), False)
-    assert r.verdict == "unverified"
-    assert not r.needs_review
-
-
-def test_luna_guard_unclear_with_jev_agreeing_is_still_unclear():
-    r = aggregate(luna("unclear"), jev("supports"), False)
-    assert r.chunks[0].stance == "unclear"
-    assert r.chunks[0].luna_stance == "unclear"
-    assert r.verdict == "unverified"
-    assert r.needs_review
-    assert r.review_reasons == [MODELS_DISAGREE]
-
-
-def test_unclear_only_is_unverified_and_needs_review():
-    r = aggregate(luna("unclear", "supports"), jev("supports", "contradicts"), False)
-    assert [c.stance for c in r.chunks] == ["unclear", "unclear"]
-    assert r.verdict == "unverified"
-    assert r.needs_review
-
-
-def test_jev_unavailable_uses_luna_stances():
-    r = aggregate(luna("supports", "irrelevant", "unclear"), None, False)
-    assert [c.stance for c in r.chunks] == ["supports", "irrelevant", "unclear"]
-    assert all(c.jev_stance is None and c.jev_p is None for c in r.chunks)
-    assert r.verdict == "accurate"
+def test_jev_unavailable_keeps_the_verdict():
+    r = aggregate(luna("supports"), True, None)
+    assert r.verdict == "incomplete"
     assert r.needs_review
     assert r.review_reasons == [JEV_UNAVAILABLE]
+    assert r.confidence is None
 
 
-def test_jev_unavailable_with_mixed_luna_stances():
-    r = aggregate(luna("supports", "contradicts"), None, False)
-    assert r.verdict == "disputed"
+def test_disputed_and_jev_unavailable_are_ordered():
+    r = aggregate(luna("contradicts", "supports"), False, None)
     assert r.review_reasons == [SOURCES_DISAGREE, JEV_UNAVAILABLE]
+    assert len(set(r.review_reasons)) == len(r.review_reasons)
 
 
-def test_reasons_are_ordered_and_unique():
-    r = aggregate(
-        luna("supports", "contradicts", "supports", "supports"),
-        jev("supports", "contradicts", "contradicts", "irrelevant"),
-        False,
-    )
-    assert r.verdict == "disputed"
-    assert r.review_reasons == [SOURCES_DISAGREE, MODELS_DISAGREE]
-
-
-def test_jev_missing_a_chunk_makes_it_unclear():
-    r = aggregate(luna("supports", "supports"), [JevStance(1, "supports", 0.9)], False)
-    assert [c.stance for c in r.chunks] == ["supports", "unclear"]
-    assert r.chunks[1].jev_stance is None
-    assert r.review_reasons == [MODELS_DISAGREE]
-
-
-def test_chunk_order_follows_luna():
-    r = aggregate(luna("supports", "irrelevant"), list(reversed(jev("supports", "irrelevant"))), False)
-    assert [c.chunk_id for c in r.chunks] == [1, 2]
-    assert [c.stance for c in r.chunks] == ["supports", "irrelevant"]
-
-
-def test_no_chunks_is_unverified():
-    r = aggregate([], [], False)
+def test_guard_unclear_is_not_a_review_reason_by_itself():
+    r = aggregate(luna("unclear", "irrelevant"), False, jev(insufficient=0.95, supported=0.05))
     assert r.verdict == "unverified"
     assert not r.needs_review
-    assert r.chunks == []
 
 
 @pytest.mark.parametrize("bad", [-0.1, 1.5])
 def test_bad_jev_min_raises(bad):
     with pytest.raises(ValueError):
-        aggregate([], [], False, jev_min=bad)
+        aggregate([], False, None, jev_min=bad)

@@ -30,10 +30,15 @@ class CheckSource(BaseModel):
     trust: str = Field(description="high | medium | low")
     year: int | None
     quote: str = Field(description="Luna's word-for-word quote from this passage; empty when it has none grounded.")
-    stance: Stance = Field(description="The combined stance the verdict uses.")
-    luna_stance: Stance = Field(description="Luna's stance after the groundedness guard.")
-    jev_stance: Literal["supports", "contradicts", "irrelevant"] | None
-    jev_p: float | None
+    stance: Stance = Field(description="The stance the verdict uses: Luna's, after the groundedness guard.")
+    luna_stance: Stance = Field(description="Luna's stance after the groundedness guard (same as stance).")
+
+
+class CheckConfidence(BaseModel):
+    label: Literal["supported", "contradicted", "insufficient"] = Field(description="Jev's top answer.")
+    p: float = Field(description="Jev's probability for its top answer.")
+    p_verdict: float | None = Field(description="Jev's probability for the class of Luna's verdict; null if disputed.")
+    agrees: bool | None = Field(description="Jev's top answer is the class of Luna's verdict; null if disputed.")
 
 
 class CheckResponse(BaseModel):
@@ -42,7 +47,9 @@ class CheckResponse(BaseModel):
     issue: str | None
     suggestion: str | None
     needs_review: bool
-    review_reasons: list[Literal["sources_disagree", "models_disagree", "jev_unavailable"]]
-    sources: list[CheckSource] = Field(description="Every retrieved passage, in search order.")
+    review_reasons: list[Literal["sources_disagree", "jev_unavailable", "jev_disagrees", "low_confidence"]]
+    sources: list[CheckSource] = Field(description="Every merged passage, best first.")
+    search_queries: list[str] = Field(description="The searches run: the raw claim first, then Luna's queries.")
+    confidence: CheckConfidence | None = Field(description="Jev's independent confidence; null when Jev failed.")
     model: str
     jev_model: str | None

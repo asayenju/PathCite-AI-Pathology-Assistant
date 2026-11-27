@@ -1,23 +1,24 @@
-"""Verdict rules for the claim checker (docs/PRD-rag-checker.md, section 4). Pure code: no model, no majority vote.
+"""Verdict and review rules for the claim checker (docs/PRD-rag-checker.md, "v2 (issue #51)"). Pure code.
 
-Per chunk (in Luna's order, which is search order):
-- Jev unavailable (`jev is None`): Luna's stance after the groundedness guard (unclear stays unclear).
-- Luna and Jev both say supports, or both contradicts, and Jev's p >= jev_min: that stance.
-- Both say irrelevant: irrelevant (whatever Jev's p).
-- Anything else: unclear. That covers the two models disagreeing, Jev's p being too low, Luna's guard having turned a
-  made-up quote into unclear, and Jev not answering for the chunk.
+Verdict, from Luna's per-passage stances after the groundedness guard (no model, no majority vote). Only supports
+and contradicts count; irrelevant and guard-unclear passages are not relevant:
+- none relevant -> unverified; all support -> accurate (incomplete when Luna reports missing_qualifier);
+  all contradict -> inaccurate; any mix -> disputed.
 
-Verdict over the chunks that support or contradict: none -> unverified; all support -> accurate (incomplete when
-Luna reports missing_qualifier); all contradict -> inaccurate; a mix -> disputed.
+Jev's single answer (`JevVerdict`, see jev_check.py) is a confidence check on that verdict, never a vote. Luna's
+verdict maps to Jev's classes: accurate/incomplete -> supported, inaccurate -> contradicted, unverified ->
+insufficient, disputed -> none.
 
-needs_review = disputed, or any unclear chunk, or Jev unavailable. review_reasons, in this order and each at most once
-(the frontend contract):
-- "sources_disagree": the verdict is disputed.
-- "models_disagree": with Jev available, any chunk ended up unclear. We don't split out Luna's groundedness guard: a
-  quote Luna couldn't ground is Luna failing to back up its stance, which the reviewer handles the same way (look at
-  the passage). Both models' stances are in the response for anyone who needs the difference.
-- "jev_unavailable": Jev failed or isn't configured, so the verdict rests on Luna alone. With Jev unavailable an
-  unclear chunk (Luna's guard) adds no extra reason: needs_review is already set.
+needs_review and review_reasons (a frontend contract; ordered, each at most once):
+- "sources_disagree": the verdict is disputed (always reviewed, Jev or not).
+- "jev_unavailable": Jev failed or isn't configured; the verdict rests on Luna alone.
+- otherwise, for a non-disputed verdict with Jev available, at most one of:
+  - "jev_disagrees": Jev's top label is not Luna's class;
+  - "low_confidence": it is, but Jev's probability for that class is below jev_min (0.7).
+Confident agreement (top label == Luna's class and p >= jev_min) needs no review.
+
+`Confidence` is what the response shows: Jev's top label and p, p_verdict = Jev's probability for Luna's class
+(None for disputed) and agrees (None for disputed). None when Jev is unavailable.
 """
 
 from __future__ import annotations
@@ -26,25 +27,33 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
-from app.check.jev_check import JevStance
-from app.check.verify import SourceStance, Stance
+from app.check.jev_check import JevLabel, JevVerdict
+from app.check.verify import SourceStance
 
 Verdict = Literal["accurate", "incomplete", "inaccurate", "disputed", "unverified"]
 
 SOURCES_DISAGREE = "sources_disagree"
-MODELS_DISAGREE = "models_disagree"
 JEV_UNAVAILABLE = "jev_unavailable"
+JEV_DISAGREES = "jev_disagrees"
+LOW_CONFIDENCE = "low_confidence"
 
-_RELEVANT = ("supports", "contradicts")
+DEFAULT_JEV_MIN = 0.7
+
+_CLASS: dict[str, JevLabel | None] = {
+    "accurate": "supported",
+    "incomplete": "supported",
+    "inaccurate": "contradicted",
+    "unverified": "insufficient",
+    "disputed": None,
+}
 
 
 @dataclass(frozen=True)
-class ChunkResult:
-    chunk_id: int
-    stance: Stance  # the combined stance
-    luna_stance: Stance  # Luna's, after the groundedness guard
-    jev_stance: str | None  # None when Jev was unavailable or didn't answer for this chunk
-    jev_p: float | None
+class Confidence:
+    label: JevLabel  # Jev's top answer
+    p: float  # its probability
+    p_verdict: float | None  # Jev's probability for Luna's class; None when disputed
+    agrees: bool | None  # label == Luna's class; None when disputed
 
 
 @dataclass(frozen=True)
@@ -52,21 +61,11 @@ class Aggregate:
     verdict: Verdict
     needs_review: bool
     review_reasons: list[str] = field(default_factory=list)
-    chunks: list[ChunkResult] = field(default_factory=list)
+    confidence: Confidence | None = None
 
 
-def _combine(luna: SourceStance, jev: JevStance | None, jev_min: float) -> Stance:
-    if jev is None:
-        return "unclear"
-    if luna.stance == jev.stance == "irrelevant":
-        return "irrelevant"
-    if luna.stance == jev.stance and luna.stance in _RELEVANT and jev.p >= jev_min:
-        return luna.stance
-    return "unclear"
-
-
-def _verdict(stances: Sequence[str], missing_qualifier: bool) -> Verdict:
-    relevant = {s for s in stances if s in _RELEVANT}
+def luna_verdict(stances: Sequence[SourceStance], missing_qualifier: bool) -> Verdict:
+    relevant = {s.stance for s in stances if s.stance in ("supports", "contradicts")}
     if not relevant:
         return "unverified"
     if relevant == {"supports"}:
@@ -76,45 +75,38 @@ def _verdict(stances: Sequence[str], missing_qualifier: bool) -> Verdict:
     return "disputed"
 
 
+def luna_class(verdict: Verdict) -> JevLabel | None:
+    return _CLASS[verdict]
+
+
 def aggregate(
     luna: Sequence[SourceStance],
-    jev: Sequence[JevStance] | None,
     missing_qualifier: bool,
-    jev_min: float = 0.6,
+    jev: JevVerdict | None,
+    jev_min: float = DEFAULT_JEV_MIN,
 ) -> Aggregate:
     if not 0.0 <= jev_min <= 1.0:
         raise ValueError("jev_min must be between 0 and 1")
 
-    chunks: list[ChunkResult] = []
-    if jev is None:
-        for s in luna:
-            chunks.append(ChunkResult(s.chunk_id, s.stance, s.stance, None, None))
-    else:
-        by_id: dict[int, JevStance] = {}
-        for j in jev:
-            by_id.setdefault(j.chunk_id, j)
-        for s in luna:
-            j = by_id.get(s.chunk_id)
-            chunks.append(
-                ChunkResult(
-                    s.chunk_id,
-                    _combine(s, j, jev_min),
-                    s.stance,
-                    j.stance if j else None,
-                    j.p if j else None,
-                )
-            )
-
-    verdict = _verdict([c.stance for c in chunks], missing_qualifier)
-    any_unclear = any(c.stance == "unclear" for c in chunks)
+    verdict = luna_verdict(luna, missing_qualifier)
+    target = luna_class(verdict)
 
     reasons: list[str] = []
     if verdict == "disputed":
         reasons.append(SOURCES_DISAGREE)
-    if jev is not None and any_unclear:
-        reasons.append(MODELS_DISAGREE)
+
+    confidence: Confidence | None = None
     if jev is None:
         reasons.append(JEV_UNAVAILABLE)
+    elif target is None:
+        confidence = Confidence(jev.label, jev.p, None, None)
+    else:
+        p_verdict = jev.probs[target]
+        agrees = jev.label == target
+        confidence = Confidence(jev.label, jev.p, p_verdict, agrees)
+        if not agrees:
+            reasons.append(JEV_DISAGREES)
+        elif p_verdict < jev_min:
+            reasons.append(LOW_CONFIDENCE)
 
-    needs_review = verdict == "disputed" or any_unclear or jev is None
-    return Aggregate(verdict, needs_review, reasons, chunks)
+    return Aggregate(verdict, bool(reasons), reasons, confidence)
