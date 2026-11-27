@@ -69,7 +69,7 @@ Both chunkers sit behind our own `app/corpus/chunking.py` interface.
    - **Under 10 tokens:** a piece is dropped.
    - Bulleted lists stay together where the size allows.
 6. **What gets embedded:** `"{section path}\n\n{chunk text}"`. Only the text is stored in `content`; the path goes in `section`. URLs and IDs are never embedded.
-7. **Chunk dedupe:** exact matches (SHA-256 of normalised text) and near-duplicates (MinHash over 5-word shingles, Jaccard ≥ 0.9) are skipped, keeping the more trusted copy. Skips are counted in the report.
+7. **Chunk dedupe:** exact matches (SHA-256 of normalised text) and near-duplicates (MinHash over 5-word shingles, Jaccard ≥ 0.95, configurable) are skipped, keeping the more trusted copy. Skips are counted in the report. The threshold was raised from 0.9 because at 0.9 a short WikiDoc chunk about MRI was dropped as a copy of one about CT (Jaccard 0.900). A near-duplicate is also never dropped when its negations, numbers, stage numerals or comparison signs differ: in a long chunk one inserted "not" still scores about 0.97.
 8. **Chunk plan cache:** steps 1–7 write `backend/.cache/corpus/chunks.jsonl`, which ingest reads.
    - **Why:** OpenAI embeddings aren't bit-for-bit deterministic, so re-chunking could move boundaries and change every hash.
    - **When to re-chunk:** only with `--rechunk`. The plan records a hash of the chunker config.

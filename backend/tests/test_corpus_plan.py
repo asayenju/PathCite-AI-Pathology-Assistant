@@ -137,7 +137,7 @@ def test_report_mentions_every_number_and_approximate_boundaries():
     plan = plan_of([(guideline("g1", text="# A\nOffer surgery to people with stage I disease after discussion at the multidisciplinary team meeting."), "guideline")])
     out = format_report(plan.stats, approximate=True)
     for label in ["Documents", "Sections dropped", "Chunks", "Tokens", "Estimated cost", "Estimated size",
-                  "approximate", "#44"]:  # fmt: skip
+                  "approximate", "chunk dedupe     0 skipped"]:  # fmt: skip
         assert label in out, label
 
 

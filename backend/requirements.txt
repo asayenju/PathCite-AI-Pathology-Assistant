@@ -12,3 +12,4 @@ httpx
 langchain-text-splitters==1.2.0
 tiktoken==0.14.0
 numpy==2.5.5
+datasketch==2.0.0

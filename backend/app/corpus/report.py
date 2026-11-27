@@ -25,7 +25,13 @@ def format_report(stats: PlanStats, *, approximate: bool, source: str = "") -> s
     avg_tokens = s.content_tokens / s.chunks if s.chunks else 0.0
     by_source = ", ".join(f"{k} {v:,}" for k, v in sorted(s.documents_by_source.items()))
     total_tokens = s.embed_tokens + s.breakpoint_tokens
-    dedupe = "not run (issue #44)" if s.chunk_dedupe_skipped is None else f"{s.chunk_dedupe_skipped:,} skipped"
+    if s.chunk_dedupe_skipped is None:
+        dedupe = "not run (plan predates issue #44)"
+    else:
+        by = ", ".join(f"{k} {v:,}" for k, v in sorted(s.chunk_dedupe_by_source.items())) or "none"
+        dedupe = (f"{s.chunk_dedupe_skipped:,} skipped ({s.chunk_dedupe_exact:,} exact, "
+                  f"{s.chunk_dedupe_near:,} near-duplicate; {by}); guard kept {s.chunk_dedupe_guarded:,} "
+                  "(a negation, number or comparison differs)")  # fmt: skip
     lines = [
         "Corpus ingest dry run (no API calls)",
         *([f"  Plan:             {source}"] if source else []),
