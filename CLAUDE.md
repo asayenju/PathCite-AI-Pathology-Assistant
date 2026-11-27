@@ -29,6 +29,8 @@ pytest -m check -s                          # opt-in live claim checker tests (C
 python scripts/fetch_cancer_corpus.py       # download the corpus to .cache/corpus/ (gitignored)
 python scripts/ingest_corpus.py --dry-run   # chunk plan report, no API calls
 python scripts/ingest_corpus.py [--limit N] [--prune] [--rebuild] [--rechunk] [--env PATH] [--corpus-dir PATH]
+python -m evals.search.run [--golden PATH] [--limit N] [--variants ...] [--refresh [queries search judge]] [--env PATH]
+                                            # live search eval (issue #53, ~$0.12/100 claims); see evals/search/README.md
 ```
 
 Frontend (from `frontend/`):
