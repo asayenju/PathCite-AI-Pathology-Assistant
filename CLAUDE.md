@@ -13,6 +13,7 @@ Research-use web app that serves a fine-tuned timm `resnet18` (`model/resnet18_f
 - `docs/PRD-transcript-review-ui.md`: agent review UI (highlights, Docs-style comments, resolve/disagree/reply) on a hand-written mock agent; issues labelled `transcript-review`.
 - `docs/PRD-jev-triage.md`: Jev (TypeSafe decision model) triage of doctor sentences into small talk / possible transcription error / medical claim, feeding a stubbed checker; issues labelled `jev-triage`.
 - `docs/PRD-corpus-ingest.md`: chunk, embed (OpenAI `text-embedding-3-small`) and store the cancer evidence corpus (NICE/PubMed/WikiDoc guidelines + PubMed abstracts) in Supabase pgvector for the claim checker; issues labelled `corpus-ingest`.
+- `docs/PRD-rag-checker.md`: claim checker. Hybrid search (`match_chunks` RPC) over the corpus, then GPT-6 Luna and Jev each judge every retrieved source (supports/contradicts/irrelevant) and code rules give the verdict (mixed sources → `disputed`, never a majority vote); issues labelled `rag-checker`.
 
 ## Commands
 
