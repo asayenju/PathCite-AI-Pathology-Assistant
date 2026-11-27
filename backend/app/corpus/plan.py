@@ -13,6 +13,7 @@ from pathlib import Path
 
 from app.corpus.chunking import chunk_section, count_tokens
 from app.corpus.config import ChunkerConfig
+from app.corpus.dedupe import DedupeResult, dedupe_chunks
 from app.corpus.documents import Document, dedupe_documents, load_corpus, normalise_for_hash
 from app.corpus.embedder import Embedder
 from app.corpus.sections import Section, filter_sections, split_sections
@@ -70,7 +71,12 @@ class PlanStats:
     chunks_missing_url: int = 0
     chunks_missing_section: int = 0
     chunk_dedupe_skipped: int | None = None
-    """None until chunk-level dedupe exists (issue #44)."""
+    """Chunks dropped as exact or near-duplicates of a more trusted chunk (None in plans from before issue #44)."""
+    chunk_dedupe_exact: int = 0
+    chunk_dedupe_near: int = 0
+    chunk_dedupe_guarded: int = 0
+    """Near-duplicates kept because their negations, numbers or comparison signs differ."""
+    chunk_dedupe_by_source: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -78,6 +84,8 @@ class Plan:
     meta: dict
     chunks: list[ChunkRecord]
     stats: PlanStats
+    dedupe: DedupeResult | None = None
+    """What chunk dedupe dropped and why; only on a freshly built plan, not written to the plan file."""
 
 
 class _CountingEmbedder:
@@ -113,9 +121,13 @@ def build_plan(docs: list[Document], embedder: Embedder, config: ChunkerConfig, 
             for content in chunk_section(section.text, counting, config)
         ]
         chunks.extend(ChunkRecord(**{**asdict(c), "ord": i}) for i, c in enumerate(doc_chunks))
-        stats.documents_without_chunks += not doc_chunks
 
-    chunks, stats.chunk_dedupe_skipped = _dedupe_chunks(chunks)
+    chunks, chunk_dedupe = dedupe_chunks(chunks, config)
+    stats.chunk_dedupe_skipped = chunk_dedupe.skipped
+    stats.chunk_dedupe_exact, stats.chunk_dedupe_near = chunk_dedupe.exact, chunk_dedupe.near
+    stats.chunk_dedupe_guarded, stats.chunk_dedupe_by_source = chunk_dedupe.guarded, chunk_dedupe.by_source
+    # Counted after dedupe: a document that lost every chunk to a more trusted copy is never ingested.
+    stats.documents_without_chunks = len({d.id for d in kept} - {c.doc_id for c in chunks})
 
     _fill_chunk_stats(stats, chunks, config)
     stats.breakpoint_tokens = counting.tokens
@@ -126,13 +138,7 @@ def build_plan(docs: list[Document], embedder: Embedder, config: ChunkerConfig, 
         "breakpoint_embedder": embedder_id,
         "stats": asdict(stats),
     }
-    return Plan(meta, chunks, stats)
-
-
-def _dedupe_chunks(chunks: list[ChunkRecord]) -> tuple[list[ChunkRecord], int | None]:
-    """PRD step 7, chunk-level exact and MinHash near-duplicate dedupe with trust-ordered keep: issue #44.
-    Until then a pass-through; None tells the report it hasn't run."""
-    return chunks, None
+    return Plan(meta, chunks, stats, chunk_dedupe)
 
 
 def _record(doc: Document, section: Section, content: str, config: ChunkerConfig) -> ChunkRecord:

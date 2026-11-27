@@ -27,6 +27,20 @@ class ChunkerConfig:
     similarity_window: int = 3
     """Sentences per side when comparing neighbouring windows."""
     boilerplate_headings: tuple[str, ...] = BOILERPLATE_HEADINGS
+    near_dup_threshold: float = 0.95
+    """Chunk dedupe (PRD step 7): drop a chunk whose 5-word-shingle Jaccard with a more trusted kept chunk is at
+    least this. Raised from the PRD's 0.9 after the real-corpus dry run: at 0.9 WikiDoc's "MRI can b helpful in the
+    diagnosis of severe ulcerative colitis..." was dropped as a copy of "CT scan can b helpful..." (32 words,
+    Jaccard exactly 0.900): a different claim. A swapped word near a chunk's edge touches few shingles, so short
+    chunks reach 0.9 easily; 0.95 cost only 4 harmless redundant chunks on the real corpus.
+    Negation: inserting one word into an n-word text gives Jaccard (n-8)/(n+1), so on Jaccard alone 0.9 keeps
+    "X is recommended" vs "X is not recommended" in texts under ~90 words and 0.95 under ~180; longer chunks rely
+    on the polarity guard in `dedupe.py`, which never drops a near-duplicate whose negations, numbers, stage numerals
+    or comparison signs differ. A one-word substitution mid-text gives (n-9)/(n+1): caught at 0.95 from ~190 words."""
+    shingle_words: int = 5
+    """Chunks with fewer words than this are deduped on exact content only."""
+    minhash_perm: int = 128
+    minhash_seed: int = 1
 
     def config_hash(self) -> str:
         blob = json.dumps(asdict(self), sort_keys=True).encode()
