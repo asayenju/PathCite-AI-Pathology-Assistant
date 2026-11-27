@@ -1,13 +1,15 @@
-# PRD: RAG claim checker (hybrid search + GPT-6 Luna + Jev per-source stance)
+# PRD: RAG claim checker (Luna-written searches + GPT-6 Luna stances + one Jev confidence)
 
-Issues: GitHub #47–#50, label `rag-checker`. Builds on `docs/PRD-jev-triage.md` (claims) and `docs/PRD-corpus-ingest.md` (the evidence corpus).
+Issues: GitHub #47–#50 (v1), #51 (backend v2) and #52 (frontend v2), label `rag-checker`. Builds on `docs/PRD-jev-triage.md` (claims) and `docs/PRD-corpus-ingest.md` (the evidence corpus).
+
+> **v2 (issue #51) replaced the v1 design below in three places:** Luna writes the searches, Luna alone judges the passages, and Jev gives one confidence over all passages instead of a per-passage stance. See [v2 (issue #51)](#v2-issue-51); sections 3–5 describe v2, and the v1 text is kept only where it still applies.
 
 ## What
 
 Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answers `not_checked` for every claim) with a real fact check:
 
 1. **Search:** hybrid search over the Supabase corpus (2,151 documents, 9,543 chunks of NICE, PubMed-sourced guidelines, PubMed abstracts and WikiDoc). It uses `match_chunks`, which is done and committed.
-2. **Judge each source separately.** GPT-6 Luna (OpenAI) and Jev (TypeSafe) each say, for every retrieved passage, whether it **supports**, **contradicts** or is **irrelevant** to the doctor's claim.
+2. **Judge each source separately.** GPT-6 Luna (OpenAI) says, for every retrieved passage, whether it **supports**, **contradicts** or is **irrelevant** to the doctor's claim. (v1: Jev also judged every passage; v2: Jev gives one independent confidence over all passages.)
 3. **Verdict by code rules, not a model and not a majority vote.**
 4. **Show it on the claim card:** the verdict, the sources grouped by stance (with trust level, year, the exact quote and a link), and a **"Needs your review"** banner when the sources or the two models disagree.
 
@@ -15,11 +17,25 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
 
 - **A doctor needs to see evidence, not a model's opinion.** Every supporting or contradicting statement must be a word-for-word quote from a retrieved passage, with its URL.
 - **Conflicts must stay visible.** If 4 sources support a claim and 1 contradicts it, a single combined verdict hides the conflict. A majority vote is also wrong: one current NICE guideline outweighs four WikiDoc pages. So a mix of support and contradiction is always shown as **"Sources disagree"** and sent to review. Nothing is resolved silently.
-- **Two independent models catch each other's misses.** A passage only counts as support or contradiction when Luna and Jev agree on it. If they disagree, the passage is marked **unclear** and the card goes to review.
+- **Two independent models catch each other's misses.** v1: a passage only counted when Luna and Jev agreed on it. v2: Jev independently answers whether the passages support, contradict or don't settle the claim; if that disagrees with Luna's verdict, or Jev isn't confident, the card goes to review.
 - **Cost:**
   - `gpt-6-luna` is $0.10 in / $0.50 out per 1M tokens: about $0.0005 a claim, about $0.015 a transcript.
   - Claim embeddings are about $0.02 per 1M tokens, effectively free.
   - Jev adds one request per claim.
+
+## v2 (issue #51)
+
+**Why it changed.** In v1 Luna and Jev each judged every passage, and a passage counted only when both agreed with Jev's p ≥ 0.6. On real claims almost every card said **"Needs your review"**: Jev's per-passage probabilities were often 0.5–0.65, and the two models split on minor passages that didn't matter to the verdict. The banner stopped meaning anything. Separately, the doctor's sentence was a poor search query ("Because it's HER2 negative, hormone-blocking pills won't work for you" shares few words with guideline text on endocrine therapy).
+
+**What v2 does ("approach A", chosen by the user), in order:**
+1. **Luna writes the searches** (`app/check/queries.py`). One small strict-JSON call (reasoning effort low): given the claim and up to 2 previous doctor turns, 1–3 short, neutral queries that would find guideline text confirming or refuting the general medical fact (for the HER2 example: "HER2 status and endocrine therapy response", "hormone receptor positive breast cancer endocrine therapy"). The raw claim is always searched too, first. All queries run concurrently through `EvidenceSearch`; the per-query results (each already with `per_doc` and `min_similarity` applied by the RPC) are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by `chunk_id`, capped at 2 chunks per `doc_id`, top `check_top_k` (8). If query generation fails, the claim alone is searched (only the exception type is logged): the check doesn't fail.
+2. **Luna judges the passages** exactly as in v1 (`verify.luna_stances`, groundedness guard). The verdict comes from code rules on Luna's grounded stances (guard-unclear passages count as not relevant): none relevant → `unverified`; all support → `accurate` (`incomplete` if `missing_qualifier`); all contradict → `inaccurate`; any mix → `disputed`.
+3. **Jev gives one confidence**, after Luna (`jev_check.jev_confidence`). One Choice question, `verdict`: do these passages show the general medical claim is **supported** / **contradicted** / **insufficient** (not settled)? The state is the claim, the context and all passages, numbered, with title, section, trust and year. **Jev is not shown Luna's stances or verdict**, so it is an independent check. Luna's verdict maps to a class: accurate/incomplete → supported, inaccurate → contradicted, unverified → insufficient, disputed → none.
+4. **Review rules** (`aggregate.py`): `sources_disagree` if the verdict is `disputed`; `jev_unavailable` if Jev failed or has no key; otherwise `jev_disagrees` if Jev's top label isn't Luna's class, or `low_confidence` if Jev's probability for Luna's class is below `check_jev_min` (now **0.7**). Confident agreement needs no review. `models_disagree` is gone.
+
+**Trade-off.** A passage no longer needs two models to count: Luna alone decides each stance, guarded by its word-for-word quotes, and Jev checks the overall answer. Disagreement is still never resolved silently (it's a review reason), but it is now measured where it matters, on the verdict.
+
+**Live smoke run (2026-11-27, `pytest -m check -s`):** Breslow "how wide" → `inaccurate`, Jev contradicted 0.97, no review; colon MMR testing → `accurate`, Jev supported 0.99, no review; HER2/hormone pills → `inaccurate`, Jev contradicted 0.62 → `low_confidence`. 8–15 s per claim, about 4–5k Luna input tokens over 2 requests.
 
 ## How
 
@@ -55,44 +71,45 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
     - **A passage about a different subtype or a different cancer is irrelevant, not a contradiction** (for example, anaplastic thyroid for a papillary claim).
 - **Groundedness guard (code):** a supports or contradicts stance whose quote is not found in its chunk becomes **unclear**. Matching is after NFC normalisation, whitespace folding and case folding. A verdict can never rest on a made-up quote.
 
-### 3. Jev per-source stance (`app/check/jev_check.py`)
-- **`judge_sources(claim, context, chunks)`** reuses `JevClient`'s transport, retries and errors.
-  - It asks one Choice per chunk, `stance_<i>`: supports / contradicts / irrelevant, with the same criteria as Luna, all in one request.
-  - `state` holds the claim, the context and the chunks.
-- **Runs concurrently with Luna.**
-- **If Jev fails,** the verdict is computed from Luna's stances alone, with `needs_review = true` and Jev's fields `null`.
+### 3. Jev confidence (`app/check/jev_check.py`, v2)
+- **`jev_confidence(jev, claim, context, chunks) -> JevVerdict(probs, label, p)`** reuses `JevClient.ask` (transport, retries and errors).
+  - One Choice question, `verdict`: supported / contradicted / insufficient over all passages, in one request.
+  - `state` holds the claim, the context and the numbered passages (title, section, trust, year, text). Never Luna's answer.
+- **Runs after Luna** (sequential).
+- **If Jev fails,** Luna's verdict stands, with `needs_review = true`, reason `jev_unavailable` and `confidence: null`.
+- (v1's `judge_sources`, one Choice per passage, was removed.)
 
 ### 4. Aggregation (`app/check/aggregate.py`, pure, fully unit-tested)
-- **Per chunk:**
-  - **Both models agree, and Jev's p ≥ `check_jev_min` (0.6):** that stance counts.
-  - **They disagree, or Jev's p is too low:** the chunk is **unclear**.
-  - **If both say irrelevant,** the chunk is irrelevant.
-- **The verdict:**
+- **The verdict**, from Luna's grounded stances (unclear counts as not relevant):
 
-  | Relevant chunks (supports or contradicts) | Verdict |
-  |---|---|
-  | none | `unverified` |
-  | all support | `accurate`, or `incomplete` if Luna reports `missing_qualifier` |
-  | all contradict | `inaccurate` |
-  | any mix | `disputed` ("Sources disagree"), always `needs_review` |
+  | Relevant chunks (supports or contradicts) | Verdict | Luna's class for Jev |
+  |---|---|---|
+  | none | `unverified` | insufficient |
+  | all support | `accurate`, or `incomplete` if Luna reports `missing_qualifier` | supported |
+  | all contradict | `inaccurate` | contradicted |
+  | any mix | `disputed` ("Sources disagree"), always `needs_review` | none |
 
-- **Any unclear chunk** sets `needs_review`.
+- **Review reasons**, ordered and unique: `sources_disagree` (disputed); `jev_unavailable`; else `jev_disagrees` (Jev's top label ≠ Luna's class) or `low_confidence` (Jev's p for Luna's class < `check_jev_min`, 0.7). Confident agreement → no review.
 
 ### 5. Endpoint `POST /check` (`app/check/router.py`)
 - **Request:** `{turn_id, quote, context[]}`. This is the frontend's `ClaimToCheck`.
-- **Response:**
+- **Response (v2):**
   ```
-  {status:"checked", verdict, issue, suggestion, needs_review, review_reasons:[...],
-   sources:[{chunk_id, title, section, url, trust, year, quote, stance,
-             luna_stance, jev_stance, jev_p}],
+  {status:"checked", verdict, issue, suggestion, needs_review,
+   review_reasons:[sources_disagree|jev_unavailable|jev_disagrees|low_confidence],
+   sources:[{chunk_id, title, section, url, trust, year, quote, stance, luna_stance}],
+   search_queries:[claim, ...Luna's queries],
+   confidence:{label:supported|contradicted|insufficient, p, p_verdict|null, agrees|null} | null,
    model, jev_model}
   ```
+  - `stance` equals `luna_stance`. Per-source `jev_stance` / `jev_p` were removed in v2.
+  - `confidence`: `label`/`p` are Jev's top answer, `p_verdict` is Jev's probability for Luna's class, `agrees` whether they match; both `null` for `disputed`; the whole object `null` when Jev is unavailable.
 - **Errors** use `{detail, code}`:
   - `check_unavailable` (503): a missing OpenAI or Supabase key.
   - `check_rate_limited` (429).
   - `check_upstream_error` (502).
   - `invalid_check_request` (422).
-- **Settings:** `openai_key` (alias `OPEN_AI_KEY`), `checker_model`, `check_top_k=8`, `check_jev_min=0.6`.
+- **Settings:** `openai_key` (alias `OPEN_AI_KEY`), `checker_model`, `check_top_k=8`, `check_jev_min=0.7` (0.6 in v1).
 - **The Supabase secret key is now read by the API server too.** It stays backend only and is never sent to the frontend or logged.
 - **`.env.example`** adds `OPEN_AI_KEY`.
 
@@ -147,4 +164,10 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
      - The label is updated, and `npm run type-check` passes.
      - CLAUDE.md and backend/README are updated.
 
-Waves: #47 and #48 in parallel, then #49, then #50. #50 can start alongside #49 against the response contract above.
+5. **#51 Backend v2** (see [v2 (issue #51)](#v2-issue-51)).
+   - Acceptance:
+     - Offline tests: query generation (schema, 1–3 queries, fallback on failure), multi-query merge (RRF order, dedupe, per-doc cap, top k), the single Jev question (no Luna verdict in its state) and its parsing, every review rule including confident agreement → no review, Luna before Jev, a Jev failure keeping the verdict, zero results → `unverified` with no judging or Jev call, the response shape, and no claim text in logs.
+     - The live smoke test prints the search queries, verdict, confidence, reasons, per-source stances, latency and Luna tokens for 3 claims.
+6. **#52 Frontend v2:** the card shows `confidence` and the new review reasons; per-source Jev fields are gone.
+
+Waves: #47 and #48 in parallel, then #49, then #50. #50 can start alongside #49 against the response contract above. #51 and #52 in parallel against the v2 response contract.

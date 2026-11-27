@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     checker_model: str = "gpt-6-luna"
     checker_timeout_s: float = 60  # a reasoning model; 8 passages usually answer in a few seconds
     check_top_k: int = 8  # passages retrieved per claim (match_chunks k)
-    check_jev_min: float = 0.6  # Jev's probability must reach this for an agreed supports/contradicts to count
+    check_jev_min: float = 0.7  # Jev's probability for Luna's verdict class below this -> low_confidence review
 
 
 def get_settings() -> Settings:

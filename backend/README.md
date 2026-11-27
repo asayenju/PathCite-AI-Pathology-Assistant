@@ -126,23 +126,30 @@ curl -H 'content-type: application/json' http://localhost:8000/check \
 ```
 
 ```json
-{"status": "checked", "verdict": "incomplete", "issue": "...", "suggestion": "...",
- "needs_review": true, "review_reasons": ["models_disagree"],
+{"status": "checked", "verdict": "accurate", "issue": null, "suggestion": null,
+ "needs_review": false, "review_reasons": [],
  "sources": [{"chunk_id": 812, "title": "Molecular testing strategies for Lynch syndrome ...", "section": "...",
               "url": "https://...", "trust": "high", "year": null, "quote": "Offer testing to all people with ...",
-              "stance": "supports", "luna_stance": "supports", "jev_stance": "supports", "jev_p": 0.99}],
+              "stance": "supports", "luna_stance": "supports"}],
+ "search_queries": ["Colon cancers are tested for mismatch repair proteins.",
+                    "colorectal cancer mismatch repair protein immunohistochemistry testing"],
+ "confidence": {"label": "supported", "p": 0.99, "p_verdict": 0.99, "agrees": true},
  "model": "gpt-6-luna", "jev_model": "jev-1.14.0"}
 ```
 
-1. **Search:** hybrid `match_chunks` over the corpus, top `CHECK_TOP_K` (8), at most 2 per document. The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
-2. **Judge each passage**, at the same time: GPT-6 Luna (OpenAI Responses API, word-for-word quotes, groundedness guard: a quote not found in its passage makes the stance `unclear`) and Jev (one Choice per passage in one TypeSafe request).
-3. **Combine per passage:** both models say supports (or both contradicts) and Jev's p >= `CHECK_JEV_MIN` (0.6): that stance. Both say irrelevant: irrelevant. Anything else: `unclear`. If Jev failed, Luna's stance is used.
-4. **Verdict** over the supporting/contradicting passages: none `unverified`; all support `accurate` (`incomplete` if Luna says a qualifier is missing); all contradict `inaccurate`; a mix `disputed`. No majority vote.
+Steps, in order (v2, issue #51):
+1. **Queries:** GPT-6 Luna writes 1-3 short search queries for the general medical fact (strict JSON, low reasoning effort). The raw claim is always searched too. If this call fails, only the claim is searched.
+2. **Search:** each query runs hybrid `match_chunks` concurrently (top `CHECK_TOP_K`, at most 2 per document); the lists are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by chunk, at most 2 per document, top `CHECK_TOP_K` (8). The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
+3. **Luna judges each passage** (OpenAI Responses API, word-for-word quotes, groundedness guard: a quote not found in its passage makes the stance `unclear`, which counts as not relevant).
+4. **Verdict** over Luna's supporting/contradicting passages: none `unverified`; all support `accurate` (`incomplete` if Luna says a qualifier is missing); all contradict `inaccurate`; a mix `disputed`. No majority vote.
+5. **Jev's confidence**, after Luna: one TypeSafe Choice over all passages, supported / contradicted / insufficient. Jev never sees Luna's answer.
 
-- `sources`: every retrieved passage, in search order (the frontend hides irrelevant ones). `quote` is Luna's grounded quote, `""` when there is none. `stance` is the combined one; `luna_stance`, `jev_stance` and `jev_p` are each model's (Jev's are `null` when Jev failed).
+- `sources`: the merged passages, best first (the frontend hides irrelevant ones). `quote` is Luna's grounded quote, `""` when there is none. `stance` equals `luna_stance`.
+- `search_queries`: what was searched, the raw claim first.
+- `confidence`: Jev's top `label` and its `p`; `p_verdict` is Jev's probability for the class of Luna's verdict (accurate/incomplete = supported, inaccurate = contradicted, unverified = insufficient) and `agrees` whether Jev's top label is that class. Both are `null` for `disputed`. The whole object is `null` when Jev is unavailable.
 - `issue` / `suggestion`: Luna's, for `inaccurate`, `incomplete` and `disputed`; `null` otherwise.
-- `needs_review` is true when the verdict is `disputed`, any passage is `unclear`, or Jev failed. `review_reasons`, in this order: `sources_disagree` (disputed), `models_disagree` (with Jev available, some passage is unclear: the models differ, Jev's p is too low, or Luna's quote wasn't found), `jev_unavailable` (no `JEV_KEY`, or Jev failed: the verdict rests on Luna alone, `jev_model` is `null`).
-- No search results: `verdict: "unverified"`, `sources: []`, `needs_review: false`, and no model is called.
+- `review_reasons`, ordered: `sources_disagree` (disputed), `jev_unavailable` (no `JEV_KEY`, or Jev failed: the verdict rests on Luna alone, `jev_model` is `null`), otherwise `jev_disagrees` (Jev's top label isn't Luna's class) or `low_confidence` (Jev's probability for Luna's class < `CHECK_JEV_MIN`, 0.7). `needs_review` is true exactly when there is a reason; confident agreement needs no review.
+- No search results: `verdict: "unverified"`, `sources: []`, `needs_review: false`, `confidence: null`; only the query call is made.
 - A missing `JEV_KEY` is not an error. Errors are JSON with the codes below.
 
 ### Errors
@@ -187,9 +194,9 @@ Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the 
 | `TRIAGE_MAX_TURN_CHARS` | `5000` | max characters per turn (and per `/triage/span` text) |
 | `OPEN_AI_KEY` | unset | OpenAI key for the Luna verdict in `/check` (503 without it) |
 | `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | unset | claim embedding and evidence search for `/check` (503 without them); see Evidence corpus |
-| `CHECKER_MODEL` | `gpt-6-luna` | OpenAI model for the per-passage stance |
-| `CHECK_TOP_K` | `8` | passages retrieved per claim |
-| `CHECK_JEV_MIN` | `0.6` | Jev's probability needed for an agreed supports/contradicts to count |
+| `CHECKER_MODEL` | `gpt-6-luna` | OpenAI model for the search queries and the per-passage stance |
+| `CHECK_TOP_K` | `8` | passages kept per claim after merging the searches |
+| `CHECK_JEV_MIN` | `0.7` | Jev's probability for Luna's verdict below this sends the card to review (`low_confidence`) |
 
 ## Privacy
 Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored. `/check` sends the claim and up to 2 previous doctor turns to OpenAI (embedding and the Luna verdict, `store: false`), Supabase (as the keyword query) and TypeSafe (Jev); patient turns are never sent. The claim, context, verdict, keys and request/response bodies are never logged or stored: failures log only the exception type. The Supabase secret key is read by the API server for `/check` and never leaves the backend.

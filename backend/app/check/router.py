@@ -1,10 +1,13 @@
 """POST /check: fact-check one doctor claim against the evidence corpus (docs/PRD-rag-checker.md, section 5).
 
-Flow: hybrid search (app/check/search.py) -> Luna (verify.luna_stances) and Jev (jev_check.judge_sources) at the
-same time -> code rules (aggregate.py). Zero search results short-circuit to `unverified` with no model calls.
+Flow (v2, issue #51), sequential: Luna writes 1-3 search queries (queries.plan_queries; the raw claim is always
+searched too, and a failure falls back to it alone) -> every query searched concurrently and merged by reciprocal
+rank fusion (queries.multi_search) -> Luna judges each passage (verify.luna_stances, groundedness guard) -> Jev gives
+one independent confidence over all passages (jev_check.jev_confidence; it never sees Luna's answer) -> code rules
+(aggregate.py). Zero search results short-circuit to `unverified` with no judging or Jev call.
 
-Jev is a second opinion, not a dependency: a missing JEV_KEY or any JevError gives a verdict from Luna alone with
-review reason `jev_unavailable`. Search and Luna failures are errors ({detail, code}).
+Jev is a confidence check, not a dependency: a missing JEV_KEY or any JevError keeps Luna's verdict with review
+reason `jev_unavailable` and `confidence: null`. Search and Luna-judging failures are errors ({detail, code}).
 
 Clients are built per request by factories on app.state (tests swap in fakes) and closed after use.
 
@@ -14,7 +17,6 @@ the keys and bodies are never logged; only exception type names are.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from collections.abc import Callable
 from contextlib import AsyncExitStack
@@ -24,9 +26,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 
 from app.check.aggregate import aggregate
-from app.check.jev_check import judge_sources
+from app.check.jev_check import jev_confidence
 from app.check.llm import LLMAuthError, LLMRateLimited, LLMUpstreamError, OpenAIResponsesClient
-from app.check.schemas import CheckRequest, CheckResponse, CheckSource
+from app.check.queries import multi_search, plan_queries
+from app.check.schemas import CheckConfidence, CheckRequest, CheckResponse, CheckSource
 from app.check.search import EvidenceSearch, SearchRateLimited, SearchUnavailable, SearchUpstreamError
 from app.check.verify import luna_stances
 from app.config import Settings, get_settings
@@ -104,7 +107,7 @@ async def _jev_or_none(jev, claim, context, chunks):
     if jev is None:
         return None
     try:
-        return await judge_sources(jev, claim, context, chunks)
+        return await jev_confidence(jev, claim, context, chunks)
     except JevError as exc:
         logger.warning("Jev check failed, using Luna alone: %s", type(exc).__name__)
         return None
@@ -128,8 +131,9 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
             else:
                 jev = await stack.enter_async_context(jev)
 
+        queries = await plan_queries(llm, claim, context)
         try:
-            chunks = await search.search(claim, settings.check_top_k)
+            chunks = await multi_search(search, queries, settings.check_top_k)
         except ValueError:  # raised before any call, e.g. a claim too long to embed
             raise ApiError(422, INVALID, "Invalid check request: quote") from None
         model = getattr(llm, "model", None) or settings.checker_model
@@ -141,25 +145,20 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
                 needs_review=False,
                 review_reasons=[],
                 sources=[],
+                search_queries=queries,
+                confidence=None,
                 model=model,
                 jev_model=None,
             )
 
-        luna, jev_stances = await asyncio.gather(
-            luna_stances(llm, claim, context, chunks),
-            _jev_or_none(jev, claim, context, chunks),
-            return_exceptions=True,
-        )
-        if isinstance(luna, BaseException):
-            raise luna
-        if isinstance(jev_stances, BaseException):  # not a JevError (those become None): a bug, so don't hide it
-            raise jev_stances
-        jev_model = (getattr(jev, "model_used", None) or settings.jev_model) if jev_stances is not None else None
+        luna = await luna_stances(llm, claim, context, chunks)
+        jev_verdict = await _jev_or_none(jev, claim, context, chunks)
+        jev_model = (getattr(jev, "model_used", None) or settings.jev_model) if jev_verdict is not None else None
 
-    result = aggregate(luna.stances, jev_stances, luna.missing_qualifier, settings.check_jev_min)
+    result = aggregate(luna.stances, luna.missing_qualifier, jev_verdict, settings.check_jev_min)
     by_id = {s.chunk_id: s for s in luna.stances}
     sources = []
-    for chunk, combined in zip(chunks, result.chunks):
+    for chunk in chunks:
         s = by_id[chunk.chunk_id]
         grounded_quote = s.quote if s.grounded and s.stance in ("supports", "contradicts") else ""
         sources.append(
@@ -171,12 +170,11 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
                 trust=chunk.trust,
                 year=chunk.year,
                 quote=grounded_quote,
-                stance=combined.stance,
-                luna_stance=combined.luna_stance,
-                jev_stance=combined.jev_stance,
-                jev_p=combined.jev_p,
+                stance=s.stance,
+                luna_stance=s.stance,
             )
         )
+    c = result.confidence
     show_issue = result.verdict in _WITH_ISSUE
     return CheckResponse(
         verdict=result.verdict,
@@ -185,6 +183,8 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
         needs_review=result.needs_review,
         review_reasons=result.review_reasons,
         sources=sources,
+        search_queries=queries,
+        confidence=None if c is None else CheckConfidence(label=c.label, p=c.p, p_verdict=c.p_verdict, agrees=c.agrees),
         model=model,
         jev_model=jev_model,
     )
@@ -195,11 +195,12 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
     response_model=CheckResponse,
     summary="Fact-check one doctor claim against the evidence corpus",
     description=(
-        "Searches the NICE/PubMed/WikiDoc corpus, has GPT-6 Luna (OpenAI) and Jev (TypeSafe) each judge every "
-        "passage as supports / contradicts / irrelevant, and derives the verdict by fixed rules: a passage counts "
-        "only when both models agree; a mix of support and contradiction is `disputed`. Every retrieved passage is "
-        "returned in search order. The claim and up to 2 previous doctor turns are sent to OpenAI, Supabase and "
-        "TypeSafe; nothing is stored or logged. Research use only: not a medical device."
+        "GPT-6 Luna (OpenAI) writes 1-3 search queries; the claim and those queries search the NICE/PubMed/WikiDoc "
+        "corpus and the results are merged. Luna judges every passage as supports / contradicts / irrelevant (with "
+        "word-for-word quotes) and the verdict follows fixed rules: a mix of support and contradiction is "
+        "`disputed`. Jev (TypeSafe) then gives one independent confidence over the passages; disagreement or low "
+        "confidence sends the card to review. The claim and up to 2 previous doctor turns are sent to OpenAI, "
+        "Supabase and TypeSafe; nothing is stored or logged. Research use only: not a medical device."
     ),
 )
 async def check(request: Request, body: CheckRequest) -> CheckResponse:

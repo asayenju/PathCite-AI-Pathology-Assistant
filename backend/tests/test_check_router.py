@@ -1,13 +1,12 @@
 """End-to-end tests for POST /check with fake search, Luna (OpenAI) and Jev clients. No network."""
 
-import asyncio
 import logging
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
-from app.check.aggregate import JEV_UNAVAILABLE, MODELS_DISAGREE, SOURCES_DISAGREE
+from app.check.aggregate import JEV_DISAGREES, JEV_UNAVAILABLE, LOW_CONFIDENCE, SOURCES_DISAGREE
 from app.check.llm import LLMAuthError, LLMRateLimited, LLMUpstreamError
 from app.check.search import Evidence, SearchRateLimited, SearchUnavailable, SearchUpstreamError
 from app.main import app
@@ -45,8 +44,10 @@ CHUNKS = [
 
 
 class FakeSearch:
-    def __init__(self, results=CHUNKS, error=None):
-        self.results, self.error = list(results), error
+    """Every query returns `results` unless `by_query` names it."""
+
+    def __init__(self, results=CHUNKS, error=None, by_query=None):
+        self.results, self.error, self.by_query = list(results), error, by_query or {}
         self.calls, self.closed = [], False
 
     async def __aenter__(self):
@@ -59,7 +60,7 @@ class FakeSearch:
         self.calls.append((claim, k))
         if self.error:
             raise self.error
-        return self.results
+        return self.by_query.get(claim, self.results)
 
 
 def luna_answer(stances, missing_qualifier=False, issue=None, suggestion=None):
@@ -83,11 +84,20 @@ DEFAULT_LUNA = luna_answer(
 )
 
 
+QUERIES = ["zorblaxian carcinoma spleen metastasis", "zorblaxian carcinoma spread pattern"]
+
+
 class FakeLLM:
-    def __init__(self, answer=DEFAULT_LUNA, error=None, before=None):
+    """Answers the query call (name search_queries) and the stance call (name source_stances).
+
+    `error` / `query_error` fail the stance / query call; `order` (shared with FakeJev) records call order."""
+
+    def __init__(self, answer=DEFAULT_LUNA, error=None, before=None, queries=QUERIES, query_error=None, order=None):
         self.answer, self.error, self.before = answer, error, before
+        self.queries, self.query_error = queries, query_error
+        self.order = order if order is not None else []
         self.model = "gpt-6-luna"
-        self.calls, self.closed = [], False
+        self.calls, self.query_calls, self.closed = [], [], False
 
     async def __aenter__(self):
         return self
@@ -96,31 +106,34 @@ class FakeLLM:
         self.closed = True
 
     async def structured(self, *, instructions, input, schema, name):
+        from app.check.llm import Usage
+
+        if name == "search_queries":
+            self.query_calls.append(input)
+            self.order.append("queries")
+            if self.query_error:
+                raise self.query_error
+            return {"queries": list(self.queries)}, Usage(5, 0, 3, 1)
         self.calls.append(input)
+        self.order.append("luna")
         if self.before:
             await self.before()
         if self.error:
             raise self.error
-        from app.check.llm import Usage
-
         return self.answer, Usage(10, 0, 5, 2)
 
 
-def jev_probs(*labels, p=0.9):
+def jev_probs(label="supported", p=0.9):
     rest = (1 - p) / 2
-    return {
-        f"stance_{i}": {
-            "type": "choice",
-            "probabilities": {x: (p if x == label else rest) for x in ("supports", "contradicts", "irrelevant")},
-        }
-        for i, label in enumerate(labels)
-    }
+    probs = {x: (p if x == label else rest) for x in ("supported", "contradicted", "insufficient")}
+    return {"verdict": {"type": "choice", "probabilities": probs}}
 
 
 class FakeJev:
-    def __init__(self, answers=None, error=None, before=None, model_used="jev-1.14.2"):
-        self.answers = answers if answers is not None else jev_probs("supports", "supports", "irrelevant")
+    def __init__(self, answers=None, error=None, before=None, model_used="jev-1.14.2", order=None):
+        self.answers = answers if answers is not None else jev_probs("supported", 0.9)
         self.error, self.before = error, before
+        self.order = order if order is not None else []
         self.model_used = None
         self._model_used = model_used
         self.calls, self.closed = [], False
@@ -133,6 +146,7 @@ class FakeJev:
 
     async def ask(self, state, questions):
         self.calls.append((state, questions))
+        self.order.append("jev")
         if self.before:
             await self.before()
         if self.error:
@@ -175,6 +189,7 @@ def test_response_shape(client):
     body = r.json()
     assert set(body) == {
         "status", "verdict", "issue", "suggestion", "needs_review", "review_reasons", "sources", "model", "jev_model",
+        "search_queries", "confidence",
     }
     assert body["status"] == "checked"
     assert body["verdict"] == "incomplete"
@@ -184,6 +199,10 @@ def test_response_shape(client):
     assert body["review_reasons"] == []
     assert body["model"] == "gpt-6-luna"
     assert body["jev_model"] == "jev-1.14.2"
+    assert body["search_queries"] == [CLAIM, *QUERIES]
+    assert body["confidence"] == {
+        "label": "supported", "p": pytest.approx(0.9), "p_verdict": pytest.approx(0.9), "agrees": True,
+    }
     assert [s["chunk_id"] for s in body["sources"]] == [1, 2, 3]
     first = body["sources"][0]
     assert first == {
@@ -196,29 +215,81 @@ def test_response_shape(client):
         "quote": "spreads to the spleen in nearly all cases",
         "stance": "supports",
         "luna_stance": "supports",
-        "jev_stance": "supports",
-        "jev_p": pytest.approx(0.9),
     }
     third = body["sources"][2]
     assert third["title"] is None and third["year"] is None and third["trust"] == "low"
     assert third["stance"] == "irrelevant" and third["quote"] == ""
 
-    assert search.calls == [(CLAIM, 8)]
+    assert sorted(search.calls) == sorted([(CLAIM, 8), *[(q, 8) for q in QUERIES]])
+    assert len(llm.query_calls) == 1 and CLAIM in llm.query_calls[0]
     assert len(llm.calls) == 1 and CLAIM in llm.calls[0] and CONTEXT_TURN in llm.calls[0]
     assert len(jev.calls) == 1 and jev.calls[0][0]["claim"] == CLAIM
     assert search.closed and llm.closed and jev.closed
 
 
+def test_luna_queries_then_luna_judges_then_jev(client):
+    order = []
+    configure(client, llm=FakeLLM(order=order), jev=FakeJev(order=order))
+    assert post(client).status_code == 200
+    assert order == ["queries", "luna", "jev"]
+
+
+def test_jev_never_sees_lunas_verdict(client):
+    _, _, jev = configure(client)
+    post(client)
+    state, questions = jev.calls[0]
+    assert set(state) == {"claim", "context", "passages"}
+    assert set(questions) == {"verdict"}
+    raw = str(state).lower() + str(questions).lower()
+    for word in ("incomplete", "accurate", "luna", "does not always spread"):
+        assert word not in raw
+
+
+def test_results_from_several_queries_are_merged(client):
+    extra = ev(9, "Zorblaxian carcinoma metastasises to the spleen.")
+    search = FakeSearch(results=CHUNKS, by_query={QUERIES[0]: [extra]})
+    luna = luna_answer(
+        [(1, "supports", "nearly all cases"), (2, "irrelevant", ""), (3, "irrelevant", ""), (9, "supports", "to the spleen")]
+    )
+    configure(client, search=search, llm=FakeLLM(answer=luna))
+    body = post(client).json()
+    assert {s["chunk_id"] for s in body["sources"]} == {1, 2, 3, 9}
+    assert body["sources"][0]["chunk_id"] == 1  # in two lists at rank 1
+
+
+def test_query_generation_failure_falls_back_to_the_claim(client, caplog):
+    caplog.set_level(logging.DEBUG)
+    search, llm, _ = configure(client, llm=FakeLLM(query_error=LLMUpstreamError("x")))
+    r = post(client)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["search_queries"] == [CLAIM]
+    assert search.calls == [(CLAIM, 8)]
+    assert body["verdict"] == "incomplete"
+    assert "LLMUpstreamError" in caplog.text
+    assert CLAIM not in caplog.text
+
+
 def test_top_k_comes_from_settings(client):
     search, _, _ = configure(client, check_top_k=3)
     post(client)
-    assert search.calls[0][1] == 3
+    assert {k for _, k in search.calls} == {3}
+
+
+def test_at_most_top_k_sources(client):
+    many = [ev(i, f"content {i}") for i in range(1, 7)]
+    more = [ev(i, f"content {i}") for i in range(11, 17)]
+    luna = luna_answer([(i, "irrelevant", "") for i in [*range(1, 7), *range(11, 17)]])
+    search = FakeSearch(results=many, by_query={QUERIES[0]: more})
+    configure(client, search=search, llm=FakeLLM(answer=luna), check_top_k=4)
+    assert len(post(client).json()["sources"]) == 4
 
 
 def test_only_last_two_context_turns_are_used(client):
     _, llm, jev = configure(client)
     post(client, context=["first turn", "second turn", "third turn"])
     assert "first turn" not in llm.calls[0]
+    assert "first turn" not in llm.query_calls[0]
     assert jev.calls[0][0]["context"] == ["second turn", "third turn"]
 
 
@@ -232,6 +303,7 @@ def test_accurate_has_no_issue_or_suggestion(client):
     body = post(client).json()
     assert body["verdict"] == "accurate"
     assert body["issue"] is None and body["suggestion"] is None
+    assert body["needs_review"] is False
 
 
 def test_inaccurate_passes_issue_through(client):
@@ -240,42 +312,64 @@ def test_inaccurate_passes_issue_through(client):
         issue="Wrong.",
         suggestion="Fixed.",
     )
-    jev = FakeJev(answers=jev_probs("contradicts", "irrelevant", "irrelevant"))
-    configure(client, llm=FakeLLM(answer=luna), jev=jev)
+    configure(client, llm=FakeLLM(answer=luna), jev=FakeJev(answers=jev_probs("contradicted", 0.8)))
     body = post(client).json()
     assert body["verdict"] == "inaccurate"
     assert (body["issue"], body["suggestion"]) == ("Wrong.", "Fixed.")
+    assert body["needs_review"] is False
+    assert body["confidence"]["label"] == "contradicted"
 
 
-def test_disputed_and_models_disagree(client):
+def test_disputed_is_sources_disagree(client):
     luna = luna_answer(
-        [(1, "supports", "nearly all cases"), (2, "contradicts", "usually spreads"), (3, "supports", "is rare")],
+        [(1, "supports", "nearly all cases"), (2, "contradicts", "usually spreads"), (3, "irrelevant", "")],
         issue="Mixed.",
         suggestion="Check.",
     )
-    jev = FakeJev(answers=jev_probs("supports", "contradicts", "irrelevant"))
-    configure(client, llm=FakeLLM(answer=luna), jev=jev)
+    configure(client, llm=FakeLLM(answer=luna))
     body = post(client).json()
     assert body["verdict"] == "disputed"
     assert body["needs_review"] is True
-    assert body["review_reasons"] == [SOURCES_DISAGREE, MODELS_DISAGREE]
+    assert body["review_reasons"] == [SOURCES_DISAGREE]
     assert body["issue"] == "Mixed."
-    third = body["sources"][2]
-    assert (third["stance"], third["luna_stance"], third["jev_stance"]) == ("unclear", "supports", "irrelevant")
-    assert third["quote"] == "is rare"  # grounded Luna quote is kept so the reviewer can see it
+    assert body["confidence"]["p_verdict"] is None and body["confidence"]["agrees"] is None
+    assert [s["stance"] for s in body["sources"]] == ["supports", "contradicts", "irrelevant"]
 
 
-def test_ungrounded_quote_is_dropped_and_unclear(client):
+def test_jev_disagrees(client):
+    configure(client, jev=FakeJev(answers=jev_probs("insufficient", 0.8)))
+    body = post(client).json()
+    assert body["verdict"] == "incomplete"
+    assert body["needs_review"] is True
+    assert body["review_reasons"] == [JEV_DISAGREES]
+    assert body["confidence"]["agrees"] is False
+    assert body["confidence"]["label"] == "insufficient"
+    assert body["confidence"]["p_verdict"] == pytest.approx(0.1)
+
+
+def test_low_confidence(client):
+    configure(client, jev=FakeJev(answers=jev_probs("supported", 0.6)))
+    body = post(client).json()
+    assert body["review_reasons"] == [LOW_CONFIDENCE]
+    assert body["confidence"]["agrees"] is True
+
+
+def test_jev_min_comes_from_settings(client):
+    configure(client, jev=FakeJev(answers=jev_probs("supported", 0.6)), check_jev_min=0.5)
+    assert post(client).json()["needs_review"] is False
+
+
+def test_ungrounded_quote_is_dropped_and_not_relevant(client):
     luna = luna_answer([(1, "supports", "made up words"), (2, "irrelevant", ""), (3, "irrelevant", "")])
-    configure(client, llm=FakeLLM(answer=luna), jev=FakeJev(answers=jev_probs("supports", "irrelevant", "irrelevant")))
+    configure(client, llm=FakeLLM(answer=luna), jev=FakeJev(answers=jev_probs("insufficient", 0.9)))
     body = post(client).json()
     s = body["sources"][0]
     assert (s["stance"], s["luna_stance"], s["quote"]) == ("unclear", "unclear", "")
     assert body["verdict"] == "unverified"
-    assert body["review_reasons"] == [MODELS_DISAGREE]
+    assert body["needs_review"] is False
 
 
-def test_zero_results_is_unverified_without_model_calls(client):
+def test_zero_results_is_unverified_without_judging_calls(client):
     search, llm, jev = configure(client, search=FakeSearch(results=[]))
     r = post(client)
     assert r.status_code == 200
@@ -285,30 +379,10 @@ def test_zero_results_is_unverified_without_model_calls(client):
     assert body["review_reasons"] == []
     assert body["sources"] == []
     assert body["issue"] is None and body["suggestion"] is None
+    assert body["search_queries"] == [CLAIM, *QUERIES]
+    assert body["confidence"] is None
     assert llm.calls == [] and jev.calls == []
     assert body["jev_model"] is None
-
-
-# --- concurrency -----------------------------------------------------------------------------------------------------
-
-
-def test_luna_and_jev_run_concurrently(client):
-    """Each fake waits for an event only the other sets: sequential calls would deadlock (and time out)."""
-    events = {}
-
-    def barrier(mine, other):
-        async def before():
-            if not events:
-                events.update(luna=asyncio.Event(), jev=asyncio.Event())
-            events[mine].set()
-            await asyncio.wait_for(events[other].wait(), timeout=2)
-
-        return before
-
-    configure(client, llm=FakeLLM(before=barrier("luna", "jev")), jev=FakeJev(before=barrier("jev", "luna")))
-    r = post(client)
-    assert r.status_code == 200, r.text
-    assert r.json()["jev_model"] == "jev-1.14.2"
 
 
 # --- Jev failure is not fatal ----------------------------------------------------------------------------------------
@@ -322,19 +396,21 @@ def test_jev_failure_still_returns_a_verdict(client, error, caplog):
     assert r.status_code == 200
     body = r.json()
     assert body["verdict"] == "incomplete"
+    assert body["issue"] == "It does not always spread."
     assert body["needs_review"] is True
     assert body["review_reasons"] == [JEV_UNAVAILABLE]
     assert body["jev_model"] is None
-    assert all(s["jev_stance"] is None and s["jev_p"] is None for s in body["sources"])
+    assert body["confidence"] is None
     assert [s["stance"] for s in body["sources"]] == ["supports", "supports", "irrelevant"]
     assert type(error).__name__ in caplog.text
     assert CLAIM not in caplog.text
 
 
 def test_malformed_jev_answer_still_returns_a_verdict(client):
-    configure(client, jev=FakeJev(answers={"stance_0": {"type": "noul"}}))
+    configure(client, jev=FakeJev(answers={"verdict": {"type": "noul"}}))
     body = post(client).json()
     assert body["review_reasons"] == [JEV_UNAVAILABLE]
+    assert body["confidence"] is None
 
 
 def test_missing_jev_key_is_not_fatal(client):

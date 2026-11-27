@@ -1,4 +1,4 @@
-"""Offline tests for the Jev per-source stance (app/check/jev_check.py) and JevClient.ask, with httpx.MockTransport."""
+"""Offline tests for Jev's single confidence question (app/check/jev_check.py) and JevClient.ask, with MockTransport."""
 
 import json
 import logging
@@ -6,7 +6,7 @@ import logging
 import httpx
 import pytest
 
-from app.check.jev_check import STANCE_CRITERIA, JevStance, judge_sources
+from app.check.jev_check import LABELS, VERDICT_CRITERIA, JevVerdict, jev_confidence
 from app.check.verify import ChunkIn
 from app.triage.jev import JevAuthError, JevClient, JevRateLimited, JevUpstreamError
 
@@ -14,10 +14,11 @@ KEY = "sk-jev-test-key-do-not-leak"
 MODEL = "jev-1.14.0"
 CLAIM = "Zorblaxian carcinoma always spreads to the spleen."
 CONTEXT = ["Older turn one.", "Turn two.", "Turn three."]
+
+
 CHUNKS = [
     ChunkIn(11, "Spread", "Zorblaxian carcinoma spreads to the spleen in most cases.", "Zorblax guideline"),
     ChunkIn(22, "Overview", "Zorblaxian carcinoma rarely spreads.", None),
-    ChunkIn(33, None, "Anaplastic thyroid carcinoma is rare.", "Thyroid"),
 ]
 
 
@@ -27,22 +28,17 @@ def anyio_backend():
 
 
 def choice(probs):
-    return {"type": "choice", "choice": "supports", "probabilities": probs}
+    return {"type": "choice", "choice": "supported", "probabilities": probs}
 
 
-def ok(probs_by_index, model="jev-1.14.2"):
+def ok(probs, model="jev-1.14.2"):
     def handler(request, body):
-        answers = {f"stance_{i}": choice(p) for i, p in probs_by_index.items()}
-        return httpx.Response(200, json={"model": model, "answers": answers, "usage": {"input_tokens": 5}})
+        return httpx.Response(200, json={"model": model, "answers": {"verdict": choice(probs)}})
 
     return handler
 
 
-DEFAULT = {
-    0: {"supports": 0.8, "contradicts": 0.1, "irrelevant": 0.1},
-    1: {"supports": 0.05, "contradicts": 0.7, "irrelevant": 0.25},
-    2: {"supports": 0.0, "contradicts": 0.02, "irrelevant": 0.98},
-}
+DEFAULT = {"supported": 0.8, "contradicted": 0.05, "insufficient": 0.15}
 
 
 class Recorder:
@@ -68,71 +64,104 @@ async def _nosleep(_):
 
 
 @pytest.mark.anyio
-async def test_one_request_with_one_choice_per_chunk():
+async def test_one_request_with_one_choice_question():
     jev, rec = client(ok(DEFAULT))
     async with jev:
-        out = await judge_sources(jev, CLAIM, CONTEXT, CHUNKS)
+        out = await jev_confidence(jev, CLAIM, CONTEXT, CHUNKS)
 
     assert len(rec.requests) == 1
     assert rec.requests[0].url.path == "/v1/systemone"
     body = rec.bodies[0]
     assert body["model"] == MODEL
-    assert set(body["questions"]) == {"stance_0", "stance_1", "stance_2"}
-    for q in body["questions"].values():
-        assert q["type"] == "choice"
-        assert set(q["criteria"]) == {"supports", "contradicts", "irrelevant"}
-        assert q["criteria"] == STANCE_CRITERIA
-    assert "Passage 2" in body["questions"]["stance_1"]["instructions"]
+    assert set(body["questions"]) == {"verdict"}
+    q = body["questions"]["verdict"]
+    assert q["type"] == "choice"
+    assert q["criteria"] == VERDICT_CRITERIA
+    assert set(q["criteria"]) == {"supported", "contradicted", "insufficient"}
     state = body["state"]
+    assert set(state) == {"claim", "context", "passages"}
     assert state["claim"] == CLAIM
     assert state["context"] == CONTEXT[-2:]
-    assert [p["chunk_id"] for p in state["passages"]] == [11, 22, 33]
-    assert state["passages"][0]["text"] == CHUNKS[0].content
-    assert state["passages"][0]["title"] == "Zorblax guideline"
+    assert [p["passage"] for p in state["passages"]] == [1, 2]
+    first = state["passages"][0]
+    assert first["text"] == CHUNKS[0].content
+    assert first["title"] == "Zorblax guideline" and first["section"] == "Spread"
+    assert "trust" in first and "year" in first
 
-    assert out == [
-        JevStance(11, "supports", 0.8),
-        JevStance(22, "contradicts", 0.7),
-        JevStance(33, "irrelevant", 0.98),
-    ]
+    assert out == JevVerdict(probs=DEFAULT, label="supported", p=0.8)
     assert jev.model_used == "jev-1.14.2"
 
 
-def test_criteria_carry_the_luna_rules():
-    text = " ".join(STANCE_CRITERIA.values()).lower()
-    assert "only" in text and "passage" in text
-    assert "patient-specific" in text
-    assert "different subtype" in text
-
-
 @pytest.mark.anyio
-async def test_no_chunks_makes_no_request():
+async def test_trust_and_year_come_from_the_chunk_when_present():
+    from dataclasses import dataclass
+
+    @dataclass(frozen=True)
+    class Ev:
+        chunk_id: int
+        section: str
+        content: str
+        title: str
+        trust: str
+        year: int
+
     jev, rec = client(ok(DEFAULT))
     async with jev:
-        assert await judge_sources(jev, CLAIM, [], []) == []
-    assert rec.requests == []
+        await jev_confidence(jev, CLAIM, [], [Ev(1, "S", "text", "T", "high", 2021)])
+    assert rec.bodies[0]["state"]["passages"][0] | {} == {
+        "passage": 1, "title": "T", "section": "S", "trust": "high", "year": 2021, "text": "text",
+    }
 
 
 @pytest.mark.anyio
-async def test_too_many_chunks_is_a_value_error():
+async def test_no_luna_verdict_is_shown_to_jev():
     jev, rec = client(ok(DEFAULT))
-    chunks = [ChunkIn(i, None, "x") for i in range(41)]
+    async with jev:
+        await jev_confidence(jev, CLAIM, CONTEXT, CHUNKS)
+    raw = json.dumps(rec.bodies[0]).lower()
+    for word in ("luna", "accurate", "inaccurate", "disputed", "unverified", "verdict_hint", "stance"):
+        assert word not in raw
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "probs, label, p",
+    [
+        ({"supported": 0.1, "contradicted": 0.7, "insufficient": 0.2}, "contradicted", 0.7),
+        ({"supported": 0.1, "contradicted": 0.1, "insufficient": 0.8}, "insufficient", 0.8),
+        ({"supported": 0.4, "contradicted": 0.4, "insufficient": 0.2}, "supported", 0.4),  # tie -> LABELS order
+    ],
+)
+async def test_label_is_the_argmax(probs, label, p):
+    jev, _ = client(ok(probs))
+    async with jev:
+        out = await jev_confidence(jev, CLAIM, [], CHUNKS)
+    assert (out.label, out.p) == (label, p)
+    assert out.probs == probs
+
+
+def test_labels_and_criteria():
+    assert LABELS == ("supported", "contradicted", "insufficient")
+    text = " ".join(VERDICT_CRITERIA.values()).lower()
+    assert "passages" in text and "general medical" in text
+
+
+@pytest.mark.anyio
+async def test_no_chunks_is_a_value_error_without_a_request():
+    jev, rec = client(ok(DEFAULT))
     async with jev:
         with pytest.raises(ValueError):
-            await judge_sources(jev, CLAIM, [], chunks)
+            await jev_confidence(jev, CLAIM, [], [])
     assert rec.requests == []
 
 
 def malformed_cases():
-    good = DEFAULT
-    yield "missing answer", ok({0: good[0], 1: good[1]})
-    yield "missing label", ok({**good, 1: {"supports": 0.5, "contradicts": 0.5}})
-    yield "prob out of range", ok({**good, 0: {"supports": 1.2, "contradicts": 0.0, "irrelevant": 0.0}})
-    yield "prob is bool", ok({**good, 0: {"supports": True, "contradicts": 0.0, "irrelevant": 0.0}})
-    yield "prob is str", ok({**good, 0: {"supports": "0.9", "contradicts": 0.0, "irrelevant": 0.0}})
-    yield "wrong type", lambda r, b: httpx.Response(
-        200, json={"answers": {f"stance_{i}": {"type": "noul", "noul": 0.5} for i in range(3)}}
-    )
+    yield "missing answer", lambda r, b: httpx.Response(200, json={"answers": {}})
+    yield "missing label", ok({"supported": 0.5, "contradicted": 0.5})
+    yield "prob out of range", ok({"supported": 1.2, "contradicted": 0.0, "insufficient": 0.0})
+    yield "prob is bool", ok({"supported": True, "contradicted": 0.0, "insufficient": 0.0})
+    yield "prob is str", ok({"supported": "0.9", "contradicted": 0.0, "insufficient": 0.0})
+    yield "wrong type", lambda r, b: httpx.Response(200, json={"answers": {"verdict": {"type": "noul", "noul": 0.5}}})
     yield "answers not a dict", lambda r, b: httpx.Response(200, json={"answers": []})
     yield "body not a dict", lambda r, b: httpx.Response(200, json=[1, 2])
     yield "not json", lambda r, b: httpx.Response(200, text="nope")
@@ -144,7 +173,7 @@ async def test_malformed_answer_is_upstream_error(name, handler):
     jev, _ = client(handler)
     async with jev:
         with pytest.raises(JevUpstreamError):
-            await judge_sources(jev, CLAIM, CONTEXT, CHUNKS)
+            await jev_confidence(jev, CLAIM, CONTEXT, CHUNKS)
 
 
 @pytest.mark.anyio
@@ -156,7 +185,7 @@ async def test_http_errors_map_to_jev_errors_without_leaking(status, error, capl
     jev, _ = client(lambda r, b: httpx.Response(status, json={"echo": CLAIM}))
     async with jev:
         with pytest.raises(error) as e:
-            await judge_sources(jev, CLAIM, CONTEXT, CHUNKS)
+            await jev_confidence(jev, CLAIM, CONTEXT, CHUNKS)
     for secret in (CLAIM, KEY):
         assert secret not in str(e.value)
         assert secret not in caplog.text
@@ -167,7 +196,7 @@ async def test_ask_returns_the_answers_dict():
     jev, rec = client(ok(DEFAULT))
     async with jev:
         answers = await jev.ask({"x": 1}, {"stance_0": {"type": "choice", "criteria": {"a": "b"}}})
-    assert set(answers) == {"stance_0", "stance_1", "stance_2"}
+    assert set(answers) == {"verdict"}
     assert rec.bodies[0] == {
         "model": MODEL,
         "state": {"x": 1},
