@@ -8,7 +8,6 @@ vector list, the keyword list and the fused list. Nothing is logged or written t
 """
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -39,17 +38,7 @@ def main() -> int:
     ):
         vectors = embedder.embed(args.claims)
         for claim, vector in zip(args.claims, vectors):
-            rows = store._json(
-                "POST",
-                "/rpc/match_chunks",
-                json={
-                    "query_embedding": json.dumps(vector),
-                    "query_text": claim,
-                    "k": args.k,
-                    "per_doc": args.per_doc,
-                    "rrf_k": args.rrf_k,
-                },
-            )
+            rows = store.match_chunks(vector, claim, k=args.k, per_doc=args.per_doc, rrf_k=args.rrf_k)
             print(f"\n=== {claim}")
             both = sum(1 for r in rows if r["vector_rank"] and r["text_rank"])
             only_v = sum(1 for r in rows if r["vector_rank"] and not r["text_rank"])
