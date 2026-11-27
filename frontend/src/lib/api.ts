@@ -43,6 +43,12 @@ const MESSAGES: Record<string, string> = {
   triage_upstream_error: "TypeSafe (Jev) didn't answer in time or sent a bad answer. Try again.",
   invalid_triage_request:
     'This transcript has no doctor turns to triage, or is too long. Check the roles, or use a shorter transcript.',
+  // RAG claim checker (POST /check).
+  check_unavailable:
+    "Fact-checking isn't available: the server is missing its OpenAI or Supabase key. Set them in the root .env and restart uvicorn.",
+  check_rate_limited: 'The fact-checker is being rate-limited. Wait a minute, then try again.',
+  check_upstream_error: "OpenAI, TypeSafe or Supabase didn't answer in time or sent a bad answer. Try again.",
+  invalid_check_request: "This claim couldn't be sent to the checker: it is empty or too long.",
 }
 
 /** Every backend error code with a message, for tests. */

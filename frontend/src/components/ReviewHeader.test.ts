@@ -140,7 +140,7 @@ describe('ReviewHeader: Jev triage', () => {
   it('shows the Jev label', () => {
     const w = mountHeader({ ...triage(0, 0, 0), demoLabel: JEV_REVIEW_LABEL })
     expect(w.get('[data-testid="review-demo-label"]').text()).toBe(
-      'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.',
+      'Triage by Jev (TypeSafe). Claims are checked against NICE/PubMed/WikiDoc with OpenAI and Jev.',
     )
   })
 })

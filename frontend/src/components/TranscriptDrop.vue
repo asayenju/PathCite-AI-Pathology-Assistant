@@ -28,8 +28,9 @@ import TranscriptionAnswer from './TranscriptionAnswer.vue'
  * roles. Memory only. Without a manifest the sample folders are simply not shown.
  *
  * With at least one doctor, "Review with agent" streams Jev triage of the doctor turns (POST /api/triage, see
- * docs/PRD-jev-triage.md) for any transcript, samples and uploads alike: claims go to the (stub) claim checker and
- * possible transcription errors ask the doctor "Is this correct?". Only doctor turns are sent. Clear, a new file or
+ * docs/PRD-jev-triage.md) for any transcript, samples and uploads alike: claims go to the RAG claim checker
+ * (POST /api/check, docs/PRD-rag-checker.md) and possible transcription errors ask the doctor "Is this correct?".
+ * Only doctor turns are sent. Clear, a new file or
  * sample, and a role change discard the review. The hand-written mock in src/mocks/review is test data only.
  */
 const props = withDefaults(defineProps<{ manifest?: TranscriptManifest | null }>(), { manifest: null })

@@ -101,11 +101,12 @@ export interface TranscriptManifest {
  */
 
 /**
- * The fact-check verdicts (inaccurate, incomplete, accurate) come from the mock agent and, later, the checker.
- * Jev triage adds two: `claim` (a general medical fact, sent to the ClaimChecker) and `transcription` (a span that
- * speech-to-text probably got wrong, which the doctor confirms or corrects). Skipped spans produce no comment.
+ * The fact-check verdicts (inaccurate, incomplete, accurate, unverified, disputed) come from the mock agent and the
+ * RAG checker (CheckVerdict). Jev triage adds two: `claim` (a general medical fact, sent to the ClaimChecker) and
+ * `transcription` (a span that speech-to-text probably got wrong, which the doctor confirms or corrects). Skipped
+ * spans produce no comment. A checked claim keeps the verdict `claim`; its check verdict lives on the review thread.
  */
-export type ReviewVerdict = 'inaccurate' | 'incomplete' | 'accurate' | 'claim' | 'transcription'
+export type ReviewVerdict = CheckVerdict | 'claim' | 'transcription'
 
 /** Jev's routing of one span (backend app/triage/decide.py). */
 export type TriageKind = 'skip' | 'claim' | 'transcription'
@@ -190,11 +191,59 @@ export interface ClaimToCheck {
   context: string[]
 }
 
-/**
- * The checker's answer. Only `not_checked` exists while the checker is a stub (lib/claimChecker.ts); the RAG PRD
- * adds real verdicts as further members of this union, e.g. `{ status: 'checked'; verdict: ...; source: ... }`.
+/*
+ * RAG claim checker (docs/PRD-rag-checker.md section 5): POST /check answers a ClaimToCheck with a CheckedResult.
  */
-export type CheckResult = { status: 'not_checked' }
+
+/** The checker's verdict for a claim, decided by code rules over the per-source stances. */
+export type CheckVerdict = 'accurate' | 'inaccurate' | 'incomplete' | 'unverified' | 'disputed'
+/** How far a source is trusted: NICE / PubMed guidelines high, PubMed abstracts medium, WikiDoc low (backend's call). */
+export type SourceTrust = 'high' | 'medium' | 'low'
+/** A source's stance after Luna and Jev are combined: unclear when they disagree or Jev isn't sure enough. */
+export type SourceStance = 'supports' | 'contradicts' | 'irrelevant' | 'unclear'
+/** Why a checked claim needs the doctor's review. Unknown reasons from a newer backend are shown generically. */
+export type ReviewReason = 'sources_disagree' | 'models_disagree' | 'jev_unavailable'
+
+/** One retrieved passage and what the two models made of it. */
+export interface CheckSource {
+  chunk_id: number
+  /** The document title; null when the corpus has none (show the section instead). */
+  title: string | null
+  /** The heading path of the chunk, e.g. "Recommendations > Staging". */
+  section: string
+  url: string
+  trust: SourceTrust
+  year: number | null
+  /** The passage's words that the stance rests on (verbatim from the chunk for supports / contradicts). */
+  quote: string
+  stance: SourceStance
+  /** Luna's (OpenAI's) own stance, e.g. "supports"; null if absent. */
+  luna_stance: string | null
+  /** Jev's own stance and its probability; null when Jev failed. */
+  jev_stance: string | null
+  jev_p: number | null
+}
+
+export interface CheckedResult {
+  status: 'checked'
+  verdict: CheckVerdict
+  issue: string | null
+  suggestion: string | null
+  needs_review: boolean
+  /** Known values are ReviewReason; anything else is kept and rendered generically. */
+  review_reasons: (ReviewReason | (string & {}))[]
+  sources: CheckSource[]
+  /** The OpenAI (Luna) model id. */
+  model: string
+  /** The Jev model id; null when Jev failed. */
+  jev_model: string | null
+}
+
+/**
+ * The checker's answer. `not_checked` is the stub's answer (lib/claimChecker.ts, tests only) and what an aborted
+ * check ends as; `checked` is the RAG checker's (POST /check).
+ */
+export type CheckResult = { status: 'not_checked' } | CheckedResult
 
 /** Checks one claim. Rejects with an AbortError (DOMException) when the signal aborts. */
 export type ClaimChecker = (claim: ClaimToCheck, signal: AbortSignal) => Promise<CheckResult>

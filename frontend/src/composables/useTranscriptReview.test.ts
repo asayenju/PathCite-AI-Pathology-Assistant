@@ -5,8 +5,8 @@ import { JEV_REVIEW_EXPORT_NOTICE, REVIEW_EXPORT_NOTICE } from '@/lib/review'
 import { mockClarify, mockReviewSource } from '@/mocks/review'
 import crcImport from '@/mocks/review/__fixtures__/crc_adenocarcinoma.import.json'
 import { messageFor, PredictError } from '@/lib/api'
-import { STUB_CHECK_DELAY_MS } from '@/lib/claimChecker'
 import type {
+  CheckedResult,
   CheckResult,
   ClaimChecker,
   ClaimToCheck,
@@ -424,6 +424,7 @@ describe('useTranscriptReview comment actions', () => {
       correction: null,
       checked_as: null,
       check_status: null,
+      check: null,
     }
     expect(data).toEqual({
       notice: REVIEW_EXPORT_NOTICE,
@@ -479,6 +480,33 @@ function deferred<T>() {
     reject = rej
   })
   return { promise, resolve, reject }
+}
+
+/** A checker answer as POST /check sends it (docs/PRD-rag-checker.md section 5). */
+const CHECKED: CheckedResult = {
+  status: 'checked',
+  verdict: 'disputed',
+  issue: 'Sources disagree on this.',
+  suggestion: null,
+  needs_review: true,
+  review_reasons: ['sources_disagree'],
+  sources: [
+    {
+      chunk_id: 7,
+      title: 'Colorectal cancer (NG151)',
+      section: 'Recommendations > Staging',
+      url: 'https://www.nice.org.uk/guidance/ng151',
+      trust: 'high',
+      year: 2021,
+      quote: 'Grade does not determine stage.',
+      stance: 'contradicts',
+      luna_stance: 'contradicts',
+      jev_stance: 'contradicts',
+      jev_p: 0.9,
+    },
+  ],
+  model: 'gpt-6-luna',
+  jev_model: 'jev-1.14.0',
 }
 
 /** A ClaimChecker the test drives: each call is recorded and settled by hand; abort rejects with an AbortError. */
@@ -557,19 +585,73 @@ describe('useTranscriptReview triage', () => {
     expect(m.calls.map((c) => c.claim.context)).toEqual([[], ['A']])
   })
 
-  it('uses the stub checker by default', async () => {
-    vi.useFakeTimers()
-    const r = useTranscriptReview({ source: listSource([ev(triaged('c', 'claim', 'claim')), { type: 'done' }]) })
-    await r.start(triageTurns(), { sampleId: null })
-    expect(byId(r, 'c').checkStatus).toBe('checking')
-    await vi.advanceTimersByTimeAsync(STUB_CHECK_DELAY_MS)
-    expect(byId(r, 'c').checkStatus).toBe('not_checked')
+  it('uses the HTTP checker (POST /api/check) by default', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(CHECKED), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      const r = useTranscriptReview({ source: listSource([ev(triaged('c', 'claim', 'claim', { turn_id: 't6' })), { type: 'done' }]) })
+      await r.start(triageTurns(), { sampleId: null })
+      expect(byId(r, 'c').checkStatus).toBe('checking')
+      await vi.waitFor(() => expect(byId(r, 'c').checkStatus).toBe('checked'))
+      const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+      expect(url).toBe('/api/check')
+      expect(JSON.parse(init.body as string)).toEqual({ turn_id: 't6', quote: 'quote c', context: ['B', 'C'] })
+      expect(byId(r, 'c').check).toEqual(CHECKED)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('stores a checked result on the comment; the comment stays a claim', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: m.checker })
+    expect(byId(r, 'c').check).toBeNull()
+    m.calls[0]!.d.resolve(CHECKED)
+    await tick()
+    expect(byId(r, 'c')).toMatchObject({ verdict: 'claim', checkStatus: 'checked', checkError: null, check: CHECKED })
+    // Still counted as a claim and still navigable as an issue.
+    expect(r.triageCounts.value.claims).toBe(1)
+    expect(r.issueOrder.value).toEqual(['c'])
+  })
+
+  it('a checked accurate claim keeps its card (only fact-check comments with verdict accurate are card-less)', async () => {
+    const m = manualChecker()
+    const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: m.checker })
+    m.calls[0]!.d.resolve({ ...CHECKED, verdict: 'accurate', needs_review: false, review_reasons: [] })
+    await tick()
+    expect(byId(r, 'c').check?.verdict).toBe('accurate')
+    expect(r.counts.value.open).toBe(1)
   })
 
   it('a failing check shows an error state and message', async () => {
     const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: () => Promise.reject(new Error('down')) })
     await tick()
-    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'error', checkError: CHECK_ERROR_MESSAGE })
+    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'error', checkError: CHECK_ERROR_MESSAGE, check: null })
+  })
+
+  it("a check that fails with a PredictError shows the backend code's message", async () => {
+    const error = new PredictError('check_rate_limited', messageFor('check_rate_limited'))
+    const r = await run([ev(triaged('c', 'claim', 'claim'))], { checker: () => Promise.reject(error) })
+    await tick()
+    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'error', checkError: messageFor('check_rate_limited') })
+  })
+
+  it('a confirmed transcription is checked too, and Stop keeps finished results', async () => {
+    const m = manualChecker()
+    const src = manualSource()
+    const r = useTranscriptReview({ source: src.source, checker: m.checker })
+    const done = r.start(triageTurns(), { sampleId: null })
+    await src.push({ type: 'comment', comment: triaged('x', 'transcription', 'claim') })
+    await src.push({ type: 'comment', comment: triaged('c', 'claim', 'claim') })
+    r.confirmTranscription('x')
+    m.calls[1]!.d.resolve(CHECKED)
+    await tick()
+    expect(byId(r, 'x')).toMatchObject({ checkStatus: 'checked', check: CHECKED })
+    r.stop()
+    expect(byId(r, 'x')).toMatchObject({ checkStatus: 'checked', check: CHECKED })
+    expect(byId(r, 'c')).toMatchObject({ checkStatus: 'not_checked', check: null })
+    await src.end()
+    await done
   })
 
   it('stop aborts running checks; they end as not checked and late answers change nothing', async () => {
@@ -839,6 +921,22 @@ describe('useTranscriptReview triage', () => {
     expect(row('x')).toMatchObject({ verdict: 'claim', kind: 'transcription', p_asr: 0.8, confirmed: true, check_status: 'not_checked' })
     expect(row('y')).toMatchObject({ verdict: 'claim', confirmed: false, correction: 'colon', checked_as: 'colon', check_status: 'not_checked' })
     expect(row('z')).toMatchObject({ verdict: 'transcription', confirmed: null, check_status: null, status: 'open' })
+    for (const id of ['c', 'x', 'y', 'z']) expect(row(id).check).toBeNull()
+  })
+
+  it('exports the check result of a checked claim', async () => {
+    const r = await run([ev(triaged('c', 'claim', 'claim')), ev(triaged('z', 'transcription', 'skip'))], {
+      checker: async () => CHECKED,
+    })
+    await tick()
+    const { data } = r.exportReview()
+    const row = (id: string) => data.comments.find((c) => c.id === id)!
+    expect(row('c')).toMatchObject({ verdict: 'claim', check_status: 'checked' })
+    const { status: _status, ...check } = CHECKED
+    expect(row('c').check).toEqual(check)
+    expect(row('z').check).toBeNull()
+    // A plain, JSON-ready copy, not the reactive object.
+    expect(JSON.parse(JSON.stringify(data)).comments[0].check).toEqual(check)
   })
 
   it('never writes to web storage during a triage review', async () => {

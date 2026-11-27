@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Check, CircleHelp, LoaderCircle, Plus, Quote, X } from 'lucide-vue-next'
+import { Check, CircleHelp, LoaderCircle, Plus, Quote, Scale, SearchX, TriangleAlert, X } from 'lucide-vue-next'
+import CheckSources from './CheckSources.vue'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
+import { CHECK_VERDICT_TEXT, NOT_CHECKED_TEXT, reviewReasonText } from '@/lib/check'
 import type { ReviewVerdict } from '@/types'
 
 /**
@@ -11,8 +13,13 @@ import type { ReviewVerdict } from '@/types'
  * The root id `comment-<id>` is the target of the highlight's aria-describedby.
  *
  * Jev triage cards (docs/PRD-jev-triage.md): a claim shows its check state in a polite live region ("Checking…",
- * then "Not fact-checked yet", or the error) and what it was checked as after a correction; a transcription card asks
- * "Is this correct?" and, once answered as small talk, collapses to "Not a claim" with the correction if any.
+ * then the check verdict, "Not fact-checked" if stopped, or the error) and what it was checked as after a
+ * correction; a transcription card asks "Is this correct?" and, once answered as small talk, collapses to "Not a
+ * claim" with the correction if any.
+ *
+ * A checked claim (docs/PRD-rag-checker.md) takes the check verdict's label, icon and colour (`data-verdict` stays
+ * `claim`; `data-check-verdict` has the check verdict), shows the checker's issue and suggestion, a "Needs your
+ * review" banner with the reasons, and, when selected, its sources grouped by stance.
  */
 const props = defineProps<{ comment: ReviewThread; active: boolean }>()
 
@@ -27,24 +34,34 @@ defineSlots<{
   answer?: () => unknown
 }>()
 
-/** Full class strings so Tailwind sees them. Accurate never gets a card, but the map stays total. */
+/**
+ * Full class strings so Tailwind sees them. A fact-check comment with verdict accurate never gets a card, but a
+ * checked claim can show any check verdict, so the map stays total.
+ */
 const VERDICTS: Record<ReviewVerdict, { label: string; icon: typeof X; text: string; border: string }> = {
   inaccurate: { label: 'Inaccurate', icon: X, text: 'text-eosin', border: 'border-l-eosin' },
   incomplete: { label: 'Incomplete', icon: Plus, text: 'text-amber', border: 'border-l-amber' },
   accurate: { label: 'Accurate', icon: Check, text: 'text-moss', border: 'border-l-moss' },
+  unverified: { label: 'Not verified', icon: SearchX, text: 'text-quiet', border: 'border-l-quiet' },
+  disputed: { label: 'Sources disagree', icon: Scale, text: 'text-ink', border: 'border-l-ink' },
   claim: { label: 'Claim', icon: Quote, text: 'text-hema', border: 'border-l-hema' },
   transcription: { label: 'Possible transcription error', icon: CircleHelp, text: 'text-ink', border: 'border-l-ink' },
 }
 
-const CHECK_TEXT = {
-  checking: 'Checking…',
-  not_checked: "Not fact-checked yet (the checker isn't built yet)",
-} as const
-
-const verdict = computed(() => VERDICTS[props.comment.verdict])
+const isClaim = computed(() => props.comment.verdict === 'claim')
+/** The checker's answer on a claim, once checked. */
+const check = computed(() => (isClaim.value && props.comment.checkStatus === 'checked' ? props.comment.check : null))
+/** A checked claim shows the check verdict; everything else its own verdict. */
+const verdict = computed(() => VERDICTS[check.value?.verdict ?? props.comment.verdict])
+const issue = computed(() => props.comment.issue ?? check.value?.issue ?? null)
+const suggestion = computed(() => props.comment.suggestion ?? check.value?.suggestion ?? null)
+const checkModels = computed(() => {
+  const c = check.value
+  if (!c) return ''
+  return c.jev_model ? `Checked with ${c.model} and ${c.jev_model}` : `Checked with ${c.model} (Jev unavailable)`
+})
 const collapsed = computed(() => props.comment.status !== 'open')
 const orphan = computed(() => props.comment.start === null)
-const isClaim = computed(() => props.comment.verdict === 'claim')
 const isTranscription = computed(() => props.comment.verdict === 'transcription')
 /** A transcription card the doctor has answered (Yes, or a correction that went through). */
 const answered = computed(() => isTranscription.value && props.comment.confirmed !== null)
@@ -55,7 +72,9 @@ const statusLabel = computed(() => {
 const checkText = computed(() => {
   const status = props.comment.checkStatus
   if (status === 'error') return props.comment.checkError ?? "This claim couldn't be checked."
-  return status ? CHECK_TEXT[status] : ''
+  if (status === 'checking') return 'Checking…'
+  if (status === 'not_checked') return NOT_CHECKED_TEXT
+  return check.value ? CHECK_VERDICT_TEXT[check.value.verdict] : ''
 })
 const hint = computed(() => {
   if (isTranscription.value && !answered.value) return 'Select to answer'
@@ -75,6 +94,7 @@ function activate() {
     :aria-current="active ? 'true' : undefined"
     :data-status="comment.status"
     :data-verdict="comment.verdict"
+    :data-check-verdict="check?.verdict"
     data-testid="comment-card"
     class="cursor-pointer rounded-glass border border-frost bg-glass text-ink transition-[box-shadow,border-color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
     :class="[
@@ -122,8 +142,8 @@ function activate() {
         “{{ comment.quote }}”
       </blockquote>
 
-      <p v-if="comment.issue" class="text-sm" :class="!active && 'line-clamp-2'" data-testid="comment-issue">
-        {{ comment.issue }}
+      <p v-if="issue" class="text-sm" :class="!active && 'line-clamp-2'" data-testid="comment-issue">
+        {{ issue }}
       </p>
 
       <p v-if="isClaim && comment.checkedAs" class="text-sm" data-testid="claim-checked-as">
@@ -146,6 +166,20 @@ function activate() {
         {{ checkText }}
       </p>
 
+      <div
+        v-if="check?.needs_review"
+        class="rounded-glass border border-amber bg-amber/10 px-2 py-1.5 text-sm"
+        data-testid="check-review-banner"
+      >
+        <p class="flex items-center gap-1.5 font-semibold" data-testid="check-review-title">
+          <TriangleAlert class="size-4 shrink-0 text-amber" aria-hidden="true" />
+          Needs your review
+        </p>
+        <ul v-if="check.review_reasons.length" class="mt-1 list-disc space-y-0.5 pl-5">
+          <li v-for="reason in check.review_reasons" :key="reason">{{ reviewReasonText(reason) }}</li>
+        </ul>
+      </div>
+
       <p v-if="isTranscription && !answered" class="text-sm font-medium" data-testid="transcription-question">
         Is this correct?
       </p>
@@ -166,14 +200,19 @@ function activate() {
       >
         <!-- relative: clips absolutely positioned sr-only labels too, or they stretch the scroll area. -->
         <div class="relative min-h-0 space-y-2 overflow-hidden">
-          <div v-if="comment.suggestion" class="rounded-glass bg-bench px-2 py-1.5" data-testid="comment-suggestion">
+          <div v-if="suggestion" class="rounded-glass bg-bench px-2 py-1.5" data-testid="comment-suggestion">
             <p class="text-xs font-semibold text-quiet">Suggested wording</p>
-            <p class="text-sm">{{ comment.suggestion }}</p>
+            <p class="text-sm">{{ suggestion }}</p>
           </div>
 
           <p v-if="comment.source" class="text-xs text-quiet" data-testid="comment-source">
             Source: {{ comment.source }}
           </p>
+
+          <template v-if="check">
+            <CheckSources :sources="check.sources" />
+            <p class="text-xs text-quiet" data-testid="check-models">{{ checkModels }}</p>
+          </template>
 
           <slot v-if="isTranscription && !answered" name="answer" />
           <slot name="actions" />
