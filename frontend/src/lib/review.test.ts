@@ -98,9 +98,9 @@ describe('downloadJson', () => {
 })
 
 describe('review labels and notices', () => {
-  it('labels a Jev review as triage that is not fact-checked and is sent to TypeSafe', () => {
+  it('labels a Jev review as triage whose claims are checked with OpenAI and Jev', () => {
     expect(JEV_REVIEW_LABEL).toBe(
-      'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.',
+      'Triage by Jev (TypeSafe). Claims are checked against NICE/PubMed/WikiDoc with OpenAI and Jev.',
     )
   })
 

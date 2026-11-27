@@ -88,6 +88,10 @@ describe('triage error messages', () => {
     ['triage_rate_limited', /rate-limit/],
     ['triage_upstream_error', /TypeSafe/],
     ['invalid_triage_request', /doctor turns/],
+    ['check_unavailable', /OpenAI or Supabase key/],
+    ['check_rate_limited', /rate-limited/],
+    ['check_upstream_error', /OpenAI, TypeSafe or Supabase/],
+    ['invalid_check_request', /empty or too long/],
   ])('%s has its own message', (code, pattern) => {
     expect(MESSAGE_CODES).toContain(code)
     expect(messageFor(code)).toMatch(pattern)

@@ -39,9 +39,12 @@ export const DEMO_REVIEW_LABEL = 'Demo review: hand-written mock, not an AI agen
 /** The notice at the top of an exported mock review. */
 export const REVIEW_EXPORT_NOTICE = `${DEMO_REVIEW_LABEL}. ${RESEARCH_USE_NOTICE}`
 
-/** Badge text shown in the review header for Jev triage (docs/PRD-jev-triage.md), the app's review source. */
+/**
+ * Badge text shown in the review header for Jev triage (docs/PRD-jev-triage.md), the app's review source, whose
+ * claims go to the RAG checker (docs/PRD-rag-checker.md).
+ */
 export const JEV_REVIEW_LABEL =
-  'Triage by Jev (TypeSafe). Claims are not fact-checked yet. Doctor turns are sent to TypeSafe.'
+  'Triage by Jev (TypeSafe). Claims are checked against NICE/PubMed/WikiDoc with OpenAI and Jev.'
 
 /** The notice at the top of an exported Jev review. */
 export const JEV_REVIEW_EXPORT_NOTICE = `${JEV_REVIEW_LABEL} ${RESEARCH_USE_NOTICE}`

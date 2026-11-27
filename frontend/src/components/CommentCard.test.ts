@@ -1,7 +1,9 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import CommentCard from './CommentCard.vue'
+import { NOT_CHECKED_TEXT } from '@/lib/check'
 import { EMPTY_TRIAGE_STATE, type ReviewThread } from '@/composables/useTranscriptReview'
+import type { CheckedResult, CheckSource } from '@/types'
 
 function thread(over: Partial<ReviewThread> = {}): ReviewThread {
   return {
@@ -136,9 +138,9 @@ describe('CommentCard: Jev claim', () => {
     expect(status.find('svg').classes()).toContain('motion-safe:animate-spin')
   })
 
-  it('then says it is not fact-checked yet', () => {
+  it('says it was not fact-checked when the check was stopped', () => {
     const w = mountCard({ ...triage('claim'), checkStatus: 'not_checked' })
-    expect(w.get('[data-testid="claim-check"]').text()).toBe("Not fact-checked yet (the checker isn't built yet)")
+    expect(w.get('[data-testid="claim-check"]').text()).toBe(NOT_CHECKED_TEXT)
   })
 
   it('shows the check error', () => {
@@ -195,5 +197,165 @@ describe('CommentCard: Jev transcription check', () => {
   it('a transcription card resolved by hand keeps the Resolved badge', () => {
     const w = mountCard({ ...triage('transcription'), status: 'resolved' })
     expect(w.get('[data-testid="comment-status"]').text()).toBe('Resolved')
+  })
+})
+
+const checkSource = (over: Partial<CheckSource> = {}): CheckSource => ({
+  chunk_id: 1,
+  title: 'Colorectal cancer (NG151)',
+  section: 'Recommendations > Staging',
+  url: 'https://www.nice.org.uk/guidance/ng151',
+  trust: 'high',
+  year: 2021,
+  quote: 'Grade does not determine stage.',
+  stance: 'contradicts',
+  luna_stance: 'contradicts',
+  jev_stance: 'contradicts',
+  jev_p: 0.9,
+  ...over,
+})
+
+function checkedResult(over: Partial<CheckedResult> = {}): CheckedResult {
+  return {
+    status: 'checked',
+    verdict: 'inaccurate',
+    issue: 'Grade describes the cells, not spread.',
+    suggestion: 'Moderately differentiated describes how the cells look.',
+    needs_review: false,
+    review_reasons: [],
+    sources: [checkSource()],
+    model: 'gpt-6-luna',
+    jev_model: 'jev-1.14.0',
+    ...over,
+  }
+}
+
+const mountChecked = (over: Partial<CheckedResult> = {}, active = true, thread: Partial<ReviewThread> = {}) =>
+  mountCard({ ...triage('claim'), checkStatus: 'checked', check: checkedResult(over), ...thread }, active)
+
+describe('CommentCard: checked claim', () => {
+  it.each([
+    ['accurate', 'Accurate', 'text-moss', 'border-l-moss', 'Accurate: the sources support this.'],
+    ['inaccurate', 'Inaccurate', 'text-eosin', 'border-l-eosin', 'Inaccurate: the sources contradict this.'],
+    [
+      'incomplete',
+      'Incomplete',
+      'text-amber',
+      'border-l-amber',
+      'Incomplete: the sources support this, but it leaves out a qualifier.',
+    ],
+    ['unverified', 'Not verified', 'text-quiet', 'border-l-quiet', "Not verified — the corpus doesn't cover this"],
+    ['disputed', 'Sources disagree', 'text-ink', 'border-l-ink', 'Sources disagree'],
+  ] as const)('shows the %s verdict with its label, colour and status text', (verdict, label, text, border, status) => {
+    const w = mountChecked({ verdict })
+    const head = w.get('[data-testid="comment-verdict"]')
+    expect(head.text()).toBe(label)
+    expect(head.classes()).toContain(text)
+    expect(head.find('svg').exists()).toBe(true)
+    expect(w.get('article').classes()).toContain(border)
+    expect(w.get('[data-testid="claim-check"]').text()).toBe(status)
+    // The DOM contract and the comment's own verdict are unchanged.
+    expect(w.get('article').attributes('id')).toBe('comment-c1')
+    expect(w.get('article').attributes('data-verdict')).toBe('claim')
+    expect(w.get('article').attributes('data-check-verdict')).toBe(verdict)
+  })
+
+  it("shows the checker's issue and suggestion", () => {
+    const w = mountChecked()
+    expect(w.get('[data-testid="comment-issue"]').text()).toBe('Grade describes the cells, not spread.')
+    expect(w.get('[data-testid="comment-suggestion"]').text()).toContain(
+      'Moderately differentiated describes how the cells look.',
+    )
+  })
+
+  it('omits a missing issue and suggestion', () => {
+    const w = mountChecked({ verdict: 'accurate', issue: null, suggestion: null })
+    expect(w.find('[data-testid="comment-issue"]').exists()).toBe(false)
+    expect(w.find('[data-testid="comment-suggestion"]').exists()).toBe(false)
+  })
+
+  it('lists the sources grouped by stance in the details, with links', () => {
+    const w = mountChecked({
+      verdict: 'disputed',
+      sources: [
+        checkSource({ chunk_id: 1, stance: 'supports', title: 'Pro' }),
+        checkSource({ chunk_id: 2, stance: 'contradicts', title: 'Con' }),
+        checkSource({
+          chunk_id: 3,
+          stance: 'unclear',
+          title: 'Huh',
+          luna_stance: 'supports',
+          jev_stance: 'irrelevant',
+          jev_p: 0.4,
+        }),
+        checkSource({ chunk_id: 4, stance: 'irrelevant', title: 'Off topic' }),
+      ],
+    })
+    const details = w.get('[data-testid="comment-details"]')
+    expect(details.find('[data-testid="check-sources"]').exists()).toBe(true)
+    expect(details.findAll('[data-testid^="sources-"] h4').map((h) => h.text())).toEqual([
+      'Supports (1)',
+      'Contradicts (1)',
+      'Unclear (1)',
+    ])
+    expect(details.get('[data-testid="sources-irrelevant"] summary').text()).toBe('Not relevant (1)')
+    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Luna: supports · Jev: irrelevant (0.40)')
+    expect(details.findAll('a')).toHaveLength(4)
+    for (const a of details.findAll('a')) {
+      expect(a.attributes('target')).toBe('_blank')
+      expect(a.attributes('rel')).toBe('noopener noreferrer')
+    }
+  })
+
+  it('names the models that checked it', () => {
+    expect(mountChecked().get('[data-testid="check-models"]').text()).toBe('Checked with gpt-6-luna and jev-1.14.0')
+    expect(mountChecked({ jev_model: null }).get('[data-testid="check-models"]').text()).toBe(
+      'Checked with gpt-6-luna (Jev unavailable)',
+    )
+  })
+
+  it('has no review banner when no review is needed', () => {
+    expect(mountChecked().find('[data-testid="check-review-banner"]').exists()).toBe(false)
+  })
+
+  it('shows a "Needs your review" banner with the reasons in plain words, even when not selected', () => {
+    const w = mountChecked(
+      {
+        verdict: 'disputed',
+        needs_review: true,
+        review_reasons: ['sources_disagree', 'models_disagree', 'jev_unavailable'],
+      },
+      false,
+    )
+    const banner = w.get('[data-testid="check-review-banner"]')
+    expect(banner.get('[data-testid="check-review-title"]').text()).toBe('Needs your review')
+    expect(banner.findAll('li').map((li) => li.text())).toEqual([
+      'The sources disagree with each other.',
+      'OpenAI (Luna) and Jev read at least one source differently.',
+      "Jev didn't answer, so only OpenAI (Luna) judged the sources.",
+    ])
+  })
+
+  it('shows an unknown review reason generically', () => {
+    const w = mountChecked({ needs_review: true, review_reasons: ['stale_guideline'] })
+    expect(w.get('[data-testid="check-review-banner"] li').text()).toBe('Other reason: stale guideline')
+  })
+
+  it('shows the banner without a list when there are no reasons', () => {
+    const w = mountChecked({ needs_review: true, review_reasons: [] })
+    expect(w.get('[data-testid="check-review-banner"]').text()).toBe('Needs your review')
+    expect(w.find('[data-testid="check-review-banner"] li').exists()).toBe(false)
+  })
+
+  it('collapses with the check verdict icon once resolved', () => {
+    const w = mountChecked({ verdict: 'inaccurate' }, false, { status: 'resolved' })
+    const line = w.get('[data-testid="comment-collapsed"]')
+    expect(line.text()).toContain('Inaccurate:')
+    expect(line.get('svg').classes()).toContain('text-eosin')
+  })
+
+  it('still shows what it was checked as', () => {
+    const w = mountChecked({}, true, { checkedAs: 'colon' })
+    expect(w.get('[data-testid="claim-checked-as"]').text()).toBe('Checked as: “colon”')
   })
 })

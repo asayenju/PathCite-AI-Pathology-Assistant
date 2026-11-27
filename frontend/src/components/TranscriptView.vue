@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { Check, CircleHelp, LoaderCircle, Plus, Quote, X } from 'lucide-vue-next'
+import { Check, CircleHelp, LoaderCircle, Plus, Quote, Scale, SearchX, X } from 'lucide-vue-next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
 import { splitSegments, type Segment, type SegmentRange, type SplitResult } from '@/lib/segments'
@@ -65,6 +65,17 @@ const MARK_STYLES: Record<ReviewVerdict, { open: string; stacked: string; faded:
     stacked: 'border-b border-moss/50 bg-moss/10',
     faded: 'border-b border-moss/25 bg-transparent',
   },
+  // Only reachable from a source that sends them as a comment verdict; checked claims keep the claim highlight.
+  unverified: {
+    open: 'border-b-2 border-quiet bg-quiet/10',
+    stacked: 'border-b-2 border-quiet bg-quiet/25',
+    faded: 'border-b-2 border-quiet/30 bg-quiet/5',
+  },
+  disputed: {
+    open: 'border-b-2 border-ink bg-ink/10',
+    stacked: 'border-b-2 border-ink bg-ink/25',
+    faded: 'border-b-2 border-ink/30 bg-ink/5',
+  },
   // Jev triage: claims in hematoxylin blue; possible transcription errors only get a dashed underline (and a ?).
   claim: {
     open: 'border-b-2 border-hema bg-hema/15',
@@ -82,6 +93,8 @@ const VERDICT_ICONS: Record<ReviewVerdict, typeof X> = {
   inaccurate: X,
   incomplete: Plus,
   accurate: Check,
+  unverified: SearchX,
+  disputed: Scale,
   claim: Quote,
   transcription: CircleHelp,
 }
@@ -89,6 +102,8 @@ const VERDICT_ICON_COLOURS: Record<ReviewVerdict, string> = {
   inaccurate: 'text-eosin',
   incomplete: 'text-amber',
   accurate: 'text-moss',
+  unverified: 'text-quiet',
+  disputed: 'text-ink',
   claim: 'text-hema',
   transcription: 'text-ink',
 }
@@ -97,6 +112,8 @@ const VERDICT_LABELS: Record<ReviewVerdict, string> = {
   inaccurate: 'inaccurate statement',
   incomplete: 'incomplete statement',
   accurate: 'accurate statement',
+  unverified: 'statement not verified',
+  disputed: 'statement the sources disagree on',
   claim: 'claim',
   transcription: 'possible transcription error',
 }

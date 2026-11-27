@@ -4,6 +4,7 @@ import { defaultClaimChecker } from '@/lib/claimChecker'
 import { defaultSpanTriager } from '@/lib/jevReviewSource'
 import { reviewExportNotice, reviewFilename } from '@/lib/review'
 import type {
+  CheckedResult,
   CheckResult,
   ClaimChecker,
   ClarifySource,
@@ -30,10 +31,14 @@ export interface ThreadMessage {
 }
 
 /**
- * A claim's check: `checking` while the ClaimChecker runs, then the checker's status (only `not_checked` while it
- * is a stub), or `error` if it failed. A check aborted by stop() ends as `not_checked`.
+ * A claim's check: `checking` while the ClaimChecker runs, then the checker's status (`checked`, with the result in
+ * `check`; `not_checked` from the test stub), or `error` if it failed. A check aborted by stop() ends as
+ * `not_checked`.
  */
 export type CheckStatus = 'checking' | CheckResult['status'] | 'error'
+
+/** A checked result in the export: the CheckedResult without its `status` (that is `check_status`). */
+export type ExportedCheck = Omit<CheckedResult, 'status'>
 
 /**
  * A received comment plus what the person did with it. The triage fields (confirmed … checkError) are null/false on
@@ -58,6 +63,11 @@ export type ReviewThread = ReviewComment & {
   checkStatus: CheckStatus | null
   /** Message for checkStatus `error`. */
   checkError: string | null
+  /**
+   * The checker's answer when checkStatus is `checked`, else null. The comment's own `verdict` stays `claim`: the
+   * check verdict (accurate … disputed) is what the card shows.
+   */
+  check: CheckedResult | null
 }
 
 /** The triage state of a comment nobody has answered: what every received comment starts with. */
@@ -69,6 +79,7 @@ export const EMPTY_TRIAGE_STATE = {
   correctionError: null,
   checkStatus: null,
   checkError: null,
+  check: null,
 } as const satisfies Partial<ReviewThread>
 
 export interface ReviewExport {
@@ -98,6 +109,8 @@ export interface ReviewExport {
     correction: string | null
     checked_as: string | null
     check_status: CheckStatus | null
+    /** The checker's verdict, issue, suggestion, review flags, sources and model ids; null unless checked. */
+    check: ExportedCheck | null
   }[]
 }
 
@@ -108,7 +121,7 @@ export interface UseTranscriptReviewOptions {
   clarify?: ClarifySource
   /** `source` field of the export, e.g. "jev" or "mock". */
   sourceName?: string
-  /** Checks claims. Defaults to the stub (lib/claimChecker.ts). */
+  /** Checks claims. Defaults to the HTTP checker, POST /api/check (lib/claimChecker.ts). */
   checker?: ClaimChecker
   /** Triages a typed correction. Defaults to POST /api/triage/span (lib/jevReviewSource.ts). */
   triageSpan?: SpanTriager
@@ -123,6 +136,15 @@ const CONTEXT_TURNS = 2
 const NO_SOURCE_MESSAGE = "Agent review isn't available for this transcript yet."
 
 const isAbort = (error: unknown) => error instanceof DOMException && error.name === 'AbortError'
+
+/** A plain copy of a check for the export (no reactive proxies, no `status`). */
+function exportedCheck({ status: _status, ...check }: CheckedResult): ExportedCheck {
+  return {
+    ...check,
+    review_reasons: [...check.review_reasons],
+    sources: check.sources.map((s) => ({ ...s })),
+  }
+}
 
 /**
  * Runs an agent review over roled turns and holds the comments and the person's responses to them.
@@ -257,6 +279,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
     checkControllers.set(id, controller)
     c.checkStatus = 'checking'
     c.checkError = null
+    c.check = null
     const claim = { turn_id: c.turn_id, quote: c.checkedAs ?? c.quote, context: previousDoctorTurns(c.turn_id) }
     // Looked up again on settle: stop/reset/start may have replaced the check or the comments meanwhile.
     const settle = (update: (c: ReviewThread) => void) => {
@@ -272,7 +295,11 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
       pending = Promise.reject(error)
     }
     pending.then(
-      (result) => settle((t) => (t.checkStatus = result.status)),
+      (result) =>
+        settle((t) => {
+          t.checkStatus = result.status
+          t.check = result.status === 'checked' ? result : null
+        }),
       (error) =>
         settle((t) => {
           if (isAbort(error)) {
@@ -280,7 +307,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
             return
           }
           t.checkStatus = 'error'
-          t.checkError = CHECK_ERROR_MESSAGE
+          t.checkError = error instanceof PredictError ? error.message : CHECK_ERROR_MESSAGE
         }),
     )
   }
@@ -591,6 +618,7 @@ export function useTranscriptReview(options: UseTranscriptReviewOptions = {}) {
           correction: c.correction,
           checked_as: c.checkedAs,
           check_status: c.checkStatus,
+          check: c.check ? exportedCheck(c.check) : null,
         })),
       },
     }

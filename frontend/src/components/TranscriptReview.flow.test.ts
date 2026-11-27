@@ -2,13 +2,13 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TranscriptDrop from './TranscriptDrop.vue'
 import { messageFor } from '@/lib/api'
-import { STUB_CHECK_DELAY_MS } from '@/lib/claimChecker'
+import { CHECK_VERDICT_TEXT, NOT_CHECKED_TEXT } from '@/lib/check'
 import { JEV_REVIEW_EXPORT_NOTICE, JEV_REVIEW_LABEL, downloadJson } from '@/lib/review'
 import { parseTranscriptManifest } from '@/lib/transcriptSamples'
 import { stubReducedMotion, unstubMatchMedia } from '@/test-utils/matchMedia'
 import crcImport from '@/mocks/review/__fixtures__/crc_adenocarcinoma.import.json'
 import rawManifest from '../../public/transcripts/index.json'
-import type { TranscriptImport, TranscriptManifest } from '@/types'
+import type { CheckedResult, TranscriptImport, TranscriptManifest } from '@/types'
 
 vi.mock('@/lib/review', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/review')>()),
@@ -16,8 +16,8 @@ vi.mock('@/lib/review', async (importOriginal) => ({
 }))
 
 /**
- * End to end through TranscriptDrop with Jev triage: the backend's POST /api/triage NDJSON stream and
- * POST /api/triage/span are faked at fetch, so nothing goes over the network.
+ * End to end through TranscriptDrop with Jev triage: the backend's POST /api/triage NDJSON stream,
+ * POST /api/triage/span and POST /api/check are faked at fetch, so nothing goes over the network.
  */
 
 /** The real manifest, so the sample ids are the ones the app ships. */
@@ -81,6 +81,61 @@ let triageCalls: TriageCall[] = []
 let spanAnswer: (body: { text: string; previous_doctor_turns: string[] }) => Promise<Response>
 let triageStatus: { status: number; code: string } | null = null
 
+/** How long the fake /check takes, so the Checking… state is visible between steps. */
+const CHECK_DELAY_MS = 600
+/** What the fake /check answers for every claim. */
+const CHECKED: CheckedResult = {
+  status: 'checked',
+  verdict: 'inaccurate',
+  issue: 'Differentiation grade describes the cells, not whether the cancer has spread.',
+  suggestion: 'Being moderately differentiated describes how the cells look; staging tells us about spread.',
+  needs_review: true,
+  review_reasons: ['models_disagree'],
+  sources: [
+    {
+      chunk_id: 41,
+      title: 'Colorectal cancer (NG151)',
+      section: 'Recommendations > Staging',
+      url: 'https://www.nice.org.uk/guidance/ng151',
+      trust: 'high',
+      year: 2021,
+      quote: 'Grade does not determine stage.',
+      stance: 'contradicts',
+      luna_stance: 'contradicts',
+      jev_stance: 'contradicts',
+      jev_p: 0.93,
+    },
+    {
+      chunk_id: 42,
+      title: null,
+      section: 'Colorectal cancer > Pathology',
+      url: 'https://www.wikidoc.org/index.php/Colorectal_cancer',
+      trust: 'low',
+      year: null,
+      quote: 'Moderately differentiated tumours are common.',
+      stance: 'unclear',
+      luna_stance: 'supports',
+      jev_stance: 'irrelevant',
+      jev_p: 0.52,
+    },
+  ],
+  model: 'gpt-6-luna',
+  jev_model: 'jev-1.14.0',
+}
+/** Every /check request body. */
+let checkCalls: { turn_id: string; quote: string; context: string[] }[] = []
+
+/** The fake /check: answers CHECKED after CHECK_DELAY_MS, or rejects with an AbortError when aborted, like fetch. */
+function checkResponse(signal: AbortSignal | null | undefined): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(jsonResponse(CHECKED)), CHECK_DELAY_MS)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer)
+      reject(new DOMException('aborted', 'AbortError'))
+    })
+  })
+}
+
 function triageResponse(body: TriageCall['body']): Response {
   let controller!: ReadableStreamDefaultController<Uint8Array>
   let next = 0
@@ -116,6 +171,10 @@ function routeFetch() {
       return triageResponse(JSON.parse(init!.body as string))
     }
     if (url === '/api/triage/span') return spanAnswer(JSON.parse(init!.body as string))
+    if (url === '/api/check') {
+      checkCalls.push(JSON.parse(init!.body as string))
+      return checkResponse(init!.signal)
+    }
     if (items.some((i) => url === `/${i.file}`)) {
       return { ok: true, status: 200, blob: async () => new Blob([`{"sample":"${url}"}`]) } as Response
     }
@@ -178,11 +237,11 @@ async function step() {
   await settle()
 }
 
-/** Sends the rest of the stream and lets the stub checker finish. */
+/** Sends the rest of the stream and lets the fake checker finish. */
 async function runToEnd() {
   for (let i = 0; i < STEPS.length; i++) lastCall().step()
   await settle()
-  await vi.advanceTimersByTimeAsync(STUB_CHECK_DELAY_MS)
+  await vi.advanceTimersByTimeAsync(CHECK_DELAY_MS)
   await settle()
 }
 
@@ -197,6 +256,7 @@ beforeEach(() => {
   // Most tests step the stream turn by turn and want each step shown at once: no pacing (see 'paced reveal').
   stubReducedMotion(true)
   triageCalls = []
+  checkCalls = []
   triageStatus = null
   spanAnswer = async () => jsonResponse({ kind: 'claim', p_claim: 0.8 })
 })
@@ -358,9 +418,66 @@ describe('Transcripts view: Jev review', () => {
     await runToEnd()
     expect(w.get('[data-testid="review-status"]').text()).toBe('Review complete')
     expect(triageCounts(w)).toBe('2 claims · 1 open transcription check · 2 skipped spans')
-    expect(card(w, GLAND_ID).get('[data-testid="claim-check"]').text()).toBe(
-      "Not fact-checked yet (the checker isn't built yet)",
+    expect(card(w, GLAND_ID).get('[data-testid="claim-check"]').text()).toBe(CHECK_VERDICT_TEXT.inaccurate)
+  })
+
+  it('checks claims with POST /api/check and shows the verdict, review banner and sources', async () => {
+    const w = await mountWithSample(crc.title)
+    await startReview(w)
+    await runToEnd()
+    expect(checkCalls).toEqual([
+      { turn_id: 't0005', quote: GLAND.quote, context: [turnText('t0001'), turnText('t0003')] },
+      { turn_id: 't0007', quote: SPREAD.quote, context: [turnText('t0003'), turnText('t0005')] },
+    ])
+    const c = card(w, SPREAD_ID)
+    expect(c.attributes('data-verdict')).toBe('claim')
+    expect(c.get('[data-testid="comment-verdict"]').text()).toBe('Inaccurate')
+    expect(c.get('[data-testid="comment-issue"]').text()).toBe(CHECKED.issue)
+    expect(c.get('[data-testid="check-review-banner"]').text()).toContain('Needs your review')
+    expect(c.get('[data-testid="check-review-banner"]').text()).toContain('OpenAI (Luna) and Jev')
+    // The highlight stays a claim highlight, and the DOM contract still holds.
+    expect(mark(w, SPREAD_ID).classes()).toContain('bg-hema/15')
+    expect(mark(w, SPREAD_ID).attributes('aria-describedby')).toBe(`comment-${SPREAD_ID}`)
+
+    await open(w, SPREAD_ID)
+    const details = card(w, SPREAD_ID).get('[data-testid="comment-details"]')
+    expect(details.get('[data-testid="comment-suggestion"]').text()).toContain(CHECKED.suggestion!)
+    expect(details.findAll('[data-testid^="sources-"] h4').map((h) => h.text())).toEqual([
+      'Contradicts (1)',
+      'Unclear (1)',
+    ])
+    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Luna: supports · Jev: irrelevant (0.52)')
+    expect(details.get('a').attributes('href')).toBe('https://www.nice.org.uk/guidance/ng151')
+  })
+
+  it('shows the checker error on the card', async () => {
+    const w = await mountWithSample(crc.title)
+    const fetchMock = vi.mocked(fetch)
+    const route = fetchMock.getMockImplementation()!
+    fetchMock.mockImplementation(async (url, init) =>
+      url === '/api/check'
+        ? jsonResponse({ detail: 'x', code: 'check_unavailable' }, 503)
+        : route(url as string, init),
     )
+    await startReview(w)
+    await runToEnd()
+    const check = card(w, GLAND_ID).get('[data-testid="claim-check"]')
+    expect(check.text()).toBe(messageFor('check_unavailable'))
+    expect(check.classes()).toContain('text-eosin')
+  })
+
+  it('exports the check results', async () => {
+    const w = await mountWithSample(crc.title)
+    await startReview(w)
+    await runToEnd()
+    await w.get('[data-testid="review-export"]').trigger('click')
+    const [, data] = vi.mocked(downloadJson).mock.calls[0]!
+    const row = (data as { comments: { id: string; check_status: string; check: unknown }[] }).comments.find(
+      (c) => c.id === GLAND_ID,
+    )!
+    const { status: _status, ...check } = CHECKED
+    expect(row.check_status).toBe('checked')
+    expect(row.check).toEqual(check)
   })
 
   it('hides Reply on triage cards but keeps Resolve and Disagree', async () => {
@@ -438,11 +555,14 @@ describe('Transcripts view: Jev review', () => {
     expect(w.get('[data-testid="turn-t0005"]').text()).not.toContain('sigmoid colon')
     expect(triageCounts(w)).toBe('3 claims · 0 open transcription checks · 2 skipped spans')
 
-    await vi.advanceTimersByTimeAsync(STUB_CHECK_DELAY_MS)
+    await vi.advanceTimersByTimeAsync(CHECK_DELAY_MS)
     await settle()
-    expect(card(w, COLIN_ID).get('[data-testid="claim-check"]').text()).toBe(
-      "Not fact-checked yet (the checker isn't built yet)",
-    )
+    expect(card(w, COLIN_ID).get('[data-testid="claim-check"]').text()).toBe(CHECK_VERDICT_TEXT.inaccurate)
+    expect(checkCalls[checkCalls.length - 1]).toEqual({
+      turn_id: 't0005',
+      quote: typed,
+      context: [turnText('t0001'), turnText('t0003')],
+    })
   })
 
   it('a correction that is small talk resolves the card with the correction shown', async () => {
@@ -514,9 +634,7 @@ describe('Transcripts view: Jev review', () => {
     expect(card(w, GLAND_ID).exists()).toBe(true)
     expect(card(w, SPREAD_ID).exists()).toBe(false)
     // The aborted check ends as not checked.
-    expect(card(w, GLAND_ID).get('[data-testid="claim-check"]').text()).toBe(
-      "Not fact-checked yet (the checker isn't built yet)",
-    )
+    expect(card(w, GLAND_ID).get('[data-testid="claim-check"]').text()).toBe(NOT_CHECKED_TEXT)
   })
 
   it('restart discards the results and runs again', async () => {

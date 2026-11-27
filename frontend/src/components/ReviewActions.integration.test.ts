@@ -9,6 +9,7 @@ import TranscriptionAnswer from './TranscriptionAnswer.vue'
 import { jevReviewSource, triageSpan } from '@/lib/jevReviewSource'
 import { useTranscriptReview, type ReviewThread } from '@/composables/useTranscriptReview'
 import type { ClarifySource, ReviewComment, ReviewEvent, ReviewSource, RoledTurn } from '@/types'
+import { NOT_CHECKED_TEXT } from '@/lib/check'
 
 const comment = (id: string, start: number | null, over: Partial<ReviewComment> = {}): ReviewComment => ({
   id,
@@ -359,9 +360,7 @@ describe('review actions on a Jev triage review', () => {
       '1 claim · 1 open transcription check · 1 skipped span',
     )
     expect(card(w, CLAIM).get('[data-testid="comment-verdict"]').text()).toBe('Claim')
-    expect(card(w, CLAIM).get('[data-testid="claim-check"]').text()).toBe(
-      "Not fact-checked yet (the checker isn't built yet)",
-    )
+    expect(card(w, CLAIM).get('[data-testid="claim-check"]').text()).toBe(NOT_CHECKED_TEXT)
     expect(card(w, ASR).get('[data-testid="transcription-question"]').text()).toBe('Is this correct?')
   })
 
