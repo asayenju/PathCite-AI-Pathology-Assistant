@@ -15,6 +15,7 @@ messages; httpx errors are raised `from None` so their request isn't chained.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from typing import Any
@@ -46,6 +47,10 @@ class SupabaseAuthError(SupabaseError):
 
 class SupabaseRequestError(SupabaseError):
     pass
+
+
+class SupabaseRateLimited(SupabaseRequestError):
+    """429 still after retries (a SupabaseRequestError, so existing callers are unaffected)."""
 
 
 def _backoff(attempt: int) -> float:
@@ -109,6 +114,15 @@ class SupabaseCorpus:
 
     def corpus_stats(self) -> dict:
         return self._json("POST", "/rpc/corpus_stats", json={})
+
+    def match_chunks(self, query_embedding: list[float], query_text: str, **overrides: Any) -> Any:
+        """Hybrid search (supabase/migrations/20261127010000_match_chunks.sql); returns the raw rows.
+
+        The embedding goes as a JSON string ("[0.1,...]"), which PostgREST casts to vector(1536). Only the overrides
+        given (k, candidates, per_doc, rrf_k, min_similarity) are sent; the rest take the SQL defaults."""
+        body = {"query_embedding": json.dumps(query_embedding, separators=(",", ":")), "query_text": query_text}
+        body.update({name: value for name, value in overrides.items() if value is not None})
+        return self._json("POST", "/rpc/match_chunks", json=body)
 
     # --- corpus_meta -------------------------------------------------------
 
@@ -193,7 +207,7 @@ class SupabaseCorpus:
                     self._sleep(_backoff(attempt))
                     continue
                 if code == 429:
-                    raise SupabaseRequestError(f"Supabase rate limit (HTTP 429) after retries on {path}")
+                    raise SupabaseRateLimited(f"Supabase rate limit (HTTP 429) after retries on {path}")
                 raise SupabaseUnreachable(f"{UNREACHABLE} (HTTP {code})")
             if code in (401, 403):
                 raise SupabaseAuthError(f"Supabase rejected the key ({_detail(r)}): {KEY_HINT}")

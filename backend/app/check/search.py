@@ -1,0 +1,237 @@
+"""Evidence search for the claim checker (docs/PRD-rag-checker.md, section 1).
+
+`EvidenceSearch.search(claim)` embeds the claim with OpenAI (`text-embedding-3-small`, OPEN_AI_VECTOR_KEY) and runs
+the hybrid `match_chunks` RPC in Supabase (supabase/migrations/20261127010000_match_chunks.sql) with the secret key.
+It reuses the sync clients of the corpus ingest (`OpenAIEmbedder`, `SupabaseCorpus`, with their retries and backoff)
+and runs them in a worker thread, so it can be awaited from a FastAPI endpoint without blocking the event loop.
+
+k (8), per_doc (2) and min_similarity (0.35) default in SQL and are only sent when overridden.
+
+Errors: everything is mapped to the three `SearchError` subclasses below, which the /check endpoint maps to
+check_unavailable (503), check_rate_limited (429) and check_upstream_error (502). An empty claim or a bad override
+raises ValueError before any call.
+
+Privacy: the claim is sent to OpenAI (to embed it) and to Supabase (as the keyword query), and nowhere else. The
+claim, the keys and request/response bodies are never logged or put in exception messages; errors are raised
+`from None` so the underlying exception (and its httpx request) isn't chained.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass, fields
+from typing import Any
+
+import anyio.to_thread
+
+from app.config import Settings
+from app.corpus.embed import (
+    EmbedAuthError,
+    EmbedError,
+    EmbedRateLimited,
+    OpenAIEmbedder,
+)
+from app.corpus.supabase import (
+    SupabaseAuthError,
+    SupabaseCorpus,
+    SupabaseError,
+    SupabaseRateLimited,
+    SupabaseUnreachable,
+)
+
+
+@dataclass(frozen=True)
+class Evidence:
+    """One row of match_chunks. Ranks are 1-based and None when the chunk wasn't in that candidate list."""
+
+    chunk_id: int
+    doc_id: str
+    section: str
+    content: str
+    trust: str  # high | medium | low
+    source: str
+    title: str | None
+    url: str
+    year: int | None
+    vector_rank: int | None
+    text_rank: int | None
+    rrf_score: float
+    similarity: float  # cosine similarity of the chunk to the claim
+
+
+class SearchError(Exception):
+    """Base class. Messages never contain the claim, keys or bodies."""
+
+
+class SearchUnavailable(SearchError):
+    """A key or URL is missing, or a key was rejected (check_unavailable, 503)."""
+
+
+class SearchRateLimited(SearchError):
+    """OpenAI or Supabase still rate-limited after retries (check_rate_limited, 429)."""
+
+
+class SearchUpstreamError(SearchError):
+    """Timeout, network error, 5xx, a paused project, another 4xx or a malformed response (check_upstream_error, 502)."""
+
+
+def _is_int(v: Any) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _is_num(v: Any) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+_CHECKS: dict[str, Callable[[Any], bool]] = {
+    "chunk_id": _is_int,
+    "doc_id": lambda v: isinstance(v, str),
+    "section": lambda v: isinstance(v, str),
+    "content": lambda v: isinstance(v, str),
+    "trust": lambda v: isinstance(v, str),
+    "source": lambda v: isinstance(v, str),
+    "title": lambda v: v is None or isinstance(v, str),
+    "url": lambda v: isinstance(v, str),
+    "year": lambda v: v is None or _is_int(v),
+    "vector_rank": lambda v: v is None or _is_int(v),
+    "text_rank": lambda v: v is None or _is_int(v),
+    "rrf_score": _is_num,
+    "similarity": _is_num,
+}
+assert set(_CHECKS) == {f.name for f in fields(Evidence)}
+
+
+def _malformed(why: str) -> SearchUpstreamError:
+    return SearchUpstreamError(f"Supabase returned a malformed match_chunks response: {why}")
+
+
+def parse_rows(rows: Any) -> list[Evidence]:
+    if not isinstance(rows, list):
+        raise _malformed("not a list")
+    out = []
+    for i, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise _malformed(f"row {i} is not an object")
+        for name, ok in _CHECKS.items():
+            if name not in row or not ok(row[name]):
+                raise _malformed(f"row {i} has a missing or invalid {name}")
+        values = {name: row[name] for name in _CHECKS}
+        values["rrf_score"] = float(values["rrf_score"])
+        values["similarity"] = float(values["similarity"])
+        out.append(Evidence(**values))
+    return out
+
+
+def _secret(value) -> str | None:
+    if value is None:
+        return None
+    raw = value.get_secret_value() if hasattr(value, "get_secret_value") else str(value)
+    return raw.strip() or None
+
+
+class EvidenceSearch:
+    def __init__(self, embedder: OpenAIEmbedder, store: SupabaseCorpus):
+        self._embedder = embedder
+        self._store = store
+
+    @classmethod
+    def from_settings(
+        cls,
+        settings: Settings,
+        *,
+        openai_transport=None,
+        supabase_transport=None,
+        sleep: Callable[[float], None] | None = None,
+    ) -> EvidenceSearch:
+        """Raises SearchUnavailable naming the first missing variable (the name only, never a value)."""
+        openai_key = _secret(settings.openai_vector_key)
+        url = (settings.supabase_url or "").strip() or None
+        supabase_key = _secret(settings.supabase_secret_key)
+        for name, value in (
+            ("OPEN_AI_VECTOR_KEY", openai_key),
+            ("SUPABASE_URL", url),
+            ("SUPABASE_SECRET_KEY", supabase_key),
+        ):
+            if value is None:
+                raise SearchUnavailable(f"Evidence search is not configured: set {name} in the repo-root .env")
+        extra = {} if sleep is None else {"sleep": sleep}
+        embedder = OpenAIEmbedder(
+            openai_key,
+            model=settings.embed_model,
+            dims=settings.embed_dims,
+            transport=openai_transport,
+            timeout_s=30,
+            max_retries=2,
+            **extra,
+        )
+        store = SupabaseCorpus(url, supabase_key, transport=supabase_transport, timeout_s=30, max_retries=2, **extra)
+        return cls(embedder, store)
+
+    def __repr__(self) -> str:
+        return f"EvidenceSearch({self._embedder!r})"
+
+    # --- lifecycle ---------------------------------------------------------
+
+    def close(self) -> None:
+        self._embedder.close()
+        self._store.close()
+
+    def __enter__(self) -> EvidenceSearch:
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        self.close()
+
+    async def __aenter__(self) -> EvidenceSearch:
+        return self
+
+    async def __aexit__(self, *exc_info) -> None:
+        self.close()
+
+    # --- search ------------------------------------------------------------
+
+    async def search(
+        self,
+        claim: str,
+        k: int | None = None,
+        *,
+        per_doc: int | None = None,
+        min_similarity: float | None = None,
+    ) -> list[Evidence]:
+        """The best passages for `claim`, best first: at most k (SQL default 8), at most per_doc (2) per document,
+        none below min_similarity (0.35). Raises ValueError (no calls made) for an empty claim or a bad override,
+        and a SearchError subclass for any upstream failure."""
+        if not isinstance(claim, str) or not claim.strip():
+            raise ValueError("claim is empty")
+        if k is not None and (not _is_int(k) or k < 1):
+            raise ValueError("k must be a positive integer")
+        if per_doc is not None and (not _is_int(per_doc) or per_doc < 1):
+            raise ValueError("per_doc must be a positive integer")
+        if min_similarity is not None and (not _is_num(min_similarity) or not -1 <= min_similarity <= 1):
+            raise ValueError("min_similarity must be between -1 and 1")
+        claim = claim.strip()
+        return await anyio.to_thread.run_sync(self._search_sync, claim, k, per_doc, min_similarity)
+
+    def _search_sync(self, claim: str, k, per_doc, min_similarity) -> list[Evidence]:
+        try:
+            [vector] = self._embedder.embed([claim])
+        except EmbedAuthError:
+            raise SearchUnavailable("OpenAI rejected the embeddings key: check OPEN_AI_VECTOR_KEY") from None
+        except EmbedRateLimited:
+            raise SearchRateLimited("OpenAI embeddings rate limit after retries") from None
+        except EmbedError as e:
+            raise SearchUpstreamError(f"OpenAI embeddings failed ({type(e).__name__})") from None
+        except ValueError:
+            raise ValueError("claim is too long to embed") from None
+
+        try:
+            rows = self._store.match_chunks(vector, claim, k=k, per_doc=per_doc, min_similarity=min_similarity)
+        except SupabaseAuthError:
+            raise SearchUnavailable("Supabase rejected the key: check SUPABASE_SECRET_KEY") from None
+        except SupabaseRateLimited:
+            raise SearchRateLimited("Supabase rate limit after retries") from None
+        except SupabaseUnreachable:
+            raise SearchUpstreamError("Supabase project unreachable or paused") from None
+        except SupabaseError as e:
+            raise SearchUpstreamError(f"Supabase match_chunks failed ({type(e).__name__})") from None
+        return parse_rows(rows)
