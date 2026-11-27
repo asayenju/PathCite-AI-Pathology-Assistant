@@ -19,7 +19,7 @@ Both cover the 6 cancers in the sample transcripts: colorectal, breast, melanoma
 ## Why
 - **Answers need sources.** The checker can only give a verdict a doctor will trust if it can point to a source. That needs the evidence stored with its citation, not just as vectors.
 - **Chunks should match how guidelines are written.** Guidelines are long (median 21K characters, up to 181K) and organised under headings. A single embedding of a whole guideline blurs all its topics together. Chunks that follow its headings, and that are split by meaning inside long sections, keep each chunk about one thing.
-- **It fits the free plan.** About 10.4M characters remain after dropping boilerplate sections. That is about 7.5K chunks and an estimated 150 MB, under the free plan's 500 MB.
+- **It fits the free plan.** About 10.4M characters remain after dropping boilerplate sections. That is about 10K chunks (the real plan: about 10,050) and an estimated 170 MB, under the free plan's 500 MB.
 - **Why lexical-only dedupe.** Only 0.2% of paragraphs are exact repeats. The real saving is dropping low-value sections (cost-effectiveness, price, committee lists, references), about 19% of the guideline text. Deduplicating by *meaning* would be dangerous for a fact checker, because "X is recommended" and "X is not recommended" embed at about 0.95 similarity and one would be silently lost.
 
 ## How
@@ -35,14 +35,14 @@ The secret key is used only by backend scripts, never by the frontend.
 | Job | Library | Why |
 |---|---|---|
 | Structural chunking | `langchain-text-splitters` `MarkdownHeaderTextSplitter` | Almost every guideline has markdown headings (177/177 NICE, 94/95 PubMed-sourced, 98/99 WikiDoc) |
-| Semantic chunking | `chonkie[openai]` `SemanticChunker` | Supports a maximum chunk size and a similarity window. LangChain's version has no maximum size and lives in `langchain-experimental` |
+| Semantic chunking | our own breakpoint code (numpy over our sentence splitter) | Planned as `chonkie[openai]` `SemanticChunker`, but Chonkie 1.7 splits sentences on plain delimiters and cuts "Dr. Smith" and "Fig. 3", so the fallback below was used and Chonkie is not a dependency |
 | Near-duplicate detection | `datasketch` (MinHash + LSH) | Lexical, fast, no embeddings needed |
 | Token counting | `tiktoken` (`cl100k_base`) | The tokenizer `text-embedding-3-*` uses |
 | API calls | `httpx` | The same pattern as `app/triage/jev.py`, so no extra SDKs |
 
-Both chunkers sit behind our own `app/corpus/chunking.py` interface.
+Both steps live behind our own `app/corpus/chunking.py` interface.
 - **Sentence-boundary rules:** the tests require that no chunk is cut at "e.g.", "i.e.", "vs.", "Dr.", "Fig. 3", "1.2 mm" or after an initial.
-- **Fallback:** if Chonkie's sentence splitter can't meet those rules, we implement the breakpoint step ourselves with numpy on our own sentence splitter.
+- **Fallback (used):** Chonkie's sentence splitter can't meet those rules, so the breakpoint step is implemented with numpy on our own sentence splitter.
 
 **Pipeline** (`backend/app/corpus/`, run with `backend/scripts/ingest_corpus.py`):
 1. **Load** both files with Unicode NFC normalisation. Each document gets a trust level:

@@ -157,13 +157,43 @@ Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the 
 ## Privacy
 Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored.
 
+## Evidence corpus (Supabase)
+
+An offline pipeline, not part of the API, that stores the cancer evidence the claim checker will search (`docs/PRD-corpus-ingest.md`). Run from `backend/` with the venv:
+
+1. **Fetch** the corpus (NICE/PubMed/WikiDoc guidelines from `epfl-llm/guidelines` and PubMed abstracts; no keys needed) into `.cache/corpus/` (gitignored; the guideline licences vary, so keep it out of git):
+   ```
+   python scripts/fetch_cancer_corpus.py
+   ```
+2. **Migrate** once: paste `supabase/migrations/20261127000000_corpus.sql` into the Supabase SQL editor, then check it with `python scripts/verify_supabase_schema.py` (see `supabase/README.md`).
+3. **Dry run** (no API calls; breakpoints come from a local stand-in embedder, so the counts are approximate):
+   ```
+   python scripts/ingest_corpus.py --dry-run
+   ```
+4. **Ingest**, first a few documents, then everything:
+   ```
+   python scripts/ingest_corpus.py --limit 3
+   python scripts/ingest_corpus.py
+   ```
+   The first real run builds the chunk plan `.cache/corpus/chunks.jsonl` with OpenAI breakpoints and reuses it after that (`--rechunk` rebuilds it). Each document is written atomically by the `ingest_document` RPC. Re-runs skip documents whose stored chunk hashes match the plan, so an interrupted run just continues and a second full run embeds nothing. A document that fails is reported, the others continue, and the exit code is 1 (re-run to retry it). Documents in Supabase that the plan no longer has are reported, not deleted.
+   - `corpus_meta` locks the embedding model, dimensions and chunker config. A run with a different one is refused (exit 2) unless `--rebuild`, which deletes every document, chunk and lock first.
+   - Other flags: `--env PATH` (default: repo-root `.env`), `--corpus-dir PATH`.
+   - Supabase free projects pause when idle: the CLI then says "Supabase project unreachable or paused — open the dashboard to resume it".
+
+**Keys** (repo-root `.env`, gitignored; see `.env.example`): `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`. The secret key bypasses row-level security, so it is for backend scripts only: never the frontend, never logged. Keys never appear in the CLI's output or errors.
+
+**Cost and size:** about 1.0M tokens for the semantic breakpoints (first run only) plus 2.3M for the chunks, so about $0.07 with `text-embedding-3-small` ($0.02/1M). The report prints the actual tokens and cost, documents and chunks per cancer and per source, and `corpus_stats()`. The stored corpus (about 10K chunks) is well under the free plan's 500 MB.
+
 ## Tests
 
 ```
 pytest                # offline, synthetic images, no GPU needed
 pytest -m hf -s       # opt-in smoke eval on a Hugging Face dataset (needs network)
 pytest -m jev -s      # opt-in live Jev triage eval (needs JEV_KEY and network)
+pytest -m corpus -s   # opt-in live ingest smoke test (needs the corpus keys and the real chunk plan)
 ```
+
+`pytest -m corpus -s` deletes the first 3 documents of the real plan, re-ingests them with `--limit 3` and checks their stored chunk hashes against the plan, then checks a second run embeds nothing. It never uses `--rebuild`, so it is safe after a full ingest. `CORPUS_DIR` and `CORPUS_ENV` override the corpus folder and the `.env` path.
 
 ### Evals
 

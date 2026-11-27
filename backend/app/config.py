@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     )
     embed_model: str = "text-embedding-3-small"
     embed_dims: int = 1536
+    # Supabase (Postgres + pgvector) for the corpus. The secret key bypasses RLS: backend scripts only, never the
+    # frontend, never logged.
+    supabase_url: str | None = None
+    supabase_secret_key: SecretStr | None = None
 
 
 def get_settings() -> Settings:
