@@ -15,8 +15,6 @@ function source(over: Partial<CheckSource> = {}): CheckSource {
     quote: 'Grade does not determine stage.',
     stance: 'supports',
     luna_stance: 'supports',
-    jev_stance: 'supports',
-    jev_p: 0.92,
     ...over,
   }
 }
@@ -27,7 +25,7 @@ const group = (w: ReturnType<typeof mountSources>, stance: string) => w.find(`[d
 describe('CheckSources', () => {
   it('groups sources as Supports, Contradicts, Unclear in that order', () => {
     const w = mountSources([
-      source({ stance: 'unclear', luna_stance: 'supports', jev_stance: 'contradicts', jev_p: 0.55 }),
+      source({ stance: 'unclear', luna_stance: 'supports' }),
       source({ stance: 'contradicts', title: 'B' }),
       source({ stance: 'supports', title: 'A' }),
       source({ stance: 'supports', title: 'C' }),
@@ -79,13 +77,14 @@ describe('CheckSources', () => {
     expect(w.find('a').exists()).toBe(false)
   })
 
-  it('says what each model thought of an unclear source', () => {
+  it("says an unclear source's quote was not found in the passage", () => {
     const w = mountSources([
-      source({ stance: 'unclear', luna_stance: 'supports', jev_stance: 'contradicts', jev_p: 0.55 }),
-      source({ stance: 'unclear', luna_stance: 'contradicts', jev_stance: null, jev_p: null }),
+      source({ stance: 'unclear', luna_stance: 'supports' }),
+      source({ stance: 'unclear', luna_stance: 'contradicts' }),
     ])
     const opinions = w.findAll('[data-testid="source-opinions"]').map((o) => o.text())
-    expect(opinions).toEqual(['Luna: supports · Jev: contradicts (0.55)', 'Luna: contradicts · Jev: no answer'])
+    expect(opinions).toEqual(['Quote not found in the passage', 'Quote not found in the passage'])
+    expect(w.text()).not.toMatch(/Luna:|Jev:/)
   })
 
   it('shows no model opinions on supporting or contradicting sources', () => {

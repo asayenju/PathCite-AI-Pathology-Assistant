@@ -142,6 +142,8 @@ function exportedCheck({ status: _status, ...check }: CheckedResult): ExportedCh
   return {
     ...check,
     review_reasons: [...check.review_reasons],
+    search_queries: [...check.search_queries],
+    confidence: check.confidence ? { ...check.confidence } : null,
     sources: check.sources.map((s) => ({ ...s })),
   }
 }

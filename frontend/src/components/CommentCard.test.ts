@@ -210,8 +210,6 @@ const checkSource = (over: Partial<CheckSource> = {}): CheckSource => ({
   quote: 'Grade does not determine stage.',
   stance: 'contradicts',
   luna_stance: 'contradicts',
-  jev_stance: 'contradicts',
-  jev_p: 0.9,
   ...over,
 })
 
@@ -226,6 +224,8 @@ function checkedResult(over: Partial<CheckedResult> = {}): CheckedResult {
     sources: [checkSource()],
     model: 'gpt-6-luna',
     jev_model: 'jev-1.14.0',
+    search_queries: ['the raw claim', 'grade and stage colorectal'],
+    confidence: { label: 'contradicted', p: 0.91, p_verdict: 0.91, agrees: true },
     ...over,
   }
 }
@@ -285,8 +285,6 @@ describe('CommentCard: checked claim', () => {
           stance: 'unclear',
           title: 'Huh',
           luna_stance: 'supports',
-          jev_stance: 'irrelevant',
-          jev_p: 0.4,
         }),
         checkSource({ chunk_id: 4, stance: 'irrelevant', title: 'Off topic' }),
       ],
@@ -299,12 +297,65 @@ describe('CommentCard: checked claim', () => {
       'Unclear (1)',
     ])
     expect(details.get('[data-testid="sources-irrelevant"] summary').text()).toBe('Not relevant (1)')
-    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Luna: supports · Jev: irrelevant (0.40)')
+    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Quote not found in the passage')
     expect(details.findAll('a')).toHaveLength(4)
     for (const a of details.findAll('a')) {
       expect(a.attributes('target')).toBe('_blank')
       expect(a.attributes('rel')).toBe('noopener noreferrer')
     }
+  })
+
+  it.each([
+    ['agrees', { label: 'contradicted', p: 0.906, p_verdict: 0.906, agrees: true }, 'inaccurate', 'Jev 91% confident'],
+    [
+      'agrees with a different top answer probability',
+      { label: 'contradicted', p: 0.8, p_verdict: 0.74, agrees: true },
+      'inaccurate',
+      'Jev 74% confident',
+    ],
+    [
+      'disagrees',
+      { label: 'supported', p: 0.84, p_verdict: 0.1, agrees: false },
+      'inaccurate',
+      "Jev disagrees: thinks it's supported (84%)",
+    ],
+    [
+      'disagrees (insufficient)',
+      { label: 'insufficient', p: 0.6, p_verdict: 0.3, agrees: false },
+      'accurate',
+      "Jev disagrees: thinks it's not covered by the sources (60%)",
+    ],
+    ['is unavailable', null, 'inaccurate', 'Jev unavailable'],
+    [
+      'leans on a disputed verdict',
+      { label: 'contradicted', p: 0.55, p_verdict: null, agrees: null },
+      'disputed',
+      'Jev leans contradicted (55%)',
+    ],
+  ] as const)("shows Jev's confidence next to the verdict when Jev %s", (_name, confidence, verdict, text) => {
+    const w = mountChecked({ verdict, confidence: confidence === null ? null : { ...confidence } }, false)
+    const el = w.get('[data-testid="check-confidence"]')
+    expect(el.text()).toBe(text)
+    // Next to the verdict, outside the verdict label itself.
+    expect(w.get('[data-testid="comment-verdict"]').text()).not.toContain('Jev')
+  })
+
+  it('has no Jev confidence on an unchecked claim', () => {
+    const w = mountCard({ ...triage('claim'), checkStatus: 'checking' }, true)
+    expect(w.find('[data-testid="check-confidence"]').exists()).toBe(false)
+  })
+
+  it('lists the search queries in a collapsed "Searched for (n)" in the selected card', () => {
+    const w = mountChecked({ search_queries: ['grade means spread', 'tumour grade vs stage', 'TNM staging'] })
+    const d = w.get('[data-testid="comment-details"] [data-testid="check-search-queries"]')
+    expect(d.element.tagName).toBe('DETAILS')
+    expect((d.element as HTMLDetailsElement).open).toBe(false)
+    expect(d.get('summary').text()).toBe('Searched for (3)')
+    expect(d.findAll('li').map((li) => li.text())).toEqual(['grade means spread', 'tumour grade vs stage', 'TNM staging'])
+  })
+
+  it('omits "Searched for" when there are no queries', () => {
+    expect(mountChecked({ search_queries: [] }).find('[data-testid="check-search-queries"]').exists()).toBe(false)
   })
 
   it('names the models that checked it', () => {
@@ -323,7 +374,7 @@ describe('CommentCard: checked claim', () => {
       {
         verdict: 'disputed',
         needs_review: true,
-        review_reasons: ['sources_disagree', 'models_disagree', 'jev_unavailable'],
+        review_reasons: ['sources_disagree', 'jev_disagrees', 'low_confidence', 'jev_unavailable'],
       },
       false,
     )
@@ -331,7 +382,8 @@ describe('CommentCard: checked claim', () => {
     expect(banner.get('[data-testid="check-review-title"]').text()).toBe('Needs your review')
     expect(banner.findAll('li').map((li) => li.text())).toEqual([
       'The sources disagree with each other.',
-      'OpenAI (Luna) and Jev read at least one source differently.',
+      'Jev disagrees with the verdict',
+      "Jev isn't confident in the verdict (under 70%)",
       "Jev didn't answer, so only OpenAI (Luna) judged the sources.",
     ])
   })

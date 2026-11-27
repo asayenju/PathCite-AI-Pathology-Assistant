@@ -90,7 +90,7 @@ const CHECKED: CheckedResult = {
   issue: 'Differentiation grade describes the cells, not whether the cancer has spread.',
   suggestion: 'Being moderately differentiated describes how the cells look; staging tells us about spread.',
   needs_review: true,
-  review_reasons: ['models_disagree'],
+  review_reasons: ['jev_disagrees'],
   sources: [
     {
       chunk_id: 41,
@@ -102,8 +102,6 @@ const CHECKED: CheckedResult = {
       quote: 'Grade does not determine stage.',
       stance: 'contradicts',
       luna_stance: 'contradicts',
-      jev_stance: 'contradicts',
-      jev_p: 0.93,
     },
     {
       chunk_id: 42,
@@ -115,12 +113,12 @@ const CHECKED: CheckedResult = {
       quote: 'Moderately differentiated tumours are common.',
       stance: 'unclear',
       luna_stance: 'supports',
-      jev_stance: 'irrelevant',
-      jev_p: 0.52,
     },
   ],
   model: 'gpt-6-luna',
   jev_model: 'jev-1.14.0',
+  search_queries: ['the raw claim', 'grade and stage colorectal'],
+  confidence: { label: 'supported', p: 0.62, p_verdict: 0.3, agrees: false },
 }
 /** Every /check request body. */
 let checkCalls: { turn_id: string; quote: string; context: string[] }[] = []
@@ -432,9 +430,10 @@ describe('Transcripts view: Jev review', () => {
     const c = card(w, SPREAD_ID)
     expect(c.attributes('data-verdict')).toBe('claim')
     expect(c.get('[data-testid="comment-verdict"]').text()).toBe('Inaccurate')
+    expect(c.get('[data-testid="check-confidence"]').text()).toBe("Jev disagrees: thinks it's supported (62%)")
     expect(c.get('[data-testid="comment-issue"]').text()).toBe(CHECKED.issue)
     expect(c.get('[data-testid="check-review-banner"]').text()).toContain('Needs your review')
-    expect(c.get('[data-testid="check-review-banner"]').text()).toContain('OpenAI (Luna) and Jev')
+    expect(c.get('[data-testid="check-review-banner"]').text()).toContain('Jev disagrees with the verdict')
     // The highlight stays a claim highlight, and the DOM contract still holds.
     expect(mark(w, SPREAD_ID).classes()).toContain('bg-hema/15')
     expect(mark(w, SPREAD_ID).attributes('aria-describedby')).toBe(`comment-${SPREAD_ID}`)
@@ -446,7 +445,7 @@ describe('Transcripts view: Jev review', () => {
       'Contradicts (1)',
       'Unclear (1)',
     ])
-    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Luna: supports · Jev: irrelevant (0.52)')
+    expect(details.get('[data-testid="source-opinions"]').text()).toBe('Quote not found in the passage')
     expect(details.get('a').attributes('href')).toBe('https://www.nice.org.uk/guidance/ng151')
   })
 

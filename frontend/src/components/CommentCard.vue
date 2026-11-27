@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Check, CircleHelp, LoaderCircle, Plus, Quote, Scale, SearchX, TriangleAlert, X } from 'lucide-vue-next'
 import CheckSources from './CheckSources.vue'
 import type { ReviewThread } from '@/composables/useTranscriptReview'
-import { CHECK_VERDICT_TEXT, NOT_CHECKED_TEXT, reviewReasonText } from '@/lib/check'
+import { CHECK_VERDICT_TEXT, NOT_CHECKED_TEXT, confidenceText, reviewReasonText } from '@/lib/check'
 import type { ReviewVerdict } from '@/types'
 
 /**
@@ -19,7 +19,8 @@ import type { ReviewVerdict } from '@/types'
  *
  * A checked claim (docs/PRD-rag-checker.md) takes the check verdict's label, icon and colour (`data-verdict` stays
  * `claim`; `data-check-verdict` has the check verdict), shows the checker's issue and suggestion, a "Needs your
- * review" banner with the reasons, and, when selected, its sources grouped by stance.
+ * review" banner with the reasons, Jev's confidence next to the verdict and, when selected, its sources grouped by
+ * stance and what was searched for.
  */
 const props = defineProps<{ comment: ReviewThread; active: boolean }>()
 
@@ -125,10 +126,20 @@ function activate() {
     </template>
 
     <template v-else>
-      <p class="flex items-center gap-1.5 text-sm font-semibold" :class="verdict.text" data-testid="comment-verdict">
-        <component :is="verdict.icon" class="size-4" aria-hidden="true" />
-        {{ verdict.label }}
-      </p>
+      <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+        <p class="flex items-center gap-1.5 text-sm font-semibold" :class="verdict.text" data-testid="comment-verdict">
+          <component :is="verdict.icon" class="size-4" aria-hidden="true" />
+          {{ verdict.label }}
+        </p>
+        <span
+          v-if="check"
+          class="text-xs"
+          :class="check.confidence?.agrees === false ? 'text-amber' : 'text-quiet'"
+          data-testid="check-confidence"
+        >
+          {{ confidenceText(check.confidence) }}
+        </span>
+      </div>
 
       <p v-if="orphan" class="text-sm text-quiet italic" data-testid="comment-orphan">
         Couldn't find this text in the turn.
@@ -211,6 +222,14 @@ function activate() {
 
           <template v-if="check">
             <CheckSources :sources="check.sources" />
+            <details v-if="check.search_queries.length" data-testid="check-search-queries">
+              <summary class="cursor-pointer text-xs font-semibold text-quiet">
+                Searched for ({{ check.search_queries.length }})
+              </summary>
+              <ul class="mt-1 list-disc space-y-0.5 pl-5 text-xs text-quiet">
+                <li v-for="(q, i) in check.search_queries" :key="i">{{ q }}</li>
+              </ul>
+            </details>
             <p class="text-xs text-quiet" data-testid="check-models">{{ checkModels }}</p>
           </template>
 

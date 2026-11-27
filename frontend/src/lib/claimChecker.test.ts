@@ -60,7 +60,7 @@ const checked: CheckedResult = {
   issue: 'Differentiation grade says nothing about spread.',
   suggestion: 'Grade describes how the cells look; staging describes spread.',
   needs_review: true,
-  review_reasons: ['models_disagree'],
+  review_reasons: ['sources_disagree'],
   sources: [
     {
       chunk_id: 12,
@@ -72,12 +72,12 @@ const checked: CheckedResult = {
       quote: 'Grade does not determine stage.',
       stance: 'contradicts',
       luna_stance: 'contradicts',
-      jev_stance: 'contradicts',
-      jev_p: 0.91,
     },
   ],
   model: 'gpt-6-luna',
   jev_model: 'jev-1.14.0',
+  search_queries: ['the raw claim', 'grade and stage colorectal'],
+  confidence: { label: 'contradicted', p: 0.91, p_verdict: 0.91, agrees: true },
 }
 
 const json = (data: unknown, status = 200) =>
@@ -133,10 +133,31 @@ describe('createHttpClaimChecker', () => {
         title: null,
         year: null,
         luna_stance: null,
-        jev_stance: null,
-        jev_p: null,
       })
     }
+  })
+
+  it('accepts the v2 fields: search queries and each confidence shape', async () => {
+    for (const confidence of [
+      null,
+      { label: 'supported', p: 0.8, p_verdict: 0.8, agrees: true },
+      { label: 'insufficient', p: 0.6, p_verdict: 0.2, agrees: false },
+      { label: 'contradicted', p: 0.55, p_verdict: null, agrees: null },
+    ]) {
+      const fetchImpl = async () => json({ ...checked, confidence })
+      const result = (await createHttpClaimChecker({ fetchImpl })(claim, live())) as CheckedResult
+      expect(result.confidence).toEqual(confidence)
+      expect(result.search_queries).toEqual(checked.search_queries)
+    }
+  })
+
+  it('drops per-source jev_stance and jev_p from an older answer', async () => {
+    const source = { ...checked.sources[0], jev_stance: 'contradicts', jev_p: 0.9 }
+    const fetchImpl = async () => json({ ...checked, sources: [source] })
+    const result = (await createHttpClaimChecker({ fetchImpl })(claim, live())) as CheckedResult
+    expect(result.sources[0]).toEqual(checked.sources[0])
+    expect(result.sources[0]).not.toHaveProperty('jev_stance')
+    expect(result.sources[0]).not.toHaveProperty('jev_p')
   })
 
   it('keeps review reasons it does not know', async () => {
@@ -154,6 +175,17 @@ describe('createHttpClaimChecker', () => {
     ['a source without a quote', { ...checked, sources: [{ ...checked.sources[0], quote: 3 }] }],
     ['review reasons that are not strings', { ...checked, review_reasons: [1] }],
     ['needs_review that is not a boolean', { ...checked, needs_review: 'yes' }],
+    ['no search queries', { ...checked, search_queries: undefined }],
+    ['search queries that are not strings', { ...checked, search_queries: ['ok', 2] }],
+    ['no confidence field', { ...checked, confidence: undefined }],
+    ['a confidence that is not an object', { ...checked, confidence: 0.9 }],
+    ['a confidence with an unknown label', { ...checked, confidence: { ...checked.confidence, label: 'accurate' } }],
+    ['a confidence p that is not a number', { ...checked, confidence: { ...checked.confidence, p: '0.9' } }],
+    ['a confidence p above 1', { ...checked, confidence: { ...checked.confidence, p: 1.5 } }],
+    ['a confidence p_verdict that is not a number', { ...checked, confidence: { ...checked.confidence, p_verdict: 'x' } }],
+    ['a confidence p_verdict below 0', { ...checked, confidence: { ...checked.confidence, p_verdict: -0.1 } }],
+    ['a confidence agrees that is not a boolean', { ...checked, confidence: { ...checked.confidence, agrees: 'yes' } }],
+    ['a confidence without agrees', { ...checked, confidence: { label: 'supported', p: 0.9, p_verdict: 0.9 } }],
   ])('rejects a malformed answer (%s) with a readable error', async (_name, body) => {
     const error = await createHttpClaimChecker({ fetchImpl: async () => json(body) })(claim, live()).catch((e) => e)
     expect(error).toBeInstanceOf(PredictError)

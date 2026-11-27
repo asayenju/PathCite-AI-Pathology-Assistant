@@ -2,12 +2,12 @@
 import { computed } from 'vue'
 import { ExternalLink } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
-import { TRUST_LABELS, safeUrl } from '@/lib/check'
+import { TRUST_LABELS, UNCLEAR_SOURCE_TEXT, safeUrl } from '@/lib/check'
 import type { CheckSource, SourceTrust } from '@/types'
 
 /**
- * One source of a checked claim: title (or section), section path, trust, year, quote, what each model said when the
- * stance is unclear, and a link that opens in a new tab (http(s) only).
+ * One source of a checked claim: title (or section), section path, trust, year, quote, a note when the stance is
+ * unclear (Luna's quote wasn't found in the passage), and a link that opens in a new tab (http(s) only).
  */
 const props = defineProps<{ source: CheckSource }>()
 
@@ -19,11 +19,6 @@ const TRUST_STYLES: Record<SourceTrust, string> = {
 }
 
 const href = computed(() => safeUrl(props.source.url))
-const opinions = computed(() => {
-  const s = props.source
-  const jev = s.jev_stance ? `${s.jev_stance}${s.jev_p === null ? '' : ` (${s.jev_p.toFixed(2)})`}` : 'no answer'
-  return `Luna: ${s.luna_stance ?? 'no answer'} · Jev: ${jev}`
-})
 </script>
 
 <template>
@@ -39,7 +34,9 @@ const opinions = computed(() => {
       <span v-if="source.year !== null" class="text-xs text-quiet" data-testid="source-year">{{ source.year }}</span>
     </p>
     <blockquote class="border-l-2 border-frost pl-2 text-sm">“{{ source.quote }}”</blockquote>
-    <p v-if="source.stance === 'unclear'" class="text-xs text-quiet" data-testid="source-opinions">{{ opinions }}</p>
+    <p v-if="source.stance === 'unclear'" class="text-xs text-quiet" data-testid="source-opinions">
+      {{ UNCLEAR_SOURCE_TEXT }}
+    </p>
     <a
       v-if="href"
       :href="href"

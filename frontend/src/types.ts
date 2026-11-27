@@ -199,12 +199,25 @@ export interface ClaimToCheck {
 export type CheckVerdict = 'accurate' | 'inaccurate' | 'incomplete' | 'unverified' | 'disputed'
 /** How far a source is trusted: NICE / PubMed guidelines high, PubMed abstracts medium, WikiDoc low (backend's call). */
 export type SourceTrust = 'high' | 'medium' | 'low'
-/** A source's stance after Luna and Jev are combined: unclear when they disagree or Jev isn't sure enough. */
+/** A source's stance: Luna's, or unclear when Luna's quote wasn't found in the passage. */
 export type SourceStance = 'supports' | 'contradicts' | 'irrelevant' | 'unclear'
 /** Why a checked claim needs the doctor's review. Unknown reasons from a newer backend are shown generically. */
-export type ReviewReason = 'sources_disagree' | 'models_disagree' | 'jev_unavailable'
+export type ReviewReason = 'sources_disagree' | 'jev_disagrees' | 'low_confidence' | 'jev_unavailable'
+/** Jev's answer about the whole claim given the passages. */
+export type ConfidenceLabel = 'supported' | 'contradicted' | 'insufficient'
 
-/** One retrieved passage and what the two models made of it. */
+/** Jev's single independent judgement of the whole claim given the retrieved passages. */
+export interface CheckConfidence {
+  /** Jev's top answer and its probability (0–1). */
+  label: ConfidenceLabel
+  p: number
+  /** Jev's probability for the checker's verdict class; null when the verdict is disputed. */
+  p_verdict: number | null
+  /** Whether Jev's top answer matches the verdict; null when the verdict is disputed. */
+  agrees: boolean | null
+}
+
+/** One retrieved passage and what Luna made of it. */
 export interface CheckSource {
   chunk_id: number
   /** The document title; null when the corpus has none (show the section instead). */
@@ -219,9 +232,6 @@ export interface CheckSource {
   stance: SourceStance
   /** Luna's (OpenAI's) own stance, e.g. "supports"; null if absent. */
   luna_stance: string | null
-  /** Jev's own stance and its probability; null when Jev failed. */
-  jev_stance: string | null
-  jev_p: number | null
 }
 
 export interface CheckedResult {
@@ -237,6 +247,10 @@ export interface CheckedResult {
   model: string
   /** The Jev model id; null when Jev failed. */
   jev_model: string | null
+  /** What was searched: the raw claim first, then the 1–3 queries Luna wrote. */
+  search_queries: string[]
+  /** Jev's confidence in the verdict; null when Jev was unavailable. */
+  confidence: CheckConfidence | null
 }
 
 /**
