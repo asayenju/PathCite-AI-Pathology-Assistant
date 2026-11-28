@@ -1,20 +1,21 @@
 """POST /check: fact-check one doctor claim against the evidence corpus (docs/PRD-rag-checker.md, section 5).
 
-Flow (v2, issue #51; v3 search speed, issue #55), sequential: Luna writes 1-3 search queries, 2-5 key terms and the
-cancer (queries.plan_search; the raw claim is always searched too, and a failure falls back to it alone) -> every
-query searched concurrently (embedding of the query, keyword search on the key terms, keyword list filtered to the
-cancer when known) and merged by reciprocal rank fusion (queries.multi_search) -> Luna judges each passage (verify.luna_stances, groundedness guard) -> Jev gives
-one independent confidence over all passages (jev_check.jev_confidence; it never sees Luna's answer) -> code rules
-(aggregate.py). Zero search results short-circuit to `unverified` with no judging or Jev call.
+Flow (v2, issue #51; v3 search speed, issue #55; v4 local BM25, issue #56), sequential: Luna writes 1-3 search
+queries, 2-5 key terms and the cancer (queries.plan_search; the raw claim is always searched too, and a failure falls
+back to it alone) -> every query searched concurrently (embedding of the query, keyword search on the key terms,
+keyword list filtered to the cancer when known; the keyword half runs on the local BM25 index when it matches the
+corpus, else in Postgres) and merged by reciprocal rank fusion (queries.multi_search) -> Luna judges each passage
+(verify.luna_stances, groundedness guard) -> Jev gives one independent confidence over all passages
+(jev_check.jev_confidence; it never sees Luna's answer) -> code rules (aggregate.py). Zero search results
+short-circuit to `unverified` with no judging or Jev call.
 
 Jev is a confidence check, not a dependency: a missing JEV_KEY or any JevError keeps Luna's verdict with review
 reason `jev_unavailable` and `confidence: null`. Search and Luna-judging failures are errors ({detail, code}).
 
 Clients are built per request by factories on app.state (tests swap in fakes) and closed after use.
 
-Privacy: the claim and context go to OpenAI (embedding + Luna), Supabase (key terms, or the claim on fallback) and
-TypeSafe (Jev). They,
-the keys and bodies are never logged; only exception type names are.
+Privacy: the claim and context go to OpenAI (embedding + Luna), TypeSafe (Jev) and, only on the v3 fallback path,
+Supabase (key terms, or the claim). They, the keys and bodies are never logged; only exception type names are.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from fastapi import APIRouter, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 
+from app.check import bm25
 from app.check.aggregate import aggregate
 from app.check.jev_check import jev_confidence
 from app.check.llm import LLMAuthError, LLMRateLimited, LLMUpstreamError, OpenAIResponsesClient
@@ -57,7 +59,8 @@ _ERRORS: list[tuple[tuple[type[Exception], ...], int, str, str]] = [
 
 
 def default_search_factory(settings: Settings) -> EvidenceSearch:
-    return EvidenceSearch.from_settings(settings)
+    # The BM25 provider is shared by the process: the index is loaded and checked against the corpus once.
+    return EvidenceSearch.from_settings(settings, keyword_index=bm25.default_provider(settings.bm25_index_dir))
 
 
 def default_llm_factory(settings: Settings) -> OpenAIResponsesClient:

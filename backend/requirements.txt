@@ -13,3 +13,6 @@ langchain-text-splitters==1.2.0
 tiktoken==0.14.0
 numpy==2.5.5
 datasketch==2.0.0
+# Claim checker keyword search (app/check/bm25.py, issue #56)
+bm25s==0.3.17
+PyStemmer==3.1.0

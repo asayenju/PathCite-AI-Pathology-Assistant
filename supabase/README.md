@@ -14,6 +14,7 @@ Then run the later migrations the same way, in file-name order, each once (all a
 
 - `migrations/20261127010000_match_chunks.sql`: the hybrid search RPC for the claim checker.
 - `migrations/20261128000000_match_chunks_filter.sql` (issue #55): recreates `match_chunks` with an optional `cancer` filter on the keyword half, which the backend now sends with Luna's key terms. It drops the two earlier signatures first. Run it before using the new backend: until then `/check` searches fail (PostgREST finds no `match_chunks` with a `cancer` argument), unless the cancer is unknown.
+- `migrations/20261128010000_match_chunks_bm25.sql` (issue #56): adds `match_chunks_fused(query_embedding, keyword_ids, ...)`: vector search (HNSW) fused with keyword ranks the backend computes with its local BM25 index (`keyword_ids`, best first), so Postgres no longer runs full-text search per claim (the free tier's disk IO ran out under sustained searches). `match_chunks` stays as the fallback. Until it is run, the backend notices the missing function (PostgREST `PGRST202`) on the first search, logs it once and keeps using `match_chunks`. Then build the index: `cd backend && python scripts/build_bm25_index.py` and restart the backend.
 
 The corpus migration is safe to run again: every statement is `if not exists` / `create or replace` (or idempotent by nature, like enabling RLS and the grants), so a second run gives no errors and no duplicate objects.
 

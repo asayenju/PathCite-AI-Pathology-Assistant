@@ -1,7 +1,7 @@
 # Search eval (issue #53)
 
 This eval measures how well the evidence search finds passages that settle a claim, before any verdict is made. It
-compares five ways of searching on a golden set of claims (`golden.jsonl`, described in `GOLDEN.md`).
+compares six ways of searching on a golden set of claims (`golden.jsonl`, described in `GOLDEN.md`).
 
 **Synthetic and AI-written.** The claims are written by an AI and the passages are graded by an LLM. Use the
 numbers to compare variants with each other. They are not an absolute accuracy figure.
@@ -11,7 +11,7 @@ numbers to compare variants with each other. They are not an absolute accuracy f
 From `backend/`:
 
 ```
-python -m evals.search.run                                   # golden.jsonl, all five variants
+python -m evals.search.run                                   # golden.jsonl, all six variants
 python -m evals.search.run --golden evals/search/smoke.jsonl # the 3-claim smoke set
 python -m evals.search.run --limit 10 --variants v1_hybrid_claim,v2_hybrid_queries
 python -m evals.search.run --refresh                         # ignore every cache
@@ -46,12 +46,22 @@ Every variant is scored on its top 8, which is what `/check` uses (`CHECK_TOP_K`
 | `v2_hybrid_queries` | the claim plus Luna's 1-3 queries (`generate_queries`) | hybrid, fused with `merge_results` (the current `/check` flow) |
 | `vec_claim` | the raw claim | vector only (`query_text = ""` leaves the keyword list empty) |
 | `vec_queries` | the same queries | vector only, fused with `merge_results` |
-| `v3_terms_cancer` | the claim plus Luna's queries from the v3 plan (`generate_plan`) | hybrid with Luna's key terms as the keyword text and the keyword list filtered to Luna's cancer (issue #55, the new `/check` flow), fused with `merge_results` |
+| `v3_terms_cancer` | the claim plus Luna's queries from the v3 plan (`generate_plan`) | hybrid with Luna's key terms as the keyword text and the keyword list filtered to Luna's cancer (issue #55), fused with `merge_results` |
+| `v4_bm25` | the same v3 plan (cached plan reused) | keyword list from the local BM25 index (key terms, cancer filter applied locally, top 40 ids), then `match_chunks_fused` in Supabase: vector search + fusion only (issue #56, the `/check` flow when the index matches the corpus), fused with `merge_results` |
 
 `v3_terms_cancer` needs `supabase/migrations/20261128000000_match_chunks_filter.sql`. Its plan (queries, key terms,
 cancer) is cached under `v3:<claim id>` in `cache/queries.json`, so the cached v2 queries stay valid; the first v3
 run makes one extra Luna call per claim. If the plan fails, it searches the claim alone with no filter (the same
 call as `v1_hybrid_claim`).
+
+`v4_bm25` needs `supabase/migrations/20261128010000_match_chunks_bm25.sql` and a BM25 index that matches the corpus
+(`python scripts/build_bm25_index.py --env /path/to/.env`; in an agent worktree the index lives in that worktree's
+`backend/.cache/corpus/bm25/`). Without one the runner stops with exit 2 before any call; drop `v4_bm25` from
+`--variants` to run the others. It makes no extra Luna calls: it reuses the v3 plan. Compare v3 and v4 latency with
+
+```
+python -m evals.search.run --variants v3_terms_cancer,v4_bm25 --refresh search
+```
 
 Each search fetches 10 results to build the pool. A multi-query variant's scored top 8 merges the top 8 of each
 query, as `/check` does. The SQL ranks before it limits, so that top 8 equals the first 8 of the top 10. The SQL
@@ -108,8 +118,8 @@ The report also includes:
 - The 10 worst misses for `v2_hybrid_queries`: claims with no grade-2 passage in the top 10 first, then claims whose
   first grade-2 passage is ranked worst.
 - Judge statistics.
-- **Search latency** per variant: calls, mean, p50 and p95 wall-clock seconds per `match_chunks` call (embedding
-  included), and timeouts (a failure mentioning Postgres 57014 or a client timeout). Only searches run in this run
+- **Search latency** per variant: calls, mean, p50 and p95 wall-clock seconds per search call (embedding
+  included; for v4 also the local BM25 search, which takes well under a millisecond), and timeouts (a failure mentioning Postgres 57014 or a client timeout). Only searches run in this run
   are timed, so cached ones don't count: compare variants with `--refresh search`. A call shared by two variants
   (the claim search of v1 and v2) counts for both.
 - Token usage, cost and wall time.
@@ -128,7 +138,8 @@ a variant), in one call per claim.
 `cache/` is gitignored and holds:
 
 - `queries.json`: Luna's queries per claim id, and the v3 plan (queries, key terms, cancer) per `v3:<claim id>`.
-- `searches.json`: ranked ids per (mode, query), and per (key terms, cancer, query) for v3.
+- `searches.json`: ranked ids per (mode, query), and per (key terms, cancer, query) for v3 and, under a `bm25|`
+  key, for v4.
 - `chunks.json`: passage text per chunk id.
 - `judgements.json`: grades per (claim id, chunk id).
 - `meta.json`: the corpus fingerprint, a hash of `corpus_meta`.

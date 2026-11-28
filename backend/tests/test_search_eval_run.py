@@ -95,13 +95,17 @@ class FakeSearcher:
         self.results = results
         self.calls = []
         self.terms_calls = []
+        self.bm25_calls = []
         self.fetched = []
         self.fp = fingerprint
 
-    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None):
+    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None, engine="sql"):
         mode = "vector" if vector_only else ("hybrid" if keyword_text is None else "terms")
+        if engine == "bm25":
+            mode = "bm25"
+            self.bm25_calls.append((query, keyword_text, cancer))
         self.calls.append((mode, query, k))
-        if keyword_text is not None:
+        if keyword_text is not None and engine != "bm25":
             self.terms_calls.append((query, keyword_text, cancer))
         return [ev(c) for c in self.results.get((mode, query), [])[:k]]
 
@@ -574,3 +578,56 @@ async def test_statement_timeouts_are_counted(tmp_path):
     md = render_markdown(result, summary)
     line = next(ln for ln in md.splitlines() if ln.startswith("| v2_hybrid_queries |") and ln.count("|") == 7)
     assert line.rstrip().endswith("| 1 |")
+
+
+# --- v4: local BM25 keyword ids + match_chunks_fused (issue #56) -------------------------------------------------
+
+
+def test_v4_variant_is_registered():
+    assert "v4_bm25" in VARIANTS
+
+
+@pytest.mark.anyio
+async def test_v4_runs_the_v3_plan_through_the_bm25_engine(tmp_path):
+    planner = FakePlanner()
+    res = {("bm25", CLAIM): [1, 2], ("bm25", "q-a"): [3, 1], ("bm25", "q-c"): [4]}
+    searcher = FakeSearcher(res)
+    result = await run([row()], tmp_path, planner=planner, searcher=searcher, variants=["v4_bm25"])
+    assert planner.calls == 0 and planner.plan_calls == 1
+    assert sorted(searcher.bm25_calls) == sorted(
+        (q, "Breslow granular layer", "melanoma") for q in (CLAIM, "q-a", "q-c")
+    )
+    assert {m for m, _, _ in searcher.calls} == {"bm25"}
+    c = result["claims"][0]
+    assert c["v3"]["queries"] == [CLAIM, "q-a", "q-c"]
+    assert c["variants"]["v4_bm25"]["ranked"][0] == 1
+
+
+@pytest.mark.anyio
+async def test_v4_reuses_the_cached_v3_plan_and_does_not_share_v3_searches(tmp_path):
+    await run([row()], tmp_path, variants=["v3_terms_cancer"])
+    planner = FakePlanner()
+    searcher = FakeSearcher(results_for())
+    await run([row()], tmp_path, planner=planner, searcher=searcher, variants=["v3_terms_cancer", "v4_bm25"])
+    assert planner.plan_calls == 0
+    assert {m for m, _, _ in searcher.calls} == {"bm25"}  # v3's are cached; v4's are new
+    again = FakeSearcher(results_for())
+    await run([row()], tmp_path, searcher=again, variants=["v4_bm25"])
+    assert again.calls == []  # cached under their own key
+
+
+@pytest.mark.anyio
+async def test_v4_without_key_terms_searches_bm25_with_the_query(tmp_path):
+    searcher = FakeSearcher({})
+    planner = FakePlanner(key_terms=(), cancer=None)
+    await run([row()], tmp_path, planner=planner, searcher=searcher, variants=["v4_bm25"])
+    assert (CLAIM, None, None) in searcher.bm25_calls  # keyword text = the query itself
+    assert ("q-a", CLAIM, None) in searcher.bm25_calls
+
+
+@pytest.mark.anyio
+async def test_v4_is_in_the_latency_table(tmp_path):
+    result = await run([row()], tmp_path)
+    assert len(result["latency"]["v4_bm25"]) == 3
+    md = render_markdown(result, summarize(result))
+    assert any(ln.startswith("| v4_bm25 |") and ln.count("|") == 7 for ln in md.splitlines())

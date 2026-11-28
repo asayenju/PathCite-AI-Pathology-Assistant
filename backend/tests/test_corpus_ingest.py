@@ -38,10 +38,18 @@ class FakePostgREST:
         self.fail_docs = set(fail_docs)
         self.ingested: list[str] = []
         self.requests: list[httpx.Request] = []
+        self.next_id = 1  # chunks.id is an identity column: a rewritten chunk gets a new id
+
+    def _ids(self, n: int) -> list[int]:
+        out = list(range(self.next_id, self.next_id + n))
+        self.next_id += n
+        return out
 
     def put(self, doc_id: str, hashes: list[str]) -> None:
         self.documents[doc_id] = {"id": doc_id}
-        self.chunks[doc_id] = [{"doc_id": doc_id, "ord": i, "content_hash": h} for i, h in enumerate(hashes)]
+        self.chunks[doc_id] = [{"id": cid, "doc_id": doc_id, "ord": i, "content_hash": h, "section": "",
+                                "content": "stored", "cancers": []}
+                               for cid, (i, h) in zip(self._ids(len(hashes)), enumerate(hashes))]  # fmt: skip
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
@@ -56,7 +64,8 @@ class FakePostgREST:
                 return httpx.Response(400, json={"code": "22000", "message": "expected 1536 dimensions, not 3"})
             assert all(len(c["embedding"]) == 1536 for c in chunks)
             self.documents[doc["id"]] = doc
-            self.chunks[doc["id"]] = [{"doc_id": doc["id"], **c} for c in chunks]
+            self.chunks[doc["id"]] = [{"id": cid, "doc_id": doc["id"], "cancers": doc.get("cancers") or [], **c}
+                                      for cid, c in zip(self._ids(len(chunks)), chunks)]  # fmt: skip
             self.ingested.append(doc["id"])
             return httpx.Response(200, json=len(chunks))
         if m == "POST" and path == "/rpc/corpus_stats":
@@ -70,6 +79,19 @@ class FakePostgREST:
             assert "merge-duplicates" in request.headers["prefer"]
             self.meta.update({r["key"]: r["value"] for r in json.loads(request.content)})
             return httpx.Response(201)
+        if m == "GET" and path == "/chunks" and q.get("order") == "id.desc":  # BM25 fingerprint: count + max id
+            assert "count=exact" in request.headers["prefer"]
+            ids = sorted(r["id"] for rows in self.chunks.values() for r in rows)
+            n = len(ids)
+            return httpx.Response(200, json=[{"id": ids[-1]}] if ids else [],
+                                  headers={"content-range": f"0-0/{n}" if n else "*/0"})  # fmt: skip
+        if m == "GET" and path == "/chunks" and q.get("order") == "id.asc":  # BM25 build: keyset pages
+            self.bm25_reads = getattr(self, "bm25_reads", 0) + 1
+            after = int(q["id"].removeprefix("gt.")) if "id" in q else 0
+            rows = sorted((r for rs in self.chunks.values() for r in rs), key=lambda r: r["id"])
+            page = [r for r in rows if r["id"] > after][: min(int(q["limit"]), self.max_rows)]
+            cols = q["select"].split(",")
+            return httpx.Response(200, json=[{c: r[c] for c in cols} for r in page])
         if m == "GET" and path in ("/chunks", "/documents"):
             if path == "/chunks":
                 rows = [r for d in sorted(self.chunks) for r in sorted(self.chunks[d], key=lambda r: r["ord"])]
@@ -127,6 +149,14 @@ def corpus(tmp_path):
     env = tmp_path / ".env"
     env.write_text(f"SUPABASE_URL={SB_URL}\nSUPABASE_SECRET_KEY={SB_KEY}\nOPEN_AI_VECTOR_KEY={OPENAI_KEY}\n")
     return d, env, plan
+
+
+@pytest.fixture(autouse=True)
+def bm25_dir(tmp_path, monkeypatch):
+    """Every CLI run here rebuilds its BM25 index into tmp, never backend/.cache."""
+    d = tmp_path / "bm25"
+    monkeypatch.setattr(cli, "DEFAULT_BM25_DIR", d)
+    return d
 
 
 def hashes(plan, doc_id):
@@ -451,3 +481,69 @@ def test_dry_run_reports_the_filter_by_rule_and_source(junk_corpus, capsys):
     assert "by source         nice 1, wikidoc 1" in out
     assert "Chunks             5 " in out  # the stats are after the filter
     assert "nice economic heading" in out and r"\binnovation\b" in out
+
+
+# --- the BM25 keyword index is rebuilt after an ingest (issue #56) ------------------------------------------------
+
+
+def test_ingest_builds_the_bm25_index(corpus, capsys, bm25_dir):
+    from app.check.bm25 import Bm25Index, store_fingerprint
+
+    sb, oa = FakePostgREST(), FakeOpenAI()
+    assert run(corpus, sb, oa) == 0
+    out = capsys.readouterr().out
+    assert "BM25" in out
+    index = Bm25Index.load(bm25_dir)
+    n = sum(len(v) for v in sb.chunks.values())
+    assert len(index) == n
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(sb)) as store:
+        assert index.matches(store_fingerprint(store))
+    hits = index.search("sentinel biopsy", cancer=None)
+    assert hits and {cid for cid, _ in hits} <= {r["id"] for r in sb.chunks["nice:a"]}
+
+
+def test_unchanged_corpus_keeps_the_index(corpus, capsys, bm25_dir):
+    sb, oa = FakePostgREST(), FakeOpenAI()
+    run(corpus, sb, oa)
+    reads = sb.bm25_reads
+    stamp = (bm25_dir / "manifest.json").stat().st_mtime_ns
+    capsys.readouterr()
+    assert run(corpus, sb, oa) == 0
+    assert "up to date" in capsys.readouterr().out
+    assert sb.bm25_reads == reads
+    assert (bm25_dir / "manifest.json").stat().st_mtime_ns == stamp
+
+
+def test_prune_rebuilds_the_index(corpus, bm25_dir):
+    from app.check.bm25 import Bm25Index
+
+    sb, oa = FakePostgREST(), FakeOpenAI()
+    run(corpus, sb, oa)
+    sb.put("old:doc", ["h1", "h2"])
+    run(corpus, sb, oa)  # the index now covers old:doc too
+    assert len(Bm25Index.load(bm25_dir)) == sum(len(v) for v in sb.chunks.values())
+    assert run(corpus, sb, oa, "--prune") == 0
+    assert "old:doc" not in sb.documents
+    assert len(Bm25Index.load(bm25_dir)) == sum(len(v) for v in sb.chunks.values())
+
+
+def test_dry_run_and_refused_runs_do_not_build_the_index(corpus, bm25_dir):
+    d, _, _ = corpus
+    assert cli.main(["--dry-run", "--corpus-dir", str(d)]) == 0
+    assert not bm25_dir.exists()
+    sb, oa = FakePostgREST(meta={**GOOD_META, "dims": 3}), FakeOpenAI()
+    assert run(corpus, sb, oa) == 2
+    assert not bm25_dir.exists()
+
+
+def test_a_failed_index_build_warns_but_keeps_the_ingest_exit_code(corpus, capsys, monkeypatch):
+    from app.check import bm25
+
+    def boom(*a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(bm25, "build_from_store", boom)
+    sb, oa = FakePostgREST(), FakeOpenAI()
+    assert run(corpus, sb, oa) == 0
+    err = capsys.readouterr().err
+    assert "BM25" in err and "build_bm25_index.py" in err
