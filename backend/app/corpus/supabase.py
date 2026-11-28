@@ -116,10 +116,11 @@ class SupabaseCorpus:
         return self._json("POST", "/rpc/corpus_stats", json={})
 
     def match_chunks(self, query_embedding: list[float], query_text: str, **overrides: Any) -> Any:
-        """Hybrid search (supabase/migrations/20261127010000_match_chunks.sql); returns the raw rows.
+        """Hybrid search (supabase/migrations/20261128000000_match_chunks_filter.sql); returns the raw rows.
 
-        The embedding goes as a JSON string ("[0.1,...]"), which PostgREST casts to vector(1536). Only the overrides
-        given (k, candidates, per_doc, rrf_k, min_similarity) are sent; the rest take the SQL defaults.
+        The embedding goes as a JSON string ("[0.1,...]"), which PostgREST casts to vector(1536). `query_text` is the
+        keyword query (Luna's key terms, or the claim). Only the overrides given and not None (k, candidates,
+        per_doc, rrf_k, min_similarity, cancer) are sent; the rest take the SQL defaults (cancer: no filter).
 
         Cold start: the first call after the project has been idle sometimes gets a JSON HTTP 500 from PostgREST
         (likely a statement timeout, 57014) and then succeeds. It's a read, so one such 5xx is retried here; other

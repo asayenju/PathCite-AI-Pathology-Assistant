@@ -343,3 +343,66 @@ def test_other_rpcs_do_not_retry_a_json_500():
         with pytest.raises(SupabaseRequestError):
             store.corpus_stats()
     assert len(rec.requests) == 1
+
+
+# --- key terms and the cancer filter (issue #55) ------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+async def test_keyword_text_replaces_the_claim_as_query_text_and_the_claim_is_still_embedded():
+    search, oa, sb = make()
+    with search:
+        await search.search(CLAIM, keyword_text="mismatch repair Lynch syndrome", cancer="colorectal")
+    assert json.loads(oa.requests[0].content)["input"] == [CLAIM]
+    body = json.loads(sb.requests[0].content)
+    assert set(body) == {"query_embedding", "query_text", "cancer"}
+    assert body["query_text"] == "mismatch repair Lynch syndrome"
+    assert body["cancer"] == "colorectal"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("keyword_text", [None, "", "   "])
+async def test_no_keyword_text_searches_the_claim_and_no_cancer_is_not_sent(keyword_text):
+    search, _, sb = make()
+    with search:
+        await search.search(CLAIM, keyword_text=keyword_text, cancer=None)
+    body = json.loads(sb.requests[0].content)
+    assert body["query_text"] == CLAIM
+    assert "cancer" not in body
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("cancer", ["", "  ", 5])
+async def test_bad_cancer_raises_value_error_without_calls(cancer):
+    search, oa, sb = make()
+    with search, pytest.raises(ValueError):
+        await search.search(CLAIM, cancer=cancer)
+    assert oa.requests == [] and sb.requests == []
+
+
+@pytest.mark.anyio
+async def test_cancer_filter_keeps_the_cold_start_retry():
+    calls = {"n": 0}
+
+    def cold(request):
+        calls["n"] += 1
+        return httpx.Response(500, json=COLD) if calls["n"] == 1 else httpx.Response(200, json=[ROW])
+
+    search, _, sb = make(supabase=cold)
+    with search:
+        assert await search.search(CLAIM, keyword_text="Lynch", cancer="colorectal") == [Evidence(**ROW)]
+    assert len(sb.requests) == 2
+    assert all(json.loads(r.content)["cancer"] == "colorectal" for r in sb.requests)
+
+
+def test_store_match_chunks_sends_cancer_only_when_set():
+    from app.corpus.supabase import SupabaseCorpus
+
+    rec = Recorder(supabase_rows())
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(rec), sleep=lambda s: None) as store:
+        store.match_chunks(VECTOR, "Breslow", cancer="melanoma")
+        store.match_chunks(VECTOR, "Breslow")
+        store.match_chunks(VECTOR, "Breslow", cancer=None)
+    bodies = [json.loads(r.content) for r in rec.requests]
+    assert bodies[0]["cancer"] == "melanoma" and bodies[0]["query_text"] == "Breslow"
+    assert "cancer" not in bodies[1] and "cancer" not in bodies[2]

@@ -15,6 +15,7 @@ from evals.search.run import (
     build_judge_input,
     cost_usd,
     evaluate,
+    latency_stats,
     load_golden,
     render_markdown,
     run_eval,
@@ -63,10 +64,15 @@ def row(id_="mel-1", type_="supported", gold=(5,), claim=CLAIM, style="technical
 
 
 class FakePlanner:
-    def __init__(self, queries=("q-a", "q-b"), fail=False):
+    """generate(): v2's queries; plan(): v3's queries, key terms and cancer (counted separately)."""
+
+    def __init__(self, queries=("q-a", "q-b"), fail=False, key_terms=("Breslow", "granular layer"), cancer="melanoma",
+                 plan_queries=("q-a", "q-c")):
         self.queries = list(queries)
         self.fail = fail
         self.calls = 0
+        self.plan_calls = 0
+        self.key_terms, self.cancer, self.plan_queries = list(key_terms), cancer, list(plan_queries)
 
     async def generate(self, claim, context):
         self.calls += 1
@@ -74,19 +80,29 @@ class FakePlanner:
             raise LLMUpstreamError("boom")
         return list(self.queries)
 
+    async def plan(self, claim, context):
+        self.plan_calls += 1
+        if self.fail:
+            raise LLMUpstreamError("boom")
+        return {"queries": list(self.plan_queries), "key_terms": list(self.key_terms), "cancer": self.cancer}
+
 
 class FakeSearcher:
-    """results[(mode, query)] -> chunk ids, best first; anything else returns []."""
+    """results[(mode, query)] -> chunk ids, best first; anything else returns []. mode is "terms" when key terms
+    (keyword_text) are given; those calls are also recorded in `terms_calls` with the keyword text and cancer."""
 
     def __init__(self, results, fingerprint="fp1"):
         self.results = results
         self.calls = []
+        self.terms_calls = []
         self.fetched = []
         self.fp = fingerprint
 
-    async def search(self, query, *, vector_only, k):
-        mode = "vector" if vector_only else "hybrid"
+    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None):
+        mode = "vector" if vector_only else ("hybrid" if keyword_text is None else "terms")
         self.calls.append((mode, query, k))
+        if keyword_text is not None:
+            self.terms_calls.append((query, keyword_text, cancer))
         return [ev(c) for c in self.results.get((mode, query), [])[:k]]
 
     async def fetch_chunks(self, ids):
@@ -353,10 +369,10 @@ async def test_failed_query_generation_falls_back_and_is_not_cached(tmp_path):
 @pytest.mark.anyio
 async def test_a_failing_claim_is_recorded_not_fatal(tmp_path):
     class Broken(FakeSearcher):
-        async def search(self, query, *, vector_only, k):
+        async def search(self, query, *, vector_only, k, **kw):
             if "broken" in query:
                 raise RuntimeError("upstream")
-            return await super().search(query, vector_only=vector_only, k=k)
+            return await super().search(query, vector_only=vector_only, k=k, **kw)
 
     rows = [row(), row("mel-2", claim="broken claim")]
     result = await run(rows, tmp_path, searcher=Broken(results_for()))
@@ -397,7 +413,10 @@ async def test_report_has_the_tables(tmp_path):
         "Cost",
         "Wall time",
         "v2_hybrid_queries",
+        "v3_terms_cancer",
         "colorectal",
+        "## Search latency",
+        "| Variant | Calls | Mean (s) | p50 (s) | p95 (s) | Timeouts |",
     ]:
         assert needle in md, needle
 
@@ -427,3 +446,131 @@ async def test_run_eval_writes_json_and_md(tmp_path):
 def test_cost():
     c = cost_usd({"query_llm": (1_000_000, 0), "judge_llm": (0, 1_000_000), "embedding_tokens": 1_000_000})
     assert c["total"] == pytest.approx(0.10 + 0.50 + 0.02)
+
+
+# --- v3: key terms + cancer filter (issue #55) -----------------------------------------------------------------
+
+
+def test_v3_variant_is_registered():
+    assert "v3_terms_cancer" in VARIANTS
+
+
+@pytest.mark.anyio
+async def test_v3_searches_every_plan_query_with_the_key_terms_and_cancer(tmp_path):
+    planner = FakePlanner()
+    res = {("terms", CLAIM): [1, 2], ("terms", "q-a"): [3, 1], ("terms", "q-c"): [4]}
+    searcher = FakeSearcher(res)
+    result = await run([row()], tmp_path, planner=planner, searcher=searcher, variants=["v3_terms_cancer"])
+    assert planner.calls == 0 and planner.plan_calls == 1
+    assert sorted(searcher.terms_calls) == sorted(
+        (q, "Breslow granular layer", "melanoma") for q in (CLAIM, "q-a", "q-c")
+    )
+    assert {m for m, _, _ in searcher.calls} == {"terms"}
+    c = result["claims"][0]
+    assert c["v3"] == {
+        "queries": [CLAIM, "q-a", "q-c"],
+        "key_terms": ["Breslow", "granular layer"],
+        "cancer": "melanoma",
+        "keyword_text": "Breslow granular layer",
+        "fallback": False,
+    }
+    assert c["variants"]["v3_terms_cancer"]["ranked"][0] == 1  # in two lists
+
+
+@pytest.mark.anyio
+async def test_v3_plan_is_cached_apart_from_the_v2_queries(tmp_path):
+    await run([row()], tmp_path, variants=["v2_hybrid_queries"])
+    v2_entry = json.loads((tmp_path / "cache" / "queries.json").read_text())["mel-1"]
+
+    planner = FakePlanner()
+    await run([row()], tmp_path, planner=planner, variants=["v2_hybrid_queries", "v3_terms_cancer"])
+    assert planner.calls == 0  # v2's cached queries are still valid
+    assert planner.plan_calls == 1  # v3 needs the new fields, so it asks once
+    cached = json.loads((tmp_path / "cache" / "queries.json").read_text())
+    assert cached["mel-1"] == v2_entry
+    v3 = [v for k, v in cached.items() if k != "mel-1"]
+    assert len(v3) == 1 and v3[0]["key_terms"] == ["Breslow", "granular layer"] and v3[0]["cancer"] == "melanoma"
+
+    planner = FakePlanner()
+    await run([row()], tmp_path, planner=planner, variants=["v3_terms_cancer"])
+    assert planner.plan_calls == 0
+
+    planner = FakePlanner()
+    await run([row()], tmp_path, planner=planner, variants=["v3_terms_cancer"], refresh={"queries"})
+    assert planner.plan_calls == 1
+
+
+@pytest.mark.anyio
+async def test_v3_failed_plan_falls_back_to_the_claim_and_is_not_cached(tmp_path):
+    searcher = FakeSearcher(results_for())
+    r = await run([row()], tmp_path, planner=FakePlanner(fail=True), searcher=searcher, variants=["v3_terms_cancer"])
+    c = r["claims"][0]
+    assert c["v3"]["fallback"] is True and c["v3"]["queries"] == [CLAIM]
+    assert c["v3"]["keyword_text"] == CLAIM and c["v3"]["cancer"] is None
+    assert searcher.calls == [("hybrid", CLAIM, 10)]  # exactly the old hybrid claim search
+    assert c["variants"]["v3_terms_cancer"]["ranked"] == list(range(1, 9))
+    planner = FakePlanner()
+    await run([row()], tmp_path, planner=planner, variants=["v3_terms_cancer"])
+    assert planner.plan_calls == 1
+
+
+@pytest.mark.anyio
+async def test_v3_without_key_terms_uses_the_claim_and_unknown_cancer_no_filter(tmp_path):
+    searcher = FakeSearcher({})
+    planner = FakePlanner(key_terms=(), cancer=None)
+    r = await run([row()], tmp_path, planner=planner, searcher=searcher, variants=["v3_terms_cancer"])
+    assert r["claims"][0]["v3"]["keyword_text"] == CLAIM
+    # the claim query is the plain hybrid search; the other queries keep the claim as keyword text
+    assert ("hybrid", CLAIM, 10) in searcher.calls
+    assert sorted(searcher.terms_calls) == [("q-a", CLAIM, None), ("q-c", CLAIM, None)]
+
+
+# --- search latency ----------------------------------------------------------------------------------------------
+
+
+def test_latency_stats():
+    calls = [{"s": x, "timeout": False} for x in (0.1, 0.2, 0.3, 0.4, 1.0)] + [{"s": 8.0, "timeout": True}]
+    st = latency_stats(calls)
+    assert st["n"] == 6
+    assert st["mean"] == pytest.approx(10.0 / 6)
+    assert st["p50"] == pytest.approx(0.35)
+    assert st["p95"] == pytest.approx(6.25)
+    assert st["timeouts"] == 1
+    assert latency_stats([]) == {"n": 0, "mean": None, "p50": None, "p95": None, "timeouts": 0}
+
+
+@pytest.mark.anyio
+async def test_latency_is_recorded_per_variant_for_searches_run_now(tmp_path):
+    result = await run([row()], tmp_path)
+    lat = result["latency"]
+    assert set(lat) == set(VARIANTS)
+    assert len(lat["v1_hybrid_claim"]) == 1
+    assert len(lat["v2_hybrid_queries"]) == 3  # the claim (shared with v1) and two queries
+    assert len(lat["v3_terms_cancer"]) == 3
+    assert all(c["s"] >= 0 and c["timeout"] is False for calls in lat.values() for c in calls)
+    summary = summarize(result)
+    assert summary["latency"]["v2_hybrid_queries"]["n"] == 3
+    # cached searches aren't timed
+    again = await run([row()], tmp_path)
+    assert all(calls == [] for calls in again["latency"].values())
+    assert summarize(again)["latency"]["v1_hybrid_claim"]["n"] == 0
+    assert "## Search latency" in render_markdown(again, summarize(again))
+
+
+@pytest.mark.anyio
+async def test_statement_timeouts_are_counted(tmp_path):
+    class Slow(FakeSearcher):
+        async def search(self, query, *, vector_only, k, **kw):
+            if query == "q-a" and not vector_only:
+                raise RuntimeError("POST /rpc/match_chunks failed: HTTP 500 57014: canceling statement")
+            return await super().search(query, vector_only=vector_only, k=k, **kw)
+
+    result = await run([row()], tmp_path, searcher=Slow(results_for()))
+    assert result["claims"][0]["error"] == "RuntimeError"
+    summary = summarize(result)
+    assert summary["latency"]["v2_hybrid_queries"]["timeouts"] == 1
+    assert summary["latency"]["v3_terms_cancer"]["timeouts"] == 1
+    assert summary["latency"]["v1_hybrid_claim"]["timeouts"] == 0
+    md = render_markdown(result, summary)
+    line = next(ln for ln in md.splitlines() if ln.startswith("| v2_hybrid_queries |") and ln.count("|") == 7)
+    assert line.rstrip().endswith("| 1 |")

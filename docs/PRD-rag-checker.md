@@ -1,6 +1,6 @@
 # PRD: RAG claim checker (Luna-written searches + GPT-6 Luna stances + one Jev confidence)
 
-Issues: GitHub #47–#50 (v1), #51 (backend v2) and #52 (frontend v2), label `rag-checker`. Builds on `docs/PRD-jev-triage.md` (claims) and `docs/PRD-corpus-ingest.md` (the evidence corpus).
+Issues: GitHub #47–#50 (v1), #51 (backend v2), #52 (frontend v2) and #55 (search speed), label `rag-checker`. Builds on `docs/PRD-jev-triage.md` (claims) and `docs/PRD-corpus-ingest.md` (the evidence corpus).
 
 > **v2 (issue #51) replaced the v1 design below in three places:** Luna writes the searches, Luna alone judges the passages, and Jev gives one confidence over all passages instead of a per-passage stance. See [v2 (issue #51)](#v2-issue-51); sections 3–5 describe v2, and the v1 text is kept only where it still applies.
 
@@ -37,9 +37,20 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
 
 **Live smoke run (2026-11-27, `pytest -m check -s`):** Breslow "how wide" → `inaccurate`, Jev contradicted 0.97, no review; colon MMR testing → `accurate`, Jev supported 0.99, no review; HER2/hormone pills → `inaccurate`, Jev contradicted 0.62 → `low_confidence`. 8–15 s per claim, about 4–5k Luna input tokens over 2 requests.
 
+## v3 search speed (issue #55)
+
+**Why.** The keyword half of `match_chunks` scored (`ts_rank_cd`) every chunk matching *any* word of the claim. Common words ("cancer", "spread") match thousands of the 9,543 chunks, so on Supabase's free tier one RPC call took 1–9 s and hit the 8 s statement timeout (code 57014) under load. Measured by hand: passing 2–5 hand-picked key terms instead of the sentence made calls 2–3x faster, with nearly identical top results.
+
+**What.**
+- **Luna's query call also returns** `key_terms` (2–5 short, distinctive terms for full-text search: named tests, scores, staging terms, drug names, abbreviations such as "Breslow", "IPI", "PSA nadir", "Dukes C"; never generic words like cancer, tumour, patient, treatment, spread, risk) and `cancer` (colorectal | breast | melanoma | lymphoma | prostate | thyroid | unknown). Key terms are cleaned: whitespace folded; blank, duplicate, over-40-character and lone generic words dropped; at most 5.
+- **Every search** embeds its own query (as in v2), but uses the key terms joined with spaces as `query_text` (the same for every query), and passes `cancer` when known.
+- **`supabase/migrations/20261128000000_match_chunks_filter.sql`** drops both earlier overloads and recreates `match_chunks` with an extra `cancer text default null`. The filter `(cancer is null or c.cancers @> array[cancer])` sits inside the keyword candidate query, next to the full-text match, so Postgres can bitmap-AND the fts and cancers GIN indexes and only ranks the filtered rows. The vector list is not filtered (a safety net for a wrong or missing label); the 0.35 floor, per-doc cap and RRF are unchanged.
+- **Fallbacks:** query generation fails or no key terms → keyword text is the raw claim (the v2 behaviour); cancer `unknown` or generation failed → no filter.
+- `/check`'s response is unchanged (`search_queries` is still the claim plus Luna's queries). The search eval has a `v3_terms_cancer` variant and a "Search latency" table (mean, p50, p95, timeouts per variant).
+
 ## How
 
-### 1. Search (done: `supabase/migrations/20261127010000_match_chunks.sql`)
+### 1. Search (done: `supabase/migrations/20261127010000_match_chunks.sql`, cancer filter added by `20261128000000_match_chunks_filter.sql`, see [v3](#v3-search-speed-issue-55))
 - **`match_chunks(query_embedding, query_text, k=8, candidates=40, per_doc=2, rrf_k=60, min_similarity=0.35)`.** It finds candidates with two searches:
   - **vector:** the top 40 by cosine distance (HNSW);
   - **keyword:** the top 40 full-text matches, with the claim's lexemes **OR-ed**, because AND-ing a whole sentence matches almost nothing.
@@ -169,5 +180,7 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
      - Offline tests: query generation (schema, 1–3 queries, fallback on failure), multi-query merge (RRF order, dedupe, per-doc cap, top k), the single Jev question (no Luna verdict in its state) and its parsing, every review rule including confident agreement → no review, Luna before Jev, a Jev failure keeping the verdict, zero results → `unverified` with no judging or Jev call, the response shape, and no claim text in logs.
      - The live smoke test prints the search queries, verdict, confidence, reasons, per-source stances, latency and Luna tokens for 3 claims.
 6. **#52 Frontend v2:** the card shows `confidence` and the new review reasons; per-source Jev fields are gone.
+7. **#55 Search speed** (see [v3 search speed](#v3-search-speed-issue-55)).
+   - Acceptance: offline tests for the schema (`key_terms`, `cancer` enum), key-term cleaning, every fallback, the RPC body (`query_text` = key terms, `cancer` only when known), the migration text (both overloads dropped, filter inside the keyword candidates, grants) and the eval variant and latency table. The migration is run by hand in the SQL editor.
 
 Waves: #47 and #48 in parallel, then #49, then #50. #50 can start alongside #49 against the response contract above. #51 and #52 in parallel against the v2 response contract.

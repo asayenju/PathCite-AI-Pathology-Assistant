@@ -1,17 +1,20 @@
 """Evidence search for the claim checker (docs/PRD-rag-checker.md, section 1).
 
 `EvidenceSearch.search(claim)` embeds the claim with OpenAI (`text-embedding-3-small`, OPEN_AI_VECTOR_KEY) and runs
-the hybrid `match_chunks` RPC in Supabase (supabase/migrations/20261127010000_match_chunks.sql) with the secret key.
+the hybrid `match_chunks` RPC in Supabase (supabase/migrations/20261128000000_match_chunks_filter.sql) with the secret
+key. The keyword half searches `keyword_text` (Luna's key terms, issue #55) when given, else the claim itself; an
+optional `cancer` filters the keyword candidates (the vector list is never filtered).
 It reuses the sync clients of the corpus ingest (`OpenAIEmbedder`, `SupabaseCorpus`, with their retries and backoff)
 and runs them in a worker thread, so it can be awaited from a FastAPI endpoint without blocking the event loop.
 
-k (8), per_doc (2) and min_similarity (0.35) default in SQL and are only sent when overridden.
+k (8), per_doc (2) and min_similarity (0.35) default in SQL and are only sent when overridden; `cancer` only when set.
 
 Errors: everything is mapped to the three `SearchError` subclasses below, which the /check endpoint maps to
 check_unavailable (503), check_rate_limited (429) and check_upstream_error (502). An empty claim or a bad override
-raises ValueError before any call.
+raises ValueError before any call (so does a blank or non-string cancer).
 
-Privacy: the claim is sent to OpenAI (to embed it) and to Supabase (as the keyword query), and nowhere else. The
+Privacy: the claim is sent to OpenAI (to embed it) and to Supabase (as the keyword query, unless key terms are
+given), and nowhere else. The
 claim, the keys and request/response bodies are never logged or put in exception messages; errors are raised
 `from None` so the underlying exception (and its httpx request) isn't chained.
 """
@@ -197,10 +200,13 @@ class EvidenceSearch:
         *,
         per_doc: int | None = None,
         min_similarity: float | None = None,
+        keyword_text: str | None = None,
+        cancer: str | None = None,
     ) -> list[Evidence]:
         """The best passages for `claim`, best first: at most k (SQL default 8), at most per_doc (2) per document,
-        none below min_similarity (0.35). Raises ValueError (no calls made) for an empty claim or a bad override,
-        and a SearchError subclass for any upstream failure."""
+        none below min_similarity (0.35). The claim is embedded; the keyword list searches `keyword_text` if it is
+        non-blank, else the claim, restricted to chunks tagged `cancer` if given. Raises ValueError (no calls made)
+        for an empty claim or a bad override, and a SearchError subclass for any upstream failure."""
         if not isinstance(claim, str) or not claim.strip():
             raise ValueError("claim is empty")
         if k is not None and (not _is_int(k) or k < 1):
@@ -209,10 +215,17 @@ class EvidenceSearch:
             raise ValueError("per_doc must be a positive integer")
         if min_similarity is not None and (not _is_num(min_similarity) or not -1 <= min_similarity <= 1):
             raise ValueError("min_similarity must be between -1 and 1")
+        if cancer is not None and (not isinstance(cancer, str) or not cancer.strip()):
+            raise ValueError("cancer must be a non-empty string")
+        if keyword_text is not None and not isinstance(keyword_text, str):
+            raise ValueError("keyword_text must be a string")
         claim = claim.strip()
-        return await anyio.to_thread.run_sync(self._search_sync, claim, k, per_doc, min_similarity)
+        text = keyword_text.strip() if keyword_text and keyword_text.strip() else claim
+        return await anyio.to_thread.run_sync(
+            self._search_sync, claim, text, k, per_doc, min_similarity, cancer.strip() if cancer else None
+        )
 
-    def _search_sync(self, claim: str, k, per_doc, min_similarity) -> list[Evidence]:
+    def _search_sync(self, claim: str, text: str, k, per_doc, min_similarity, cancer) -> list[Evidence]:
         try:
             [vector] = self._embedder.embed([claim])
         except EmbedAuthError:
@@ -225,7 +238,9 @@ class EvidenceSearch:
             raise ValueError("claim is too long to embed") from None
 
         try:
-            rows = self._store.match_chunks(vector, claim, k=k, per_doc=per_doc, min_similarity=min_similarity)
+            rows = self._store.match_chunks(
+                vector, text, k=k, per_doc=per_doc, min_similarity=min_similarity, cancer=cancer
+            )
         except SupabaseAuthError:
             raise SearchUnavailable("Supabase rejected the key: check SUPABASE_SECRET_KEY") from None
         except SupabaseRateLimited:

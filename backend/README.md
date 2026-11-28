@@ -137,9 +137,9 @@ curl -H 'content-type: application/json' http://localhost:8000/check \
  "model": "gpt-6-luna", "jev_model": "jev-1.14.0"}
 ```
 
-Steps, in order (v2, issue #51):
-1. **Queries:** GPT-6 Luna writes 1-3 short search queries for the general medical fact (strict JSON, low reasoning effort). The raw claim is always searched too. If this call fails, only the claim is searched.
-2. **Search:** each query runs hybrid `match_chunks` concurrently (top `CHECK_TOP_K`, at most 2 per document); the lists are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by chunk, at most 2 per document, top `CHECK_TOP_K` (8). The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
+Steps, in order (v2, issue #51; search speed, issue #55):
+1. **Queries:** GPT-6 Luna writes 1-3 short search queries for the general medical fact, 2-5 distinctive key terms for keyword search (e.g. "Breslow", "PSA nadir"; no generic words like "cancer") and the cancer the claim is about (or `unknown`), in one strict-JSON call at low reasoning effort. The raw claim is always searched too. If this call fails, only the claim is searched, with its own words as keywords and no cancer filter.
+2. **Search:** each query runs hybrid `match_chunks` concurrently (top `CHECK_TOP_K`, at most 2 per document). The vector half embeds the query; the keyword half searches the key terms (the raw claim if there are none), restricted to chunks tagged with the cancer when it is known (the vector half is never filtered). This needs `supabase/migrations/20261128000000_match_chunks_filter.sql`. the lists are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by chunk, at most 2 per document, top `CHECK_TOP_K` (8). The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
 3. **Luna judges each passage** (OpenAI Responses API, word-for-word quotes, groundedness guard: a quote not found in its passage makes the stance `unclear`, which counts as not relevant).
 4. **Verdict** over Luna's supporting/contradicting passages: none `unverified`; all support `accurate` (`incomplete` if Luna says a qualifier is missing); all contradict `inaccurate`; a mix `disputed`. No majority vote.
 5. **Jev's confidence**, after Luna: one TypeSafe Choice over all passages, supported / contradicted / insufficient. Jev never sees Luna's answer.

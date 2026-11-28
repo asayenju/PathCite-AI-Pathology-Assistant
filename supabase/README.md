@@ -10,7 +10,12 @@ There's no Postgres connection string for this project, so migrations are run by
 2. Paste the whole of `migrations/20261127000000_corpus.sql`.
 3. Click **Run**. It should finish with "Success. No rows returned".
 
-It is safe to run again: every statement is `if not exists` / `create or replace` (or idempotent by nature, like enabling RLS and the grants), so a second run gives no errors and no duplicate objects.
+Then run the later migrations the same way, in file-name order, each once (all are safe to re-run):
+
+- `migrations/20261127010000_match_chunks.sql`: the hybrid search RPC for the claim checker.
+- `migrations/20261128000000_match_chunks_filter.sql` (issue #55): recreates `match_chunks` with an optional `cancer` filter on the keyword half, which the backend now sends with Luna's key terms. It drops the two earlier signatures first. Run it before using the new backend: until then `/check` searches fail (PostgREST finds no `match_chunks` with a `cancer` argument), unless the cancer is unknown.
+
+The corpus migration is safe to run again: every statement is `if not exists` / `create or replace` (or idempotent by nature, like enabling RLS and the grants), so a second run gives no errors and no duplicate objects.
 
 pgvector is installed into the `extensions` schema, as Supabase recommends. If `vector` was already enabled in another schema, `create extension if not exists` does nothing and the functions still find the type through `search_path = public, extensions`.
 
