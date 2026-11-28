@@ -1,8 +1,9 @@
 """POST /check: fact-check one doctor claim against the evidence corpus (docs/PRD-rag-checker.md, section 5).
 
-Flow (v2, issue #51), sequential: Luna writes 1-3 search queries (queries.plan_queries; the raw claim is always
-searched too, and a failure falls back to it alone) -> every query searched concurrently and merged by reciprocal
-rank fusion (queries.multi_search) -> Luna judges each passage (verify.luna_stances, groundedness guard) -> Jev gives
+Flow (v2, issue #51; v3 search speed, issue #55), sequential: Luna writes 1-3 search queries, 2-5 key terms and the
+cancer (queries.plan_search; the raw claim is always searched too, and a failure falls back to it alone) -> every
+query searched concurrently (embedding of the query, keyword search on the key terms, keyword list filtered to the
+cancer when known) and merged by reciprocal rank fusion (queries.multi_search) -> Luna judges each passage (verify.luna_stances, groundedness guard) -> Jev gives
 one independent confidence over all passages (jev_check.jev_confidence; it never sees Luna's answer) -> code rules
 (aggregate.py). Zero search results short-circuit to `unverified` with no judging or Jev call.
 
@@ -11,7 +12,8 @@ reason `jev_unavailable` and `confidence: null`. Search and Luna-judging failure
 
 Clients are built per request by factories on app.state (tests swap in fakes) and closed after use.
 
-Privacy: the claim and context go to OpenAI (embedding + Luna), Supabase (keyword query) and TypeSafe (Jev). They,
+Privacy: the claim and context go to OpenAI (embedding + Luna), Supabase (key terms, or the claim on fallback) and
+TypeSafe (Jev). They,
 the keys and bodies are never logged; only exception type names are.
 """
 
@@ -28,7 +30,7 @@ from fastapi.routing import APIRoute
 from app.check.aggregate import aggregate
 from app.check.jev_check import jev_confidence
 from app.check.llm import LLMAuthError, LLMRateLimited, LLMUpstreamError, OpenAIResponsesClient
-from app.check.queries import multi_search, plan_queries
+from app.check.queries import multi_search, plan_search
 from app.check.schemas import CheckConfidence, CheckRequest, CheckResponse, CheckSource
 from app.check.search import EvidenceSearch, SearchRateLimited, SearchUnavailable, SearchUpstreamError
 from app.check.verify import luna_stances
@@ -131,9 +133,12 @@ async def _check(request: Request, body: CheckRequest, settings: Settings) -> Ch
             else:
                 jev = await stack.enter_async_context(jev)
 
-        queries = await plan_queries(llm, claim, context)
+        plan = await plan_search(llm, claim, context)
+        queries = plan.queries
         try:
-            chunks = await multi_search(search, queries, settings.check_top_k)
+            chunks = await multi_search(
+                search, queries, settings.check_top_k, keyword_text=plan.keyword_text, cancer=plan.cancer
+            )
         except ValueError:  # raised before any call, e.g. a claim too long to embed
             raise ApiError(422, INVALID, "Invalid check request: quote") from None
         model = getattr(llm, "model", None) or settings.checker_model

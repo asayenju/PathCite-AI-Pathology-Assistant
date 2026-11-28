@@ -3,7 +3,7 @@
     python -m evals.search.run [--golden PATH] [--limit N] [--variants v1_hybrid_claim,...]
                                [--refresh [queries,search,judge]] [--env PATH] [--concurrency 4]
 
-For every golden claim it runs four search variants, pools their top 10 with the gold chunks, has gpt-6-luna grade
+For every golden claim it runs five search variants, pools their top 10 with the gold chunks, has gpt-6-luna grade
 the pool 0/1/2 in one call per claim, scores the variants (metrics.py) and writes results/<timestamp>.json (all
 per-claim data, gitignored) and results/<timestamp>.md (the report, committed). See README.md.
 
@@ -13,13 +13,20 @@ Variants (k=8 scored; each search fetches 10 for the pool):
                      merge_results, the current /check flow
 - vec_claim:         match_chunks(claim) with query_text "" (no keyword list: vector only)
 - vec_queries:       the same queries, vector only, merged with merge_results
+- v3_terms_cancer:   claim + Luna's queries from the v3 plan (generate_plan), each embedded, with Luna's key terms as
+                     the keyword text and the keyword list filtered to Luna's cancer (issue #55), merged
 
 The scored top 8 of a multi-query variant merges each query's top 8, exactly like /check (the SQL orders and then
 limits, so a query's top 8 is the first 8 of its top 10). The pool list merges the full top 10s.
 
-Caches (cache/, gitignored): Luna's queries per claim id, search results per (mode, query), chunk text per id, and
-judgements per (claim id, chunk id). Queries and judgements are dropped when the claim (or its context/needed note)
+Caches (cache/, gitignored): Luna's queries per claim id (the v3 plan, with key terms and cancer, under its own
+"v3:<id>" key so older entries stay valid), search results per (mode, query[, keyword text, cancer]), chunk text
+per id, and judgements per (claim id, chunk id). Queries and judgements are dropped when the claim (or its context/needed note)
 changes; search, chunk and judgement caches are dropped when the corpus fingerprint (corpus_meta) changes.
+
+Search latency: every search run (not cached) is timed, wall clock, and counted for each variant that uses it; a
+failure mentioning a timeout (Postgres 57014, an httpx timeout) counts as a timeout. Use --refresh search to time
+every call.
 
 Privacy: the claims are synthetic. Still, nothing is logged but exception type names; keys are never printed.
 """
@@ -30,6 +37,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import statistics
 import sys
 import time
 from collections import Counter
@@ -42,7 +50,7 @@ from typing import Literal, Protocol
 from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr, ValidationError
 
 from app.check.llm import LLMError, LLMUpstreamError
-from app.check.queries import merge_results
+from app.check.queries import build_plan, merge_results
 from app.check.search import Evidence
 from evals.search.metrics import COVERED, KS, aggregate, best_rank, noise, score_claim
 
@@ -54,13 +62,15 @@ DEFAULT_RESULTS = HERE / "results"
 POOL_K = 10
 SCORE_K = 8
 MAIN_VARIANT = "v2_hybrid_queries"
-# name -> (what is searched, vector only)
+# name -> (what is searched, vector only). "plan": the v3 plan's queries with its key terms and cancer filter.
 VARIANTS: dict[str, tuple[str, bool]] = {
     "v1_hybrid_claim": ("claim", False),
     "v2_hybrid_queries": ("queries", False),
     "vec_claim": ("claim", True),
     "vec_queries": ("queries", True),
+    "v3_terms_cancer": ("plan", False),
 }
+V3_CACHE_PREFIX = "v3:"
 REFRESH_CHOICES = ("queries", "search", "judge")
 
 # USD per 1M tokens
@@ -126,9 +136,15 @@ class Planner(Protocol):
     async def generate(self, claim: str, context: Sequence[str]) -> list[str]:
         """Luna's queries (without the claim). Raises LLMError on failure."""
 
+    async def plan(self, claim: str, context: Sequence[str]) -> dict:
+        """The v3 plan: {"queries": [...], "key_terms": [...], "cancer": str | None}, cleaned. Raises LLMError."""
+
 
 class Searcher(Protocol):
-    async def search(self, query: str, *, vector_only: bool, k: int) -> list[Evidence]: ...
+    async def search(
+        self, query: str, *, vector_only: bool, k: int, keyword_text: str | None = None, cancer: str | None = None
+    ) -> list[Evidence]:
+        """keyword_text / cancer are given only for v3 searches (None: keyword search on the query, no filter)."""
     async def fetch_chunks(self, ids: Sequence[int]) -> list[ChunkInfo]: ...
     async def fingerprint(self) -> str: ...
 
@@ -275,17 +291,18 @@ async def evaluate(
         cache.judgements.clear()
         cache.meta["corpus"] = fp
     sem = asyncio.Semaphore(concurrency)
+    latency: dict[str, list[dict]] = {v: [] for v in variants}
 
     async def one(row: GoldenRow) -> dict:
         async with sem:
             try:
-                return await _claim(row, planner, searcher, judge, cache, variants, refresh, stats)
+                return await _claim(row, planner, searcher, judge, cache, variants, refresh, stats, latency)
             except Exception as e:  # noqa: BLE001 - recorded per claim, never the message (it could hold text)
                 stats["errors"] += 1
                 return {**_base(row), "error": type(e).__name__}
 
     claims = await asyncio.gather(*(one(r) for r in rows))
-    return {"claims": list(claims), "stats": dict(stats), "variants": list(variants)}
+    return {"claims": list(claims), "stats": dict(stats), "variants": list(variants), "latency": latency}
 
 
 def _base(row: GoldenRow) -> dict:
@@ -319,12 +336,69 @@ async def _queries(row, planner, cache, refresh, stats) -> tuple[list[str], bool
     return [row.claim, *(q for q in generated if q.casefold() != claim_key)], False
 
 
-async def _search(query, vector_only, searcher, cache, refresh, stats) -> list[Evidence]:
-    key = f"{'vector' if vector_only else 'hybrid'}|k{POOL_K}|{query}"
+async def _plan(row, planner, cache, refresh, stats) -> dict:
+    """The v3 plan, cached under "v3:<id>". On failure: the claim alone, its own keywords, no filter (not cached)."""
+    h = _hash(row.claim, row.context)
+    key = V3_CACHE_PREFIX + row.id
+    cached = cache.queries.get(key)
+    fallback = False
+    if cached and cached.get("hash") == h and "queries" not in refresh:
+        stats["plan_cache_hits"] += 1
+        generated, terms, cancer = cached["queries"], cached["key_terms"], cached["cancer"]
+    else:
+        try:
+            p = await planner.plan(row.claim, row.context)
+        except LLMError:
+            stats["plan_fallbacks"] += 1
+            generated, terms, cancer, fallback = [], [], None, True
+        else:
+            stats["plan_calls"] += 1
+            generated, terms, cancer = list(p["queries"]), list(p["key_terms"]), p["cancer"]
+            cache.queries[key] = {"hash": h, "queries": generated, "key_terms": terms, "cancer": cancer}
+    plan = build_plan(row.claim, generated, terms, cancer)
+    return {
+        "queries": plan.queries,
+        "key_terms": plan.key_terms,
+        "cancer": plan.cancer,
+        "keyword_text": plan.keyword_text,
+        "fallback": fallback,
+    }
+
+
+# A search: (vector only, query, keyword text, cancer). Keyword text None = the query itself (v1/v2/vec); a v3 search
+# whose keyword text is its own query and has no filter is the same call, so it is normalised to that.
+Spec = tuple[bool, str, str | None, str | None]
+
+
+def _spec(vector_only: bool, query: str, keyword_text: str | None = None, cancer: str | None = None) -> Spec:
+    if keyword_text == query and cancer is None:
+        keyword_text = None
+    return (vector_only, query, keyword_text, cancer)
+
+
+def _is_timeout(e: BaseException) -> bool:
+    text = f"{type(e).__name__} {e}".lower()
+    return "57014" in text or "timeout" in text or "timed out" in text
+
+
+async def _search(spec: Spec, searcher, cache, refresh, stats, timings: dict) -> list[Evidence]:
+    vector_only, query, keyword_text, cancer = spec
+    if keyword_text is None:
+        key = f"{'vector' if vector_only else 'hybrid'}|k{POOL_K}|{query}"
+        options: dict = {}
+    else:
+        key = f"terms|k{POOL_K}|{cancer or ''}|{keyword_text}|{query}"
+        options = {"keyword_text": keyword_text, "cancer": cancer}
     if key in cache.searches and "search" not in refresh:
         stats["search_cache_hits"] += 1
         return [_lite(cid, doc) for cid, doc in cache.searches[key]]
-    results = await searcher.search(query, vector_only=vector_only, k=POOL_K)
+    t0 = time.perf_counter()
+    try:
+        results = await searcher.search(query, vector_only=vector_only, k=POOL_K, **options)
+    except Exception as e:
+        timings[spec] = {"s": time.perf_counter() - t0, "timeout": _is_timeout(e)}
+        raise
+    timings[spec] = {"s": time.perf_counter() - t0, "timeout": False}
     stats["searches"] += 1
     cache.searches[key] = [[e.chunk_id, e.doc_id] for e in results]
     for e in results:
@@ -332,28 +406,44 @@ async def _search(query, vector_only, searcher, cache, refresh, stats) -> list[E
     return results
 
 
-async def _claim(row, planner, searcher, judge, cache, variants, refresh, stats) -> dict:
+async def _claim(row, planner, searcher, judge, cache, variants, refresh, stats, latency) -> dict:
     record = _base(row)
     queries, fallback = [row.claim], False
     if any(VARIANTS[v][0] == "queries" for v in variants):
         queries, fallback = await _queries(row, planner, cache, refresh, stats)
     record["queries"] = queries
     record["query_fallback"] = fallback
+    v3 = None
+    if any(VARIANTS[v][0] == "plan" for v in variants):
+        v3 = await _plan(row, planner, cache, refresh, stats)
+        record["v3"] = v3
 
-    needed: list[tuple[bool, str]] = []
-    for v in variants:
+    def specs(v: str) -> list[Spec]:
         source, vector_only = VARIANTS[v]
-        for q in [row.claim] if source == "claim" else queries:
-            if (vector_only, q) not in needed:
-                needed.append((vector_only, q))
-    found = await asyncio.gather(*(_search(q, vo, searcher, cache, refresh, stats) for vo, q in needed))
+        if source == "claim":
+            return [_spec(vector_only, row.claim)]
+        if source == "queries":
+            return [_spec(vector_only, q) for q in queries]
+        return [_spec(vector_only, q, v3["keyword_text"], v3["cancer"]) for q in v3["queries"]]
+
+    needed: list[Spec] = []
+    for v in variants:
+        needed += [s for s in specs(v) if s not in needed]
+    timings: dict = {}
+    found = await asyncio.gather(
+        *(_search(s, searcher, cache, refresh, stats, timings) for s in needed), return_exceptions=True
+    )
+    for v in variants:
+        latency[v] += [timings[s] for s in specs(v) if s in timings]
+    for f in found:
+        if isinstance(f, BaseException):
+            raise f
     lists = dict(zip(needed, found))
 
     record["variants"] = {}
     pool: list[int] = []
     for v in variants:
-        source, vector_only = VARIANTS[v]
-        per = [lists[(vector_only, q)] for q in ([row.claim] if source == "claim" else queries)]
+        per = [lists[s] for s in specs(v)]
         ranked = [e.chunk_id for e in merge_results([p[:SCORE_K] for p in per], SCORE_K)]
         pooled = [e.chunk_id for e in merge_results(per, POOL_K)]
         record["variants"][v] = {"ranked": ranked, "pool": pooled}
@@ -455,10 +545,34 @@ def summarize(result: dict) -> dict:
             "by_type": by("type", list(COVERED)),
             "noise": {**noise(items, k=SCORE_K), "ids_with_grade_2": nc_hits},
         }
+    latency = result.get("latency") or {}
+    out["latency"] = {v: latency_stats(latency.get(v, [])) for v in result["variants"]}
     main = MAIN_VARIANT if MAIN_VARIANT in result["variants"] else (result["variants"] or [None])[0]
     out["main_variant"] = main
     out["worst_misses"] = _worst(claims, main) if main else []
     return out
+
+
+def _percentile(sorted_values: Sequence[float], q: float) -> float:
+    """Linear interpolation between closest ranks (numpy's default)."""
+    pos = (len(sorted_values) - 1) * q
+    lo = int(pos)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    return sorted_values[lo] + (sorted_values[hi] - sorted_values[lo]) * (pos - lo)
+
+
+def latency_stats(calls: Sequence[dict]) -> dict:
+    """calls: [{"s": seconds, "timeout": bool}] -> {n, mean, p50, p95, timeouts} (None values when there are none)."""
+    values = sorted(c["s"] for c in calls)
+    if not values:
+        return {"n": 0, "mean": None, "p50": None, "p95": None, "timeouts": 0}
+    return {
+        "n": len(values),
+        "mean": statistics.fmean(values),
+        "p50": _percentile(values, 0.5),
+        "p95": _percentile(values, 0.95),
+        "timeouts": sum(1 for c in calls if c["timeout"]),
+    }
 
 
 def _worst(claims: Sequence[dict], variant: str, n: int = 10) -> list[dict]:
@@ -588,6 +702,19 @@ def render_markdown(result: dict, summary: dict) -> str:
           f"{', '.join(nz['ids_with_grade_2']) or '-'} |")
     w("")
 
+    w("## Search latency")
+    w("")
+    w("Wall clock per match_chunks call (embedding included) run in this run; cached searches aren't timed (use "
+      "`--refresh search` to time them all). A call shared by two variants counts for both. Timeouts: calls that "
+      "failed with a statement timeout (57014) or a client timeout.")
+    w("")
+    w("| Variant | Calls | Mean (s) | p50 (s) | p95 (s) | Timeouts |")
+    w("|---|---:|---:|---:|---:|---:|")
+    for v in variants:
+        lt = summary.get("latency", {}).get(v) or latency_stats([])
+        w(f"| {v} | {lt['n']} | {_f(lt['mean'])} | {_f(lt['p50'])} | {_f(lt['p95'])} | {lt['timeouts']} |")
+    w("")
+
     main = summary.get("main_variant")
     w(f"## Worst misses ({main})")
     w("")
@@ -630,6 +757,9 @@ def render_markdown(result: dict, summary: dict) -> str:
       f"unknown chunk ids in answers (ignored): {stats.get('unknown_ids', 0)}")
     w(f"- Query generation: {stats.get('query_calls', 0)} calls, {stats.get('query_cache_hits', 0)} cached, "
       f"{stats.get('query_fallbacks', 0)} fell back to the claim alone")
+    if "v3_terms_cancer" in variants:
+        w(f"- v3 plans (queries + key terms + cancer): {stats.get('plan_calls', 0)} calls, "
+          f"{stats.get('plan_cache_hits', 0)} cached, {stats.get('plan_fallbacks', 0)} fell back to the claim alone")
     w(f"- Searches: {stats.get('searches', 0)} run, {stats.get('search_cache_hits', 0)} cached"
       + ("; **corpus changed since the last run, caches dropped**" if stats.get("corpus_changed") else ""))
     w("")
@@ -726,6 +856,12 @@ class LunaPlanner:
         queries, _ = await generate_queries(self._client, claim, context)
         return queries
 
+    async def plan(self, claim, context):
+        from app.check.queries import generate_plan
+
+        (queries, key_terms, cancer), _ = await generate_plan(self._client, claim, context)
+        return {"queries": queries, "key_terms": key_terms, "cancer": cancer}
+
 
 class LunaJudge:
     def __init__(self, client):
@@ -743,7 +879,8 @@ class LunaJudge:
 
 class LiveSearch:
     """match_chunks through the corpus clients (sync, run in worker threads). An empty query_text makes the keyword
-    list empty, so the RPC ranks by vector alone. Embeddings are memoised per query text for the run."""
+    list empty, so the RPC ranks by vector alone. v3 searches send the key terms as query_text and the cancer filter
+    (needs supabase/migrations/20261128000000_match_chunks_filter.sql). Embeddings are memoised per query text."""
 
     def __init__(self, embedder, store):
         self._embedder = embedder
@@ -755,16 +892,17 @@ class LiveSearch:
             [self._vectors[text]] = self._embedder.embed([text])
         return self._vectors[text]
 
-    def _search_sync(self, query: str, vector_only: bool, k: int) -> list[Evidence]:
+    def _search_sync(self, query: str, vector_only: bool, k: int, keyword_text, cancer) -> list[Evidence]:
         from app.check.search import parse_rows
 
-        rows = self._store.match_chunks(self._vector(query), "" if vector_only else query, k=k)
+        text = "" if vector_only else (keyword_text if keyword_text is not None else query)
+        rows = self._store.match_chunks(self._vector(query), text, k=k, cancer=cancer)
         return parse_rows(rows)
 
-    async def search(self, query, *, vector_only, k):
+    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None):
         import anyio.to_thread
 
-        return await anyio.to_thread.run_sync(self._search_sync, query, vector_only, k)
+        return await anyio.to_thread.run_sync(self._search_sync, query, vector_only, k, keyword_text, cancer)
 
     def _fetch_sync(self, ids):
         rows = self._store._json(
@@ -793,7 +931,7 @@ def _parse_args(argv):
     p = argparse.ArgumentParser(prog="python -m evals.search.run", description="Search eval (issue #53).")
     p.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
     p.add_argument("--limit", type=int, default=None, help="only the first N claims")
-    p.add_argument("--variants", default=",".join(VARIANTS), help="comma-separated, default all four")
+    p.add_argument("--variants", default=",".join(VARIANTS), help="comma-separated, default all five")
     p.add_argument(
         "--refresh",
         nargs="*",
@@ -881,7 +1019,9 @@ async def _amain(args) -> int:
     summary = data["summary"]
     for v in args.variants:
         a = summary["variants"][v]["all"]
-        print(f"{v:<20} hit@8 {_f(a['hit@8'])}  recall@8 {_f(a['recall@8'])}  ndcg@8 {_f(a['ndcg@8'])}  mrr {_f(a['mrr'])}")
+        lt = summary["latency"][v]
+        print(f"{v:<20} hit@8 {_f(a['hit@8'])}  recall@8 {_f(a['recall@8'])}  ndcg@8 {_f(a['ndcg@8'])}  "
+              f"mrr {_f(a['mrr'])}  search p50 {_f(lt['p50'])} s  p95 {_f(lt['p95'])} s  timeouts {lt['timeouts']}")
     print(f"cost ${data['meta']['cost']['total']:.4f}, wall {data['meta']['wall_time_s']:.1f} s")
     print(f"report: {md_path}")
     print(f"data:   {json_path}")

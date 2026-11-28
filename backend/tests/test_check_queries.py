@@ -8,13 +8,19 @@ import pytest
 
 from app.check.llm import LLMAuthError, LLMRateLimited, LLMUpstreamError, OpenAIResponsesClient
 from app.check.queries import (
+    CANCERS,
+    MAX_KEY_TERMS,
     MAX_QUERIES,
     QUERY_INSTRUCTIONS,
     QUERY_SCHEMA,
+    SearchPlan,
+    clean_key_terms,
+    generate_plan,
     generate_queries,
     merge_results,
     multi_search,
     plan_queries,
+    plan_search,
 )
 from app.check.search import Evidence, SearchRateLimited
 
@@ -56,7 +62,15 @@ def client_for(payload=None, seen=None, status=200):
     )
 
 
-GOOD = {"queries": ["HER2 status and endocrine therapy response", "hormone receptor positive breast cancer endocrine therapy"]}
+GOOD = {
+    "queries": ["HER2 status and endocrine therapy response", "hormone receptor positive breast cancer endocrine therapy"],
+    "key_terms": ["HER2", "endocrine therapy", "hormone receptor"],
+    "cancer": "breast",
+}
+
+
+def answer(queries=(), key_terms=(), cancer="unknown"):
+    return {"queries": list(queries), "key_terms": list(key_terms), "cancer": cancer}
 
 
 # --- generate_queries ----------------------------------------------------------------------------------------------
@@ -81,9 +95,26 @@ async def test_generate_sends_structured_request_with_low_effort():
 
 
 def test_schema_is_a_strict_object_of_strings():
-    assert QUERY_SCHEMA["required"] == ["queries"]
+    assert QUERY_SCHEMA["required"] == ["queries", "key_terms", "cancer"]
     assert QUERY_SCHEMA["additionalProperties"] is False
     assert QUERY_SCHEMA["properties"]["queries"]["items"] == {"type": "string"}
+
+
+def test_schema_has_key_terms_and_a_cancer_enum():
+    props = QUERY_SCHEMA["properties"]
+    assert props["key_terms"] == {"type": "array", "items": {"type": "string"}}
+    assert props["cancer"] == {"type": "string", "enum": list(CANCERS)}
+    assert CANCERS == ("colorectal", "breast", "melanoma", "lymphoma", "prostate", "thyroid", "unknown")
+
+
+def test_instructions_ask_for_distinctive_key_terms_and_the_cancer():
+    text = QUERY_INSTRUCTIONS
+    assert "key_terms" in text and "2 to 5" in text
+    for example in ("Breslow", "IPI", "PSA nadir", "Dukes C"):
+        assert example in text
+    for generic in ("cancer", "tumour", "patient", "treatment", "spread", "risk"):
+        assert generic in text.split("NOT generic words", 1)[1][:200]
+    assert '"unknown"' in text
 
 
 def test_instructions_ask_for_general_fact_queries():
@@ -94,7 +125,7 @@ def test_instructions_ask_for_general_fact_queries():
 
 @pytest.mark.anyio
 async def test_generate_cleans_dedupes_and_caps_at_three():
-    payload = {"queries": ["  HER2   and endocrine therapy ", "her2 and endocrine therapy", "", "q2", "q3", "q4", "x" * 400]}
+    payload = answer(["  HER2   and endocrine therapy ", "her2 and endocrine therapy", "", "q2", "q3", "q4", "x" * 400])
     async with client_for(payload) as llm:
         queries, _ = await generate_queries(llm, CLAIM, [])
     assert queries == ["HER2 and endocrine therapy", "q2", "q3"]
@@ -102,7 +133,20 @@ async def test_generate_cleans_dedupes_and_caps_at_three():
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("payload", [{"queries": "not a list"}, {"queries": [1, 2]}, {"other": []}, {"queries": [], "x": 1}])
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {**answer(), "queries": "not a list"},
+        {**answer(), "queries": [1, 2]},
+        {"other": []},
+        {**answer(), "x": 1},
+        {"queries": []},  # the new fields are required
+        {**answer(), "key_terms": "Breslow"},
+        {**answer(), "key_terms": [3]},
+        {**answer(), "cancer": "lung"},
+        {**answer(), "cancer": None},
+    ],
+)
 async def test_generate_schema_violation_is_upstream_error(payload):
     async with client_for(payload) as llm:
         with pytest.raises(LLMUpstreamError):
@@ -120,13 +164,13 @@ async def test_plan_puts_the_raw_claim_first():
 
 @pytest.mark.anyio
 async def test_plan_drops_a_query_equal_to_the_claim():
-    async with client_for({"queries": [CLAIM.upper(), "q1"]}) as llm:
+    async with client_for(answer([CLAIM.upper(), "q1"])) as llm:
         assert await plan_queries(llm, CLAIM, []) == [CLAIM, "q1"]
 
 
 @pytest.mark.anyio
 async def test_plan_with_no_generated_queries_is_the_claim_alone():
-    async with client_for({"queries": []}) as llm:
+    async with client_for(answer()) as llm:
         assert await plan_queries(llm, CLAIM, []) == [CLAIM]
 
 
@@ -148,6 +192,80 @@ async def test_plan_falls_back_on_a_malformed_answer(caplog):
         assert await plan_queries(llm, CLAIM, []) == [CLAIM]
     assert "LLMUpstreamError" in caplog.text
     assert CLAIM not in caplog.text
+
+
+# --- key terms and cancer (issue #55) ----------------------------------------------------------------------------------
+
+
+def test_clean_key_terms_folds_drops_and_caps():
+    raw = ["  PSA   nadir ", "psa NADIR", "", "   ", "x" * 41, "Gleason", "ADT", "Dukes C", "IPI", "Breslow", "extra"]
+    assert clean_key_terms(raw) == ["PSA nadir", "Gleason", "ADT", "Dukes C", "IPI"]
+    assert len(clean_key_terms(raw)) == MAX_KEY_TERMS == 5
+
+
+def test_clean_key_terms_keeps_a_40_char_term():
+    assert clean_key_terms(["y" * 40]) == ["y" * 40]
+
+
+def test_clean_key_terms_drops_lone_generic_words():
+    assert clean_key_terms(["Cancer", "tumour", "risk", "Breslow", "cancer staging"]) == ["Breslow", "cancer staging"]
+
+
+@pytest.mark.anyio
+async def test_generate_plan_returns_queries_terms_and_cancer():
+    async with client_for(GOOD) as llm:
+        (queries, key_terms, cancer), usage = await generate_plan(llm, CLAIM, CONTEXT)
+    assert queries == GOOD["queries"]
+    assert key_terms == GOOD["key_terms"]
+    assert cancer == "breast"
+    assert usage.input_tokens == 120
+
+
+@pytest.mark.anyio
+async def test_generate_plan_unknown_cancer_is_none():
+    async with client_for(answer(["q"], ["Breslow"], "unknown")) as llm:
+        (_, _, cancer), _ = await generate_plan(llm, CLAIM, [])
+    assert cancer is None
+
+
+@pytest.mark.anyio
+async def test_plan_search_uses_key_terms_as_keyword_text_and_the_cancer_filter():
+    async with client_for(GOOD) as llm:
+        plan = await plan_search(llm, CLAIM, CONTEXT)
+    assert plan == SearchPlan(
+        queries=[CLAIM, *GOOD["queries"]], keyword_text="HER2 endocrine therapy hormone receptor", cancer="breast"
+    )
+
+
+@pytest.mark.anyio
+async def test_plan_search_without_key_terms_searches_keywords_of_the_claim():
+    async with client_for(answer(["q1"], ["  ", "cancer"], "melanoma")) as llm:
+        plan = await plan_search(llm, CLAIM, [])
+    assert plan == SearchPlan(queries=[CLAIM, "q1"], keyword_text=CLAIM, cancer="melanoma")
+
+
+@pytest.mark.anyio
+async def test_plan_search_unknown_cancer_means_no_filter():
+    async with client_for(answer(["q1"], ["Breslow"], "unknown")) as llm:
+        plan = await plan_search(llm, CLAIM, [])
+    assert plan.cancer is None and plan.keyword_text == "Breslow"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("status", [401, 429, 500])
+async def test_plan_search_failure_falls_back_to_the_old_behaviour(status, caplog):
+    caplog.set_level(logging.DEBUG)
+    async with client_for(status=status) as llm:
+        plan = await plan_search(llm, CLAIM, CONTEXT)
+    assert plan == SearchPlan(queries=[CLAIM], keyword_text=CLAIM, cancer=None)
+    assert CLAIM not in caplog.text and KEY not in caplog.text
+
+
+@pytest.mark.anyio
+async def test_plan_search_malformed_answer_falls_back():
+    async with client_for({**answer(["q"], ["Breslow"]), "cancer": "lung"}) as llm:
+        plan = await plan_search(llm, CLAIM, [])
+    assert plan == SearchPlan(queries=[CLAIM], keyword_text=CLAIM, cancer=None)
 
 
 # --- merge_results ---------------------------------------------------------------------------------------------------
@@ -217,9 +335,11 @@ class FakeSearch:
     def __init__(self, by_query, error_for=None):
         self.by_query, self.error_for = by_query, error_for
         self.calls = []
+        self.kwargs = []
 
-    async def search(self, query, k=None):
+    async def search(self, query, k=None, **kwargs):
         self.calls.append((query, k))
+        self.kwargs.append(kwargs)
         if query == self.error_for:
             raise SearchRateLimited("x")
         return self.by_query.get(query, [])
@@ -255,3 +375,17 @@ async def test_multi_search_runs_concurrently():
 async def test_multi_search_error_propagates():
     with pytest.raises(SearchRateLimited):
         await multi_search(FakeSearch({"a": [ev(1)]}, error_for="b"), ["a", "b"], k=8)
+
+
+@pytest.mark.anyio
+async def test_multi_search_sends_the_same_keyword_text_and_cancer_with_every_query():
+    search = FakeSearch({"a": [ev(1)], "b": [ev(2)]})
+    await multi_search(search, ["a", "b"], k=8, keyword_text="Breslow ulceration", cancer="melanoma")
+    assert search.kwargs == [{"keyword_text": "Breslow ulceration", "cancer": "melanoma"}] * 2
+
+
+@pytest.mark.anyio
+async def test_multi_search_leaves_out_unset_options():
+    search = FakeSearch({"a": [ev(1)]})
+    await multi_search(search, ["a"], k=8, keyword_text="x", cancer=None)
+    assert search.kwargs == [{"keyword_text": "x"}]

@@ -48,7 +48,7 @@ class FakeSearch:
 
     def __init__(self, results=CHUNKS, error=None, by_query=None):
         self.results, self.error, self.by_query = list(results), error, by_query or {}
-        self.calls, self.closed = [], False
+        self.calls, self.kwargs, self.closed = [], [], False
 
     async def __aenter__(self):
         return self
@@ -58,6 +58,7 @@ class FakeSearch:
 
     async def search(self, claim, k=None, **kw):
         self.calls.append((claim, k))
+        self.kwargs.append(kw)
         if self.error:
             raise self.error
         return self.by_query.get(claim, self.results)
@@ -85,6 +86,7 @@ DEFAULT_LUNA = luna_answer(
 
 
 QUERIES = ["zorblaxian carcinoma spleen metastasis", "zorblaxian carcinoma spread pattern"]
+KEY_TERMS = ["zorblaxian carcinoma", "splenic metastasis"]
 
 
 class FakeLLM:
@@ -92,9 +94,13 @@ class FakeLLM:
 
     `error` / `query_error` fail the stance / query call; `order` (shared with FakeJev) records call order."""
 
-    def __init__(self, answer=DEFAULT_LUNA, error=None, before=None, queries=QUERIES, query_error=None, order=None):
+    def __init__(
+        self, answer=DEFAULT_LUNA, error=None, before=None, queries=QUERIES, query_error=None, order=None,
+        key_terms=KEY_TERMS, cancer="unknown",
+    ):
         self.answer, self.error, self.before = answer, error, before
         self.queries, self.query_error = queries, query_error
+        self.key_terms, self.cancer = key_terms, cancer
         self.order = order if order is not None else []
         self.model = "gpt-6-luna"
         self.calls, self.query_calls, self.closed = [], [], False
@@ -113,7 +119,8 @@ class FakeLLM:
             self.order.append("queries")
             if self.query_error:
                 raise self.query_error
-            return {"queries": list(self.queries)}, Usage(5, 0, 3, 1)
+            answer = {"queries": list(self.queries), "key_terms": list(self.key_terms), "cancer": self.cancer}
+            return answer, Usage(5, 0, 3, 1)
         self.calls.append(input)
         self.order.append("luna")
         if self.before:
@@ -265,9 +272,23 @@ def test_query_generation_failure_falls_back_to_the_claim(client, caplog):
     body = r.json()
     assert body["search_queries"] == [CLAIM]
     assert search.calls == [(CLAIM, 8)]
+    assert search.kwargs == [{"keyword_text": CLAIM}]  # the old behaviour: keywords of the claim, no filter
     assert body["verdict"] == "incomplete"
     assert "LLMUpstreamError" in caplog.text
     assert CLAIM not in caplog.text
+
+
+def test_every_search_gets_the_key_terms_and_the_cancer_filter(client):
+    search, _, _ = configure(client, llm=FakeLLM(cancer="thyroid"))
+    body = post(client).json()
+    assert search.kwargs == [{"keyword_text": "zorblaxian carcinoma splenic metastasis", "cancer": "thyroid"}] * 3
+    assert body["search_queries"] == [CLAIM, *QUERIES]  # unchanged: key terms and cancer aren't in the response
+
+
+def test_unknown_cancer_sends_no_filter_and_no_key_terms_searches_the_claim(client):
+    search, _, _ = configure(client, llm=FakeLLM(key_terms=[]))
+    post(client)
+    assert search.kwargs == [{"keyword_text": CLAIM}] * 3
 
 
 def test_top_k_comes_from_settings(client):
