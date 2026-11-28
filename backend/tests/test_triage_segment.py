@@ -1,5 +1,7 @@
 """split_spans: deterministic sentence spans (character offsets) for Jev triage. Jev can't split text itself."""
 
+import pytest
+
 from app.triage.segment import MAX_SPAN_WORDS, Span, split_spans
 
 
@@ -94,3 +96,68 @@ def test_span_is_a_value_object():
 
 def test_a_spoken_no_ends_its_sentence():
     assert texts("No. It hasn't spread.") == ["No.", "It hasn't spread."]
+
+
+# ---- short context-dependent replies (local skip, issue #57) ----
+
+
+def flags(text: str) -> list[tuple[str, bool, bool]]:
+    return [(text[s.start : s.end], s.filler, s.short_reply) for s in split_spans(text)]
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        "Nobody does.",
+        "Exactly.",
+        "That's normal.",
+        "Good, that's normal.",
+        "Most people do.",
+        "Same here.",
+        "It can be.",
+        "That’s very common.",  # curly apostrophe
+        "Not at all.",
+        "Thank you.",
+    ],
+)
+def test_short_reply_without_content_words_is_skipped_locally(reply):
+    assert flags(reply) == [(reply, False, True)]
+
+
+@pytest.mark.parametrize(
+    "fact",
+    [
+        "Melanoma can spread.",
+        "HER2 is a protein.",
+        "Most polyps are benign.",
+        "Smoking causes it.",
+        "Fibre helps.",
+        "Cancer isn't contagious.",
+        "It can spread.",
+    ],
+)
+def test_short_span_with_a_content_word_is_not_a_short_reply(fact):
+    assert flags(fact) == [(fact, False, False)]
+
+
+@pytest.mark.parametrize("text", ["Most do by 50.", "About one in three.", "It's 10 percent.", "Half of them do."])
+def test_a_number_keeps_a_short_span(text):
+    assert flags(text)[0][2] is False
+
+
+def test_more_than_four_words_is_never_a_short_reply():
+    text = "That is very normal for most people."
+    assert flags(text) == [(text, False, False)]
+
+
+def test_filler_still_wins_and_is_not_also_a_short_reply():
+    assert flags("Okay. Nobody does. Polyps can become cancer.") == [
+        ("Okay.", True, False),
+        ("Nobody does.", False, True),
+        ("Polyps can become cancer.", False, False),
+    ]
+
+
+def test_local_skip_covers_filler_and_short_replies():
+    a, b, c = split_spans("Um. Exactly. Polyps can grow.")
+    assert (a.local_skip, b.local_skip, c.local_skip) == (True, True, False)

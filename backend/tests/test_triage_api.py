@@ -141,6 +141,24 @@ def test_filler_spans_are_skipped_locally(client):
     assert [s.text for s in fake.calls[0]["spans"]] == ["Polyps can become cancer."]
 
 
+def test_short_replies_are_skipped_locally(client):
+    fake = configure(client, FakeJev())
+    text = "Nobody does. Keep up the fibre. Melanoma can spread."
+    ev = events(client.post("/triage", json={"turns": [turn("t1", text)]}))
+    spans = [e for e in ev if e["type"] == "span"]
+    assert [s["quote"] for s in spans] == ["Nobody does.", "Keep up the fibre.", "Melanoma can spread."]
+    assert (spans[0]["kind"], spans[0]["base_kind"], spans[0]["p_claim"], spans[0]["p_asr"]) == ("skip", "skip", 0.0, None)
+    assert [s.text for s in fake.calls[0]["spans"]] == ["Keep up the fibre.", "Melanoma can spread."]
+    assert [s.id for s in fake.calls[0]["spans"]] == ["1", "2"]
+
+
+def test_turn_of_only_short_replies_makes_no_call(client):
+    fake = configure(client, FakeJev())
+    ev = events(client.post("/triage", json={"turns": [turn("t1", "Okay. That's normal. Most people do.")]}))
+    assert [e["kind"] for e in ev if e["type"] == "span"] == ["skip", "skip", "skip"]
+    assert fake.calls == []
+
+
 @pytest.mark.parametrize("text", ["", "   ", "Um. Okay.", "Mm-hmm... uh-huh!"])
 def test_empty_or_all_filler_turn_makes_no_call(client, text):
     fake = configure(client, FakeJev())

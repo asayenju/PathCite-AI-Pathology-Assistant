@@ -12,6 +12,7 @@ from app.triage.jev import (
     JevUpstreamError,
     SpanAnswer,
     SpanInput,
+    kind_criteria,
 )
 
 KEY = "sk-jev-test-key-do-not-leak"
@@ -131,6 +132,15 @@ async def test_criteria_cover_prd_definitions():
     assert "hedged" in claim and "myth" in claim and "justify" in claim
     assert "question" in small and "plan" in small and "recommendation" in small
     assert "patient-specific result" in small
+
+
+def test_kind_criteria_context_notes_are_additive():
+    plain, noted = kind_criteria(context_notes=False), kind_criteria(context_notes=True)
+    assert set(plain) == set(noted) == {"small_talk", "medical_claim"}
+    for kind in plain:
+        assert noted[kind].startswith(plain[kind]) and noted[kind] != plain[kind]
+    assert "brief reply" in noted["small_talk"] and "previous line" in noted["small_talk"]
+    assert "on its own" in noted["medical_claim"]
 
 
 @pytest.mark.anyio

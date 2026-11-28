@@ -22,22 +22,40 @@ import httpx
 SMALL_TALK = "small_talk"
 MEDICAL_CLAIM = "medical_claim"
 
-KIND_CRITERIA = {
-    SMALL_TALK: (
-        "Not a general medical assertion: a greeting, thanks, empathy or reassurance; a question "
-        "to the patient; scheduling or logistics; a plan or recommendation for this patient (a "
-        "test, treatment, referral or follow-up, e.g. 'we'll do a CT next week'); or a "
-        "patient-specific result or guess with no general assertion (e.g. 'your biopsy shows "
-        "cancer cells', 'it's probably early')."
-    ),
-    MEDICAL_CLAIM: (
-        "Asserts a general medical fact that published literature could confirm or refute. This "
-        "includes a general fact used to justify a conclusion about the patient (e.g. 'because "
-        "it's moderately differentiated, that tells us it hasn't spread'), a hedged general fact "
-        "(e.g. 'this usually means...'), a rhetorical question that asserts a fact, and a myth "
-        "or misconception mentioned in order to correct it."
-    ),
-}
+_SMALL_TALK = (
+    "Not a general medical assertion: a greeting, thanks, empathy or reassurance; a question "
+    "to the patient; scheduling or logistics; a plan or recommendation for this patient (a "
+    "test, treatment, referral or follow-up, e.g. 'we'll do a CT next week'); or a "
+    "patient-specific result or guess with no general assertion (e.g. 'your biopsy shows "
+    "cancer cells', 'it's probably early')."
+)
+_MEDICAL_CLAIM = (
+    "Asserts a general medical fact that published literature could confirm or refute. This "
+    "includes a general fact used to justify a conclusion about the patient (e.g. 'because "
+    "it's moderately differentiated, that tells us it hasn't spread'), a hedged general fact "
+    "(e.g. 'this usually means...'), a rhetorical question that asserts a fact, and a myth "
+    "or misconception mentioned in order to correct it."
+)
+# Issue #57: only doctor turns are sent, so a reply to the patient's line has an invisible referent.
+SMALL_TALK_CONTEXT_NOTE = (
+    " A brief reply whose meaning depends on words not shown (e.g. the patient's previous line, "
+    "as in 'Nobody does.' or 'That's normal.') is not a claim."
+)
+MEDICAL_CLAIM_CONTEXT_NOTE = (
+    " The claim must be understandable on its own from the span plus the doctor's own turn and "
+    "previous doctor turns."
+)
+
+
+def kind_criteria(*, context_notes: bool) -> dict[str, str]:
+    """The small_talk / medical_claim criteria, with or without the issue #57 context notes."""
+    if not context_notes:
+        return {SMALL_TALK: _SMALL_TALK, MEDICAL_CLAIM: _MEDICAL_CLAIM}
+    return {SMALL_TALK: _SMALL_TALK + SMALL_TALK_CONTEXT_NOTE, MEDICAL_CLAIM: _MEDICAL_CLAIM + MEDICAL_CLAIM_CONTEXT_NOTE}
+
+
+# Shipped with the notes after the 2026-11-27 hard-case eval (backend/evals/triage/README.md).
+KIND_CRITERIA = kind_criteria(context_notes=True)
 
 LOW_CONFIDENCE_NOTE = (
     "Each span's low_confidence_words lists words the speech-to-text engine was unsure of. "

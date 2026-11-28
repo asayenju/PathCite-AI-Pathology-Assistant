@@ -35,6 +35,10 @@ This replaces the hand-written mock as the Review source for every transcript, u
   - It splits on `.?!` followed by whitespace. It does not split after abbreviations (Dr., Mr., Mrs., Ms., e.g., i.e., vs., approx.), inside decimals (`1.2 mm`), after ellipses or after initials.
   - Unpunctuated runs over 40 words (common in WhisperX output) are cut at the nearest comma or conjunction, or at 40 words as a last resort.
   - Spans with no letters, or made only of fillers (`um`, `okay`, `mm-hmm`), are skipped locally and never sent to Jev.
+  - Short replies are skipped locally too (issue #57). A short reply has at most 4 words, every word from a small
+    allow-list of content-free words, and no digit: "Nobody does.", "That's normal.", "Most people do.". Patient
+    turns are never sent, so Jev can't see what such a reply refers to, and the checker can't check it. Any other
+    word, or a number, keeps the span ("Melanoma can spread.", "HER2 is a protein.").
 - **`jev.py`**: a thin `httpx` client for `POST https://api.typesafe.ai/v1/systemone` with `Authorization: Bearer`.
   - It retries `429` at most twice, following `retry-after`, then raises `JevRateLimited`.
   - A timeout or 5xx raises `JevUnavailable`. A 401 maps to `triage_unavailable`.
@@ -45,6 +49,7 @@ This replaces the hand-written mock as the Review source for every transcript, u
     - `kind_<i>`, a **Choice** between `small_talk` and `medical_claim`. The option descriptions define the line:
       - **Claim:** a general medical fact that the literature could confirm or refute. This includes a general fact used to justify a conclusion about the patient, a hedged general fact ("this usually means…"), and a myth that is mentioned in order to correct it.
       - **Small talk:** greetings, empathy, questions to the patient, scheduling and logistics, plans and recommendations, and a patient-specific result with no general assertion ("your biopsy shows…").
+      - Since issue #57, both definitions also say that a brief reply whose meaning depends on words not shown (the patient's line) is not a claim, and that a claim must be understandable on its own from the span plus the doctor's own turns.
     - `asr_<i>`, a **Noul**: "Does this span contain a word speech-to-text likely got wrong: a non-word, a misspelled or out-of-place medical term, or a homophone that makes no sense here?" Word confidences are a hint, not the deciding factor.
 
     A span can be both a claim and garbled, which is why there are two questions rather than one three-way choice.
@@ -163,6 +168,7 @@ PubMed/Supabase retrieval and real verdicts (next PRD), checking plans or recomm
    - Each `source_myth` statement is triaged as a single span; rows that only say "From physicians." are skipped.
    - Asserts claim recall ≥ 0.95, and the misses are listed in the report.
    - The dataset is cached in `backend/.cache/` and never committed. Its expert corrections are kept for the checker PRD.
+3. **Hard cases** (issue #57). `backend/evals/triage/hard_cases.jsonl` has 76 synthetic rows: context-dependent replies, patient results, plans phrased as facts, and hedged, short and in-reply general facts. They run through the production per-turn path, and the checker-test transcripts are scored in the same report. `JEV_EVAL_VARIANT` compares the short-reply rule and the criteria notes without code edits. The results are in `backend/evals/triage/README.md`.
 
 **Manual:** put `JEV_KEY` in the root `.env`, then run uvicorn and `npm run dev`. Review the CRC sample and check:
 - the greeting isn't highlighted
