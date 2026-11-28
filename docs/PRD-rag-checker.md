@@ -48,9 +48,21 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
 - **Fallbacks:** query generation fails or no key terms → keyword text is the raw claim (the v2 behaviour); cancer `unknown` or generation failed → no filter.
 - `/check`'s response is unchanged (`search_queries` is still the claim plus Luna's queries). The search eval has a `v3_terms_cancer` variant and a "Search latency" table (mean, p50, p95, timeouts per variant).
 
+## v4 local BM25 (issue #56)
+
+**Why.** v3's key terms made each call faster, but on Supabase's free tier sustained searches still exhausted the disk IO budget, and then everything timed out (v3 search eval: about 95 statement timeouts in 330 calls, p95 26 s). Postgres full-text search has to read and rank many rows per query, however few the terms. The corpus is small (9,543 chunks, about 6 MB as a BM25 index), so the keyword search moves into the backend and Supabase is left with an HNSW lookup and primary-key lookups per claim.
+
+**What.**
+- **`app/check/bm25.py`:** a bm25s index over `section + "\n" + content` of every stored chunk (English stopwords, Snowball stemming via PyStemmer, plus a fold so "metastases" matches "metastasis"). `search(terms, k=40, cancer)` scores every chunk in memory, applies the cancer filter (`chunks.cancers`) before taking the top k, and returns only chunks with a positive score, so a cancer with fewer matches returns fewer ids. Under a millisecond per search; read-only and thread-safe.
+- **Build:** `scripts/build_bm25_index.py` reads every chunk (id, section, content, cancers) from Supabase in keyset pages and saves the index to `backend/.cache/corpus/bm25/` (gitignored) with a manifest holding the corpus fingerprint: chunk count, max chunk id (an identity column, so any re-ingest raises it), a hash of the sorted ids, and `corpus_meta`'s `chunker_config_hash` and `quality_filter_hash`. The ingest CLI rebuilds it at the end of every non-dry run when the stored corpus changed.
+- **`supabase/migrations/20261128010000_match_chunks_bm25.sql`:** `match_chunks_fused(query_embedding, keyword_ids, k=8, candidates=40, per_doc=2, rrf_k=60, min_similarity=0.35)`. Keyword rank = position in `keyword_ids`; the vector list is the HNSW top 40 as before; full outer join, RRF, the 0.35 cosine floor for every fused id, at most 2 per document, top k. Same columns as `match_chunks` (`text_rank` = keyword position). `match_chunks` stays.
+- **`EvidenceSearch`:** given the process's `KeywordIndexProvider` (the router's default factory passes it), it loads the index lazily on the first search and compares its fingerprint with the live corpus once (`corpus_meta` + one count query), caching the answer for the process: no extra round trip per claim. If it matches, the keyword ids come from BM25 (Luna's key terms, else the claim; Luna's cancer as the filter) and the RPC is `match_chunks_fused`. Otherwise (no index, unreadable, stale, or `match_chunks_fused` not deployed, PostgREST PGRST202) it uses the v3 `match_chunks` path, logging the condition once and never the text. After rebuilding the index, restart the backend.
+- **Privacy:** on the v4 path Supabase receives only the embedding and chunk ids, not the key terms or the claim.
+- `/check`'s response is unchanged. The search eval has a `v4_bm25` variant (the cached v3 plan, BM25 keyword ids, `match_chunks_fused`) in the latency table.
+
 ## How
 
-### 1. Search (done: `supabase/migrations/20261127010000_match_chunks.sql`, cancer filter added by `20261128000000_match_chunks_filter.sql`, see [v3](#v3-search-speed-issue-55))
+### 1. Search (done: `supabase/migrations/20261127010000_match_chunks.sql`, cancer filter added by `20261128000000_match_chunks_filter.sql`, see [v3](#v3-search-speed-issue-55); keyword half moved to a local BM25 index with `20261128010000_match_chunks_bm25.sql`, see [v4](#v4-local-bm25-issue-56))
 - **`match_chunks(query_embedding, query_text, k=8, candidates=40, per_doc=2, rrf_k=60, min_similarity=0.35)`.** It finds candidates with two searches:
   - **vector:** the top 40 by cosine distance (HNSW);
   - **keyword:** the top 40 full-text matches, with the claim's lexemes **OR-ed**, because AND-ing a whole sentence matches almost nothing.
@@ -137,7 +149,7 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
 - **Review label** becomes: "Triage by Jev (TypeSafe). Claims are checked against NICE/PubMed/WikiDoc with OpenAI and Jev."
 
 ## Privacy
-- **Where claim text goes:** doctor claim sentences (and up to 2 previous doctor turns as context) go to OpenAI for embedding and the verdict, to TypeSafe (Jev), and to Supabase as the search text.
+- **Where claim text goes:** doctor claim sentences (and up to 2 previous doctor turns as context) go to OpenAI for embedding and the verdict, to TypeSafe (Jev), and to Supabase as the search text only on the v3 fallback path (with the local BM25 index, Supabase gets only the embedding and chunk ids).
 - **Nothing is logged or stored:** not the claim, not the context and not the verdict. Only exception type names are logged.
 - **Patient turns are never sent.**
 
@@ -182,5 +194,7 @@ Replace the placeholder `ClaimChecker` (`frontend/src/lib/claimChecker.ts`, answ
 6. **#52 Frontend v2:** the card shows `confidence` and the new review reasons; per-source Jev fields are gone.
 7. **#55 Search speed** (see [v3 search speed](#v3-search-speed-issue-55)).
    - Acceptance: offline tests for the schema (`key_terms`, `cancer` enum), key-term cleaning, every fallback, the RPC body (`query_text` = key terms, `cancer` only when known), the migration text (both overloads dropped, filter inside the keyword candidates, grants) and the eval variant and latency table. The migration is run by hand in the SQL editor.
+8. **#56 Local BM25 keyword search** (see [v4 local BM25](#v4-local-bm25-issue-56)).
+   - Acceptance: offline tests for the index (build/save/load round trip, stemming and stopwords, rare term beats common, cancer filter including fewer matches than k), fingerprint match/mismatch → fallback, the fused RPC body (keyword id order, embedding string), the ingest CLI rebuild, the migration text and the `v4_bm25` eval variant. The migration is run by hand in the SQL editor, then the index is built.
 
 Waves: #47 and #48 in parallel, then #49, then #50. #50 can start alongside #49 against the response contract above. #51 and #52 in parallel against the v2 response contract.

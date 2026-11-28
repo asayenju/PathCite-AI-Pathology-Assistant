@@ -406,3 +406,210 @@ def test_store_match_chunks_sends_cancer_only_when_set():
     bodies = [json.loads(r.content) for r in rec.requests]
     assert bodies[0]["cancer"] == "melanoma" and bodies[0]["query_text"] == "Breslow"
     assert "cancer" not in bodies[1] and "cancer" not in bodies[2]
+
+
+# --- local BM25 keyword index + match_chunks_fused (issue #56) ----------------------------------------------------
+
+
+class FakeIndex:
+    def __init__(self, hits=((7, 3.2), (42, 2.5), (3, 1.0))):
+        self.hits = list(hits)
+        self.calls = []
+
+    def search(self, terms, k=40, cancer=None):
+        self.calls.append((terms, k, cancer))
+        return self.hits[:k]
+
+
+class FakeProvider:
+    def __init__(self, index=None):
+        self.index = index
+        self.stores = []
+        self.disabled = []
+
+    def get(self, store):
+        self.stores.append(store)
+        return None if self.disabled else self.index
+
+    def disable(self, reason):
+        self.disabled.append(reason)
+
+
+def make_bm25(provider, supabase=supabase_rows(ROW)):
+    oa, sb = Recorder(openai_ok), Recorder(supabase)
+    search = EvidenceSearch.from_settings(
+        settings(),
+        openai_transport=httpx.MockTransport(oa),
+        supabase_transport=httpx.MockTransport(sb),
+        sleep=lambda s: None,
+        keyword_index=provider,
+    )
+    return search, oa, sb
+
+
+@pytest.mark.anyio
+async def test_bm25_ids_go_to_match_chunks_fused_in_rank_order():
+    index = FakeIndex()
+    search, oa, sb = make_bm25(FakeProvider(index))
+    with search:
+        results = await search.search(CLAIM, keyword_text="mismatch repair Lynch", cancer="colorectal")
+    assert results == [Evidence(**ROW)]
+    assert index.calls == [("mismatch repair Lynch", 40, "colorectal")]
+    assert json.loads(oa.requests[0].content)["input"] == [CLAIM]
+    [req] = sb.requests
+    assert str(req.url) == f"{SB_URL}/rest/v1/rpc/match_chunks_fused"
+    assert req.headers["apikey"] == SB_KEY
+    body = json.loads(req.content)
+    assert set(body) == {"query_embedding", "keyword_ids"}
+    assert body["keyword_ids"] == [7, 42, 3]
+    assert isinstance(body["query_embedding"], str) and body["query_embedding"].startswith("[0.25,0.0,")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("keyword_text", [None, "  "])
+async def test_bm25_searches_the_claim_without_key_terms(keyword_text):
+    index = FakeIndex()
+    search, _, _ = make_bm25(FakeProvider(index))
+    with search:
+        await search.search(CLAIM, keyword_text=keyword_text)
+    assert index.calls == [(CLAIM, 40, None)]
+
+
+@pytest.mark.anyio
+async def test_bm25_no_hits_sends_an_empty_id_list_and_overrides():
+    search, _, sb = make_bm25(FakeProvider(FakeIndex(hits=())))
+    with search:
+        await search.search(CLAIM, 5, per_doc=1, min_similarity=0.4)
+    body = json.loads(sb.requests[0].content)
+    assert body["keyword_ids"] == []
+    assert (body["k"], body["per_doc"], body["min_similarity"]) == (5, 1, 0.4)
+    assert "cancer" not in body and "query_text" not in body
+
+
+@pytest.mark.anyio
+async def test_no_usable_index_falls_back_to_match_chunks():
+    provider = FakeProvider(None)
+    search, _, sb = make_bm25(provider)
+    with search:
+        await search.search(CLAIM, keyword_text="Lynch", cancer="colorectal")
+    assert len(provider.stores) == 1
+    [req] = sb.requests
+    assert req.url.path.endswith("/rpc/match_chunks")
+    assert json.loads(req.content)["query_text"] == "Lynch"
+
+
+@pytest.mark.anyio
+async def test_missing_fused_rpc_disables_bm25_and_falls_back_in_the_same_call(caplog):
+    def handler(request):
+        if request.url.path.endswith("/match_chunks_fused"):
+            return httpx.Response(404, json={"code": "PGRST202", "message": "Could not find the function"})
+        return httpx.Response(200, json=[ROW])
+
+    provider = FakeProvider(FakeIndex())
+    search, _, sb = make_bm25(provider, supabase=handler)
+    with search, caplog.at_level(logging.WARNING, logger="pathcite"):
+        assert await search.search(CLAIM, keyword_text="Lynch") == [Evidence(**ROW)]
+    assert provider.disabled == ["rpc_missing"]
+    assert [r.url.path.rsplit("/", 1)[1] for r in sb.requests] == ["match_chunks_fused", "match_chunks"]
+    assert CLAIM not in caplog.text and "Lynch" not in caplog.text
+
+
+@pytest.mark.anyio
+async def test_other_fused_rpc_errors_are_upstream_errors():
+    search, _, _ = make_bm25(
+        FakeProvider(FakeIndex()), supabase=lambda r: httpx.Response(400, json={"code": "22P02", "message": "bad"})
+    )
+    with search, pytest.raises(SearchUpstreamError):
+        await search.search(CLAIM)
+
+
+@pytest.mark.anyio
+async def test_real_provider_checks_the_fingerprint_once_per_process(tmp_path):
+    from app.check.bm25 import Bm25Index, IndexRow, KeywordIndexProvider
+
+    meta = {"chunker_config_hash": "c", "quality_filter_hash": "q"}
+    Bm25Index.build([IndexRow(42, "MMR", "Lynch syndrome testing", ("colorectal",)), IndexRow(50, "", "other", ())],
+                    meta).save(tmp_path / "bm25")  # fmt: skip
+    seen = {"meta": 0, "count": 0}
+
+    def handler(request):
+        path = request.url.path.removeprefix("/rest/v1")
+        if path == "/corpus_meta":
+            seen["meta"] += 1
+            return httpx.Response(200, json=[{"key": k, "value": v} for k, v in meta.items()])
+        if path == "/chunks":
+            seen["count"] += 1
+            assert "count=exact" in request.headers["prefer"]
+            return httpx.Response(200, json=[{"id": 50}], headers={"content-range": "0-0/2"})
+        return httpx.Response(200, json=[ROW])
+
+    provider = KeywordIndexProvider(tmp_path / "bm25")
+    for _ in range(2):
+        search, _, sb = make_bm25(provider, supabase=handler)
+        with search:
+            await search.search(CLAIM, keyword_text="Lynch syndrome", cancer="colorectal")
+            await search.search(CLAIM, keyword_text="Lynch syndrome")
+        fused = [json.loads(r.content) for r in sb.requests if r.url.path.endswith("match_chunks_fused")]
+        assert [b["keyword_ids"] for b in fused] == [[42], [42]]
+    assert provider.status == "ready"
+    assert seen == {"meta": 1, "count": 1}
+
+
+def test_store_match_chunks_fused_body_and_cold_start_retry():
+    from app.corpus.supabase import SupabaseCorpus
+
+    calls = {"n": 0}
+
+    def cold(request):
+        calls["n"] += 1
+        return httpx.Response(500, json=COLD) if calls["n"] == 1 else httpx.Response(200, json=[])
+
+    rec = Recorder(cold)
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(rec), sleep=lambda s: None) as store:
+        assert store.match_chunks_fused(VECTOR, [9, 2, 5], k=8, per_doc=None) == []
+    assert len(rec.requests) == 2
+    body = json.loads(rec.requests[-1].content)
+    assert body["keyword_ids"] == [9, 2, 5] and body["k"] == 8 and "per_doc" not in body
+    assert body["query_embedding"] == json.dumps(VECTOR, separators=(",", ":"))
+
+
+def test_store_count_and_max_id():
+    from app.corpus.supabase import SupabaseCorpus
+
+    def handler(request):
+        assert request.url.params["order"] == "id.desc" and request.url.params["limit"] == "1"
+        return httpx.Response(200, json=[{"id": 9876}], headers={"content-range": "0-0/9543"})
+
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(handler)) as store:
+        assert store.chunk_count_and_max_id() == (9543, 9876)
+
+    def empty(request):
+        return httpx.Response(200, json=[], headers={"content-range": "*/0"})
+
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(empty)) as store:
+        assert store.chunk_count_and_max_id() == (0, None)
+
+
+def test_store_chunk_texts_pages_by_id():
+    from app.corpus.supabase import SupabaseCorpus
+
+    rows = [{"id": i, "section": "s", "content": f"c{i}", "cancers": []} for i in range(1, 8)]
+
+    def handler(request):
+        p = request.url.params
+        assert p["select"] == "id,section,content,cancers" and p["order"] == "id.asc"
+        after = int(p["id"].removeprefix("gt.")) if "id" in p else 0
+        page = [r for r in rows if r["id"] > after][:2]  # a server cap lower than the page size
+        return httpx.Response(200, json=page)
+
+    with SupabaseCorpus(SB_URL, SB_KEY, transport=httpx.MockTransport(handler), page_size=3) as store:
+        assert [r["id"] for r in store.chunk_texts()] == list(range(1, 8))
+
+
+def test_default_search_factory_uses_the_shared_bm25_provider(tmp_path):
+    from app.check import bm25
+    from app.check.router import default_search_factory
+
+    s = settings(bm25_index_dir=tmp_path / "bm25")
+    with default_search_factory(s) as search:
+        assert search._keywords is bm25.default_provider(tmp_path / "bm25")

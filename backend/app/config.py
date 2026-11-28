@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     checker_timeout_s: float = 60  # a reasoning model; 8 passages usually answer in a few seconds
     check_top_k: int = 8  # passages retrieved per claim (match_chunks k)
     check_jev_min: float = 0.7  # Jev's probability for Luna's verdict class below this -> low_confidence review
+    # Local BM25 keyword index (app/check/bm25.py, issue #56); built by scripts/build_bm25_index.py. Missing or stale
+    # -> /check falls back to Postgres full-text search (match_chunks).
+    bm25_index_dir: Path = REPO_ROOT / "backend" / ".cache" / "corpus" / "bm25"
 
 
 def get_settings() -> Settings:

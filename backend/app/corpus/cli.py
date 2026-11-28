@@ -8,6 +8,10 @@
     python scripts/ingest_corpus.py --rebuild                 # delete the corpus in Supabase and re-ingest
     python scripts/ingest_corpus.py --env PATH --corpus-dir PATH
 
+After every run that reaches the report (not --dry-run, not refused), the local BM25 keyword index of the claim
+checker (app/check/bm25.py) is rebuilt from Supabase if it no longer matches the stored corpus; a failed rebuild only
+warns (run scripts/build_bm25_index.py) and doesn't change the exit code.
+
 Exit codes: 0 ok, 1 some documents failed (re-run to retry them), 2 refused or stopped (keys, guards, Supabase down).
 """
 
@@ -17,6 +21,7 @@ from pathlib import Path
 
 import httpx
 
+from app.check import bm25
 from app.config import REPO_ROOT, Settings
 from app.corpus import local_embedder
 from app.corpus.config import ChunkerConfig
@@ -33,6 +38,7 @@ DEFAULT_ENV = REPO_ROOT / ".env"
 DRY_RUN_PLAN_FILE = "chunks.dry-run.jsonl"
 """The stand-in embedder's plan goes here, never to chunks.jsonl, so ingest can't pick up approximate boundaries."""
 EMBEDDER_ID = "openai:text-embedding-3-small"
+DEFAULT_BM25_DIR = bm25.DEFAULT_DIR
 
 
 def main(
@@ -127,7 +133,25 @@ def _ingest(args, config: ChunkerConfig, quality: QualityFilterConfig, embedder:
     print(format_ingest_report(plan.stats, plan.chunks, result, tokens_embedded=embedder.total_tokens,
                                corpus_stats=stats, plan_source=plan_source,
                                quality_lines=[*format_quality_report(filtered, quality), filter_note]))  # fmt: skip
+    _refresh_bm25(store, DEFAULT_BM25_DIR)
     return 1 if result.failed else 0
+
+
+def _refresh_bm25(store: SupabaseCorpus, directory: Path) -> None:
+    """Rebuild the claim checker's BM25 index if the stored corpus changed. Never fails the ingest."""
+    print()
+    try:
+        index, rebuilt = bm25.refresh_from_store(store, directory, progress=lambda m: print(m, flush=True))
+    except Exception as e:  # noqa: BLE001 - the ingest itself succeeded; only the type is shown
+        print(f"BM25 keyword index NOT rebuilt ({type(e).__name__}): run python scripts/build_bm25_index.py",
+              file=sys.stderr)  # fmt: skip
+        return
+    if not rebuilt:
+        print(f"BM25 keyword index up to date: {directory}")
+        return
+    size = bm25.dir_size(directory) / 1e6
+    print(f"BM25 keyword index rebuilt: {bm25.manifest_summary(index.manifest)}; {size:.1f} MB at {directory}")
+    print("Restart the backend so /check loads it.")
 
 
 def _record_filter_hash(store: SupabaseCorpus, filter_hash: str, *, complete: bool) -> str:

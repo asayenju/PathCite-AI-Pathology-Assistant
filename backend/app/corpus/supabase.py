@@ -46,7 +46,12 @@ class SupabaseAuthError(SupabaseError):
 
 
 class SupabaseRequestError(SupabaseError):
-    pass
+    """`status` and `code` (PostgREST's error code, e.g. PGRST202 for a missing function) when known."""
+
+    def __init__(self, message: str, *, status: int | None = None, code: str | None = None):
+        super().__init__(message)
+        self.status = status
+        self.code = code
 
 
 class SupabaseRateLimited(SupabaseRequestError):
@@ -66,6 +71,14 @@ def _detail(r: httpx.Response) -> str:
         msg = str(body.get("message") or "")[:MAX_DETAIL]
         return f"HTTP {r.status_code} {body.get('code')}: {msg}"
     return f"HTTP {r.status_code}"
+
+
+def _code(r: httpx.Response) -> str | None:
+    try:
+        body = r.json()
+    except ValueError:
+        return None
+    return str(body["code"]) if isinstance(body, dict) and body.get("code") is not None else None
 
 
 def _is_html(r: httpx.Response) -> bool:
@@ -129,6 +142,18 @@ class SupabaseCorpus:
         body.update({name: value for name, value in overrides.items() if value is not None})
         return self._json("POST", "/rpc/match_chunks", json=body, retry_json_5xx=1)
 
+    def match_chunks_fused(self, query_embedding: list[float], keyword_ids: list[int], **overrides: Any) -> Any:
+        """Vector search + fusion with keyword ranks from the backend's BM25 index
+        (supabase/migrations/20261128010000_match_chunks_bm25.sql); returns the raw rows. `keyword_ids` are chunk
+        ids, best first (rank = position). Overrides (k, candidates, per_doc, rrf_k, min_similarity) are sent only
+        when not None. One JSON 5xx is retried, as for match_chunks."""
+        body = {
+            "query_embedding": json.dumps(query_embedding, separators=(",", ":")),
+            "keyword_ids": [int(i) for i in keyword_ids],
+        }
+        body.update({name: value for name, value in overrides.items() if value is not None})
+        return self._json("POST", "/rpc/match_chunks_fused", json=body, retry_json_5xx=1)
+
     # --- corpus_meta -------------------------------------------------------
 
     def read_meta(self) -> dict[str, Any]:
@@ -158,6 +183,37 @@ class SupabaseCorpus:
     def chunk_keys(self) -> list[tuple[str, int]]:
         """Every stored (doc_id, ord), for duplicate and orphan checks."""
         return [(r["doc_id"], r["ord"]) for r in self._paged("/chunks", "doc_id,ord", "doc_id.asc,ord.asc")]
+
+    def chunk_texts(self):
+        """Yields every chunk's {id, section, content, cancers}, by id. Keyset pages (id > last), so each page is a
+        primary-key range read however far in it is (cheaper than offsets on the free tier's disk IO)."""
+        last = None
+        while True:
+            params = {"select": "id,section,content,cancers", "order": "id.asc", "limit": self._page_size}
+            if last is not None:
+                params["id"] = f"gt.{last}"
+            page = self._json("GET", "/chunks", params=params)
+            if not page:
+                return
+            yield from page
+            last = page[-1]["id"]
+
+    def chunk_count_and_max_id(self) -> tuple[int, int | None]:
+        """(number of chunks, largest chunk id or None) in one request: the top id by the primary key, with an
+        exact count in Content-Range."""
+        r = self._request(
+            "GET",
+            "/chunks",
+            params={"select": "id", "order": "id.desc", "limit": 1},
+            headers={"Prefer": "count=exact"},
+        )
+        total = r.headers.get("content-range", "").rpartition("/")[2]
+        try:
+            rows = r.json()
+            n = int(total)
+        except ValueError:
+            raise SupabaseRequestError("Supabase returned no chunk count for /chunks") from None
+        return n, (int(rows[0]["id"]) if rows else None)
 
     def _paged(self, path: str, select: str, order: str) -> list[dict]:
         rows: list[dict] = []
@@ -230,4 +286,4 @@ class SupabaseCorpus:
                 if _is_html(r):  # a proxy or the paused-project page, not PostgREST
                     raise SupabaseUnreachable(f"{UNREACHABLE} (got an HTML page)")
                 return r
-            raise SupabaseRequestError(f"{method} {path} failed: {_detail(r)}")
+            raise SupabaseRequestError(f"{method} {path} failed: {_detail(r)}", status=code, code=_code(r))

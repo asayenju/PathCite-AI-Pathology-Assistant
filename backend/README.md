@@ -137,9 +137,12 @@ curl -H 'content-type: application/json' http://localhost:8000/check \
  "model": "gpt-6-luna", "jev_model": "jev-1.14.0"}
 ```
 
-Steps, in order (v2, issue #51; search speed, issue #55):
+Steps, in order (v2, issue #51; search speed, issues #55 and #56):
 1. **Queries:** GPT-6 Luna writes 1-3 short search queries for the general medical fact, 2-5 distinctive key terms for keyword search (e.g. "Breslow", "PSA nadir"; no generic words like "cancer") and the cancer the claim is about (or `unknown`), in one strict-JSON call at low reasoning effort. The raw claim is always searched too. If this call fails, only the claim is searched, with its own words as keywords and no cancer filter.
-2. **Search:** each query runs hybrid `match_chunks` concurrently (top `CHECK_TOP_K`, at most 2 per document). The vector half embeds the query; the keyword half searches the key terms (the raw claim if there are none), restricted to chunks tagged with the cancer when it is known (the vector half is never filtered). This needs `supabase/migrations/20261128000000_match_chunks_filter.sql`. the lists are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by chunk, at most 2 per document, top `CHECK_TOP_K` (8). The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
+2. **Search:** each query runs a hybrid search concurrently (top `CHECK_TOP_K`, at most 2 per document). The vector half embeds the query; the keyword half searches the key terms (the raw claim if there are none), restricted to chunks tagged with the cancer when it is known (the vector half is never filtered).
+   - **Keyword half, v4 (issue #56):** in the backend, on a local BM25 index (`app/check/bm25.py`: bm25s, English stopwords and stemming, section + content of every chunk; top 40 ids, cancer filter applied before the top 40). Supabase gets only the embedding and those ids (`match_chunks_fused`, `supabase/migrations/20261128010000_match_chunks_bm25.sql`) and does the HNSW lookup, the fusion and the 0.35 similarity floor. Why: Postgres full-text search exhausted the free tier's disk IO under sustained searches (statement timeouts). Build the index with `python scripts/build_bm25_index.py` (from Supabase, read-only; about 6 MB in `backend/.cache/corpus/bm25/`, gitignored); the ingest CLI rebuilds it after an ingest that changed the corpus. Restart the backend after a rebuild.
+   - **Fallback, v3:** `match_chunks` with the key terms and cancer (Postgres full-text, `supabase/migrations/20261128000000_match_chunks_filter.sql`) when there is no index, it can't be read, it doesn't match the corpus (chunk count, max chunk id, chunker and quality-filter hashes in `corpus_meta`, checked once per process on the first `/check`), or `match_chunks_fused` isn't deployed. Logged once, condition only.
+   - The lists are merged by reciprocal rank fusion (sum of 1/(60 + rank)), deduplicated by chunk, at most 2 per document, top `CHECK_TOP_K` (8). The first search after the free project has been idle can get a JSON 500 (statement timeout); it is retried once.
 3. **Luna judges each passage** (OpenAI Responses API, word-for-word quotes, groundedness guard: a quote not found in its passage makes the stance `unclear`, which counts as not relevant).
 4. **Verdict** over Luna's supporting/contradicting passages: none `unverified`; all support `accurate` (`incomplete` if Luna says a qualifier is missing); all contradict `inaccurate`; a mix `disputed`. No majority vote.
 5. **Jev's confidence**, after Luna: one TypeSafe Choice over all passages, supported / contradicted / insufficient. Jev never sees Luna's answer.
@@ -197,9 +200,10 @@ Always JSON: `{"detail": "...", "code": "..."}` (for `/triage`, only before the 
 | `CHECKER_MODEL` | `gpt-6-luna` | OpenAI model for the search queries and the per-passage stance |
 | `CHECK_TOP_K` | `8` | passages kept per claim after merging the searches |
 | `CHECK_JEV_MIN` | `0.7` | Jev's probability for Luna's verdict below this sends the card to review (`low_confidence`) |
+| `BM25_INDEX_DIR` | `backend/.cache/corpus/bm25` | the local BM25 keyword index for `/check` (missing or stale: Postgres full-text fallback) |
 
 ## Privacy
-Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored. `/check` sends the claim and up to 2 previous doctor turns to OpenAI (embedding and the Luna verdict, `store: false`), Supabase (as the keyword query) and TypeSafe (Jev); patient turns are never sent. The claim, context, verdict, keys and request/response bodies are never logged or stored: failures log only the exception type. The Supabase secret key is read by the API server for `/check` and never leaves the backend.
+Uploaded images and transcripts are processed in memory only: never written to disk (uploads are not spooled to temp files) and never logged. Unexpected errors log only the exception type. `/triage` sends doctor turn text to TypeSafe, which has no BAA, so use synthetic or de-identified text only. The text, Jev's requests and answers, and `JEV_KEY` are never logged or stored. `/check` sends the claim and up to 2 previous doctor turns to OpenAI (embedding and the Luna verdict, `store: false`), Supabase (as the keyword query, only on the v3 fallback path; with the BM25 index Supabase gets only the embedding and chunk ids) and TypeSafe (Jev); patient turns are never sent. The claim, context, verdict, keys and request/response bodies are never logged or stored: failures log only the exception type. The Supabase secret key is read by the API server for `/check` and never leaves the backend.
 
 ## Evidence corpus (Supabase)
 
@@ -225,6 +229,12 @@ An offline pipeline, not part of the API, that stores the cancer evidence the cl
    - `--prune`: after the ingest, delete stored documents the (filtered) plan no longer has, for example documents the quality filter emptied.
    - Other flags: `--env PATH` (default: repo-root `.env`), `--corpus-dir PATH`.
    - Supabase free projects pause when idle: the CLI then says "Supabase project unreachable or paused — open the dashboard to resume it".
+
+5. **BM25 index** for `/check`'s keyword search: rebuilt automatically at the end of every non-dry ingest run when the stored corpus changed ("BM25 keyword index up to date" otherwise; a failed rebuild only warns). By hand:
+   ```
+   python scripts/build_bm25_index.py [--env PATH] [--out DIR] [--if-stale]
+   ```
+   It reads every chunk's id, section, content and cancers in keyset pages (about 10 reads), builds in about 8 s and loads in about 10 ms (9,543 chunks, 6.1 MB). Restart the backend afterwards.
 
 **Keys** (repo-root `.env`, gitignored; see `.env.example`): `OPEN_AI_VECTOR_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`. The secret key bypasses row-level security, so it is for backend scripts only: never the frontend, never logged. Keys never appear in the CLI's output or errors.
 

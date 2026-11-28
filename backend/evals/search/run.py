@@ -3,7 +3,7 @@
     python -m evals.search.run [--golden PATH] [--limit N] [--variants v1_hybrid_claim,...]
                                [--refresh [queries,search,judge]] [--env PATH] [--concurrency 4]
 
-For every golden claim it runs five search variants, pools their top 10 with the gold chunks, has gpt-6-luna grade
+For every golden claim it runs six search variants, pools their top 10 with the gold chunks, has gpt-6-luna grade
 the pool 0/1/2 in one call per claim, scores the variants (metrics.py) and writes results/<timestamp>.json (all
 per-claim data, gitignored) and results/<timestamp>.md (the report, committed). See README.md.
 
@@ -15,6 +15,10 @@ Variants (k=8 scored; each search fetches 10 for the pool):
 - vec_queries:       the same queries, vector only, merged with merge_results
 - v3_terms_cancer:   claim + Luna's queries from the v3 plan (generate_plan), each embedded, with Luna's key terms as
                      the keyword text and the keyword list filtered to Luna's cancer (issue #55), merged
+- v4_bm25:           the same v3 plan (the cached v3 plan is reused), but the keyword list comes from the local BM25
+                     index (app/check/bm25.py, cancer filter applied there) and Supabase runs match_chunks_fused
+                     (vector + fusion only, issue #56). Needs the index (scripts/build_bm25_index.py) to match the
+                     corpus, and supabase/migrations/20261128010000_match_chunks_bm25.sql
 
 The scored top 8 of a multi-query variant merges each query's top 8, exactly like /check (the SQL orders and then
 limits, so a query's top 8 is the first 8 of its top 10). The pool list merges the full top 10s.
@@ -69,7 +73,9 @@ VARIANTS: dict[str, tuple[str, bool]] = {
     "vec_claim": ("claim", True),
     "vec_queries": ("queries", True),
     "v3_terms_cancer": ("plan", False),
+    "v4_bm25": ("plan_bm25", False),
 }
+PLAN_SOURCES = ("plan", "plan_bm25")
 V3_CACHE_PREFIX = "v3:"
 REFRESH_CHOICES = ("queries", "search", "judge")
 
@@ -142,9 +148,17 @@ class Planner(Protocol):
 
 class Searcher(Protocol):
     async def search(
-        self, query: str, *, vector_only: bool, k: int, keyword_text: str | None = None, cancer: str | None = None
+        self,
+        query: str,
+        *,
+        vector_only: bool,
+        k: int,
+        keyword_text: str | None = None,
+        cancer: str | None = None,
+        engine: str = "sql",
     ) -> list[Evidence]:
-        """keyword_text / cancer are given only for v3 searches (None: keyword search on the query, no filter)."""
+        """keyword_text / cancer are given only for v3/v4 searches (None: keyword search on the query, no filter).
+        engine "bm25" (given only for v4): keyword ids from the local BM25 index, then match_chunks_fused."""
     async def fetch_chunks(self, ids: Sequence[int]) -> list[ChunkInfo]: ...
     async def fingerprint(self) -> str: ...
 
@@ -365,15 +379,18 @@ async def _plan(row, planner, cache, refresh, stats) -> dict:
     }
 
 
-# A search: (vector only, query, keyword text, cancer). Keyword text None = the query itself (v1/v2/vec); a v3 search
-# whose keyword text is its own query and has no filter is the same call, so it is normalised to that.
-Spec = tuple[bool, str, str | None, str | None]
+# A search: (vector only, query, keyword text, cancer, engine). Keyword text None = the query itself (v1/v2/vec); a
+# v3/v4 search whose keyword text is its own query and has no filter is the same call, so it is normalised to that.
+# engine: "sql" (match_chunks, Postgres full-text) or "bm25" (local BM25 ids + match_chunks_fused).
+Spec = tuple[bool, str, str | None, str | None, str]
 
 
-def _spec(vector_only: bool, query: str, keyword_text: str | None = None, cancer: str | None = None) -> Spec:
+def _spec(
+    vector_only: bool, query: str, keyword_text: str | None = None, cancer: str | None = None, engine: str = "sql"
+) -> Spec:
     if keyword_text == query and cancer is None:
         keyword_text = None
-    return (vector_only, query, keyword_text, cancer)
+    return (vector_only, query, keyword_text, cancer, engine)
 
 
 def _is_timeout(e: BaseException) -> bool:
@@ -382,10 +399,13 @@ def _is_timeout(e: BaseException) -> bool:
 
 
 async def _search(spec: Spec, searcher, cache, refresh, stats, timings: dict) -> list[Evidence]:
-    vector_only, query, keyword_text, cancer = spec
-    if keyword_text is None:
+    vector_only, query, keyword_text, cancer, engine = spec
+    if engine == "bm25":
+        key = f"bm25|k{POOL_K}|{cancer or ''}|{keyword_text or ''}|{query}"
+        options: dict = {"keyword_text": keyword_text, "cancer": cancer, "engine": "bm25"}
+    elif keyword_text is None:
         key = f"{'vector' if vector_only else 'hybrid'}|k{POOL_K}|{query}"
-        options: dict = {}
+        options = {}
     else:
         key = f"terms|k{POOL_K}|{cancer or ''}|{keyword_text}|{query}"
         options = {"keyword_text": keyword_text, "cancer": cancer}
@@ -414,7 +434,7 @@ async def _claim(row, planner, searcher, judge, cache, variants, refresh, stats,
     record["queries"] = queries
     record["query_fallback"] = fallback
     v3 = None
-    if any(VARIANTS[v][0] == "plan" for v in variants):
+    if any(VARIANTS[v][0] in PLAN_SOURCES for v in variants):
         v3 = await _plan(row, planner, cache, refresh, stats)
         record["v3"] = v3
 
@@ -424,7 +444,8 @@ async def _claim(row, planner, searcher, judge, cache, variants, refresh, stats,
             return [_spec(vector_only, row.claim)]
         if source == "queries":
             return [_spec(vector_only, q) for q in queries]
-        return [_spec(vector_only, q, v3["keyword_text"], v3["cancer"]) for q in v3["queries"]]
+        engine = "bm25" if source == "plan_bm25" else "sql"
+        return [_spec(vector_only, q, v3["keyword_text"], v3["cancer"], engine) for q in v3["queries"]]
 
     needed: list[Spec] = []
     for v in variants:
@@ -704,7 +725,8 @@ def render_markdown(result: dict, summary: dict) -> str:
 
     w("## Search latency")
     w("")
-    w("Wall clock per match_chunks call (embedding included) run in this run; cached searches aren't timed (use "
+    w("Wall clock per search call (embedding included; match_chunks, or for v4 the local BM25 search + "
+      "match_chunks_fused) run in this run; cached searches aren't timed (use "
       "`--refresh search` to time them all). A call shared by two variants counts for both. Timeouts: calls that "
       "failed with a statement timeout (57014) or a client timeout.")
     w("")
@@ -757,7 +779,7 @@ def render_markdown(result: dict, summary: dict) -> str:
       f"unknown chunk ids in answers (ignored): {stats.get('unknown_ids', 0)}")
     w(f"- Query generation: {stats.get('query_calls', 0)} calls, {stats.get('query_cache_hits', 0)} cached, "
       f"{stats.get('query_fallbacks', 0)} fell back to the claim alone")
-    if "v3_terms_cancer" in variants:
+    if "v3_terms_cancer" in variants or "v4_bm25" in variants:
         w(f"- v3 plans (queries + key terms + cancer): {stats.get('plan_calls', 0)} calls, "
           f"{stats.get('plan_cache_hits', 0)} cached, {stats.get('plan_fallbacks', 0)} fell back to the claim alone")
     w(f"- Searches: {stats.get('searches', 0)} run, {stats.get('search_cache_hits', 0)} cached"
@@ -880,11 +902,13 @@ class LunaJudge:
 class LiveSearch:
     """match_chunks through the corpus clients (sync, run in worker threads). An empty query_text makes the keyword
     list empty, so the RPC ranks by vector alone. v3 searches send the key terms as query_text and the cancer filter
-    (needs supabase/migrations/20261128000000_match_chunks_filter.sql). Embeddings are memoised per query text."""
+    (needs supabase/migrations/20261128000000_match_chunks_filter.sql). v4 searches (engine "bm25") take the top 40
+    keyword ids from the local BM25 index and call match_chunks_fused. Embeddings are memoised per query text."""
 
-    def __init__(self, embedder, store):
+    def __init__(self, embedder, store, bm25_index=None):
         self._embedder = embedder
         self._store = store
+        self._bm25 = bm25_index
         self._vectors: dict[str, list[float]] = {}
 
     def _vector(self, text: str) -> list[float]:
@@ -892,17 +916,24 @@ class LiveSearch:
             [self._vectors[text]] = self._embedder.embed([text])
         return self._vectors[text]
 
-    def _search_sync(self, query: str, vector_only: bool, k: int, keyword_text, cancer) -> list[Evidence]:
+    def _search_sync(self, query: str, vector_only: bool, k: int, keyword_text, cancer, engine) -> list[Evidence]:
+        from app.check.bm25 import CANDIDATES
         from app.check.search import parse_rows
 
         text = "" if vector_only else (keyword_text if keyword_text is not None else query)
-        rows = self._store.match_chunks(self._vector(query), text, k=k, cancer=cancer)
+        if engine == "bm25":
+            if self._bm25 is None:
+                raise RuntimeError("v4_bm25 needs the BM25 index")
+            ids = [cid for cid, _ in self._bm25.search(text, CANDIDATES, cancer)] if text else []
+            rows = self._store.match_chunks_fused(self._vector(query), ids, k=k)
+        else:
+            rows = self._store.match_chunks(self._vector(query), text, k=k, cancer=cancer)
         return parse_rows(rows)
 
-    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None):
+    async def search(self, query, *, vector_only, k, keyword_text=None, cancer=None, engine="sql"):
         import anyio.to_thread
 
-        return await anyio.to_thread.run_sync(self._search_sync, query, vector_only, k, keyword_text, cancer)
+        return await anyio.to_thread.run_sync(self._search_sync, query, vector_only, k, keyword_text, cancer, engine)
 
     def _fetch_sync(self, ids):
         rows = self._store._json(
@@ -931,7 +962,7 @@ def _parse_args(argv):
     p = argparse.ArgumentParser(prog="python -m evals.search.run", description="Search eval (issue #53).")
     p.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
     p.add_argument("--limit", type=int, default=None, help="only the first N claims")
-    p.add_argument("--variants", default=",".join(VARIANTS), help="comma-separated, default all five")
+    p.add_argument("--variants", default=",".join(VARIANTS), help="comma-separated, default all six")
     p.add_argument(
         "--refresh",
         nargs="*",
@@ -981,6 +1012,13 @@ async def _amain(args) -> int:
         print(f"Set {', '.join(missing)} in the .env", file=sys.stderr)
         return 2
 
+    bm25_index = None
+    if "v4_bm25" in args.variants:
+        bm25_index, problem = _load_bm25(settings)
+        if problem:
+            print(problem, file=sys.stderr)
+            return 2
+
     key = settings.openai_key.get_secret_value()
     query_client = OpenAIResponsesClient(key, model=settings.checker_model, timeout_s=settings.checker_timeout_s)
     judge_client = OpenAIResponsesClient(key, model=settings.checker_model, timeout_s=max(settings.checker_timeout_s, 180))
@@ -1004,7 +1042,7 @@ async def _amain(args) -> int:
             out_dir=args.out,
             cache_dir=args.cache,
             planner=LunaPlanner(query_client),
-            searcher=LiveSearch(embedder, store),
+            searcher=LiveSearch(embedder, store, bm25_index),
             judge=LunaJudge(judge_client),
             usage=usage,
             concurrency=args.concurrency,
@@ -1026,6 +1064,23 @@ async def _amain(args) -> int:
     print(f"report: {md_path}")
     print(f"data:   {json_path}")
     return 0
+
+
+def _load_bm25(settings):
+    """(index, None) when the local index exists and matches the live corpus, else (None, message)."""
+    from app.check.bm25 import Bm25Index, IndexError_, store_fingerprint
+    from app.corpus.supabase import SupabaseCorpus
+
+    hint = "build it with: python scripts/build_bm25_index.py (or drop v4_bm25 from --variants)"
+    try:
+        index = Bm25Index.load(settings.bm25_index_dir)
+    except IndexError_ as e:
+        return None, f"v4_bm25: no usable BM25 index at {settings.bm25_index_dir} ({type(e).__name__}); {hint}"
+    with SupabaseCorpus(settings.supabase_url, settings.supabase_secret_key.get_secret_value(), timeout_s=30) as s:
+        live = store_fingerprint(s)
+    if not index.matches(live):
+        return None, f"v4_bm25: the BM25 index at {settings.bm25_index_dir} doesn't match the corpus; {hint}"
+    return index, None
 
 
 def main(argv=None) -> int:
