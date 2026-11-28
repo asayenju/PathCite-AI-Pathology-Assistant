@@ -116,7 +116,7 @@ async def _triage_turn(client, turn: TriageTurn, previous: list[str], settings: 
     to_send = [
         (i, SpanInput(str(i), turn.text[s.start : s.end], _low_confidence_words(turn.words, turn.text[s.start : s.end], settings.asr_low_confidence)))
         for i, s in enumerate(spans)
-        if not s.filler
+        if not s.local_skip
     ]
     decisions = {}
     if to_send:
@@ -170,8 +170,8 @@ async def _triage_stream(request: Request, body: TriageRequest, settings: Settin
     description=(
         "Splits each doctor turn into sentence spans and labels each one with Jev (TypeSafe AI): `skip`, `claim` "
         "or `transcription`. Streams NDJSON, per turn in request order: `turn_started`, one `span` per span, "
-        "`turn_done`; then `done` with the Jev model. Filler spans are skipped locally and never sent. An error "
-        "after the stream has started arrives as a final `{\"type\": \"error\", \"code\"}` line. Send doctor turns "
+        "`turn_done`; then `done` with the Jev model. Filler spans and short content-free replies (\"Nobody "
+        "does.\") are skipped locally and never sent. An error after the stream has started arrives as a final `{\"type\": \"error\", \"code\"}` line. Send doctor turns "
         "only: their text is sent to TypeSafe. Nothing is stored or logged. Research use only: not a medical device."
     ),
     response_class=StreamingResponse,

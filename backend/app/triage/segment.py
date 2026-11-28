@@ -3,6 +3,13 @@
 Jev only labels the input it's given; it can't return spans. So spans are cut here, deterministically, as character
 offsets into the turn text (which the importer already NFC-normalised). Offsets, not quotes, are what the UI anchors
 on, so a sentence repeated within a turn is still placed correctly.
+
+Two kinds of span are skipped locally, never sent to Jev (`Span.local_skip`):
+- filler: no letters, or only filler words ("Um.", "Okay, okay.").
+- short_reply: at most 4 words, all from a small allow-list of content-free words, and no digit ("Nobody does.",
+  "That's normal.", "Most people do."). Only doctor turns are sent to Jev, so the patient line such a reply answers
+  is invisible and Jev can read it as a claim (issue #57). Any other word, such as a disease, drug, organ, verb
+  ("spread") or acronym ("HER2"), or any number, keeps the span: "Melanoma can spread." still goes to Jev.
 """
 
 import re
@@ -24,11 +31,47 @@ FILLERS = frozenset(
 )  # fmt: skip
 CONJUNCTIONS = frozenset({"and", "but", "so", "because", "or"})
 
+SHORT_REPLY_MAX_WORDS = 4
+"""A span of at most this many words made only of REPLY_WORDS is a context-dependent reply (local skip)."""
+REPLY_WORDS = frozenset(
+    {
+        # pronouns, determiners, quantifiers over people
+        "i", "you", "we", "they", "he", "she", "it", "me", "us", "them", "my", "your", "our", "their", "its",
+        "this", "that", "these", "those", "there", "here", "a", "an", "the", "some", "most", "many", "all", "any",
+        "nobody", "everybody", "everyone", "someone", "somebody", "anyone", "anybody", "people", "folks", "lots",
+        "plenty", "of", "at", "for", "to", "with", "in", "on", "about", "what", "how", "why",
+        # auxiliaries and their contractions
+        "do", "does", "did", "don't", "doesn't", "didn't", "is", "are", "was", "were", "be", "been", "isn't",
+        "aren't", "wasn't", "weren't", "can", "can't", "cannot", "could", "couldn't", "will", "won't", "would",
+        "wouldn't", "should", "shouldn't", "may", "might", "must", "have", "has", "had", "haven't", "hasn't",
+        "it's", "that's", "there's", "what's", "i'm", "you're", "we're", "they're", "it'll", "that'll", "i'd",
+        "you'd", "we'd", "i've", "you've", "we've", "they've", "let's",
+        # agreement, reassurance and other content-free words
+        "exactly", "absolutely", "definitely", "certainly", "totally", "completely", "entirely", "quite", "very",
+        "really", "so", "too", "also", "just", "actually", "indeed", "course", "same", "normal", "fine", "good",
+        "great", "true", "right", "correct", "fair", "common", "usual", "typical", "rare", "possible", "likely",
+        "probably", "maybe", "perhaps", "sometimes", "often", "always", "never", "not", "no", "yes", "now", "then",
+        "again", "enough", "point", "question", "questions", "worry", "worries", "problem", "sense", "okay", "ok",
+        "well", "understandable", "natural", "happens", "happen", "thing", "things", "agree", "know", "see",
+        "understand", "think", "mean", "guess", "bet", "hope", "sure", "thanks", "thank", "glad", "sorry", "hear",
+        "sounds", "mind", "either", "neither", "both", "nothing", "something", "everything", "much", "more",
+        "less", "case", "way", "fault", "deal", "else", "wonderful", "lovely", "perfect",
+    }
+)  # fmt: skip
+NUMBER_WORDS = frozenset(
+    {
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
+        "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "thousand",
+        "million", "half", "third", "thirds", "quarter", "percent", "once", "twice", "double", "triple",
+    }
+)  # fmt: skip
+
 # Terminal punctuation (or an ellipsis), any closing quotes/brackets, then whitespace or the end of the text.
 _BOUNDARY = re.compile(r"(?:\.{2,}|…|[.?!]+)[\"'”’)\]]*(?=\s|$)")
 _PRECEDING_TOKEN = re.compile(r"(\S+)$")
 _WORD = re.compile(r"\S+")
 _LETTER_TOKEN = re.compile(r"[a-z]+(?:[-'’][a-z]+)*")
+_EDGE = re.compile(r"^[\W_]+|[\W_]+$")  # punctuation around a word (keeps inner apostrophes and hyphens)
 
 
 @dataclass(frozen=True)
@@ -37,14 +80,36 @@ class Span:
     end: int  # exclusive
     filler: bool
     """True when the span has no letters or only filler words: it is skipped without calling Jev."""
+    short_reply: bool = False
+    """True for a short reply with no content word and no number ("Nobody does.", "That's normal."): skipped
+    without calling Jev. Its meaning depends on the patient's line, which is never sent, so it can't be checked."""
+
+    @property
+    def local_skip(self) -> bool:
+        return self.filler or self.short_reply
 
 
 def split_spans(text: str) -> list[Span]:
     spans: list[Span] = []
     for start, end in _sentences(text):
         for s, e in _cut_long(text, start, end):
-            spans.append(Span(s, e, _is_filler(text[s:e])))
+            filler = _is_filler(text[s:e])
+            spans.append(Span(s, e, filler, not filler and is_short_reply(text[s:e])))
     return spans
+
+
+def is_short_reply(span_text: str) -> bool:
+    """At most SHORT_REPLY_MAX_WORDS words, every one in REPLY_WORDS or FILLERS, and no digit.
+
+    The vocabulary is an allow-list of words that can't carry a medical assertion, so any other word (a disease,
+    drug, organ, verb like "spread", an acronym like "HER2") keeps the span for Jev. Number words aren't in it."""
+    if any(c.isdigit() for c in span_text):
+        return False
+    words = [_EDGE.sub("", w) for w in _WORD.findall(span_text.lower().replace("’", "'"))]
+    words = [w for w in words if w]
+    if not words or len(words) > SHORT_REPLY_MAX_WORDS:
+        return False
+    return all((w in REPLY_WORDS or w in FILLERS) and w not in NUMBER_WORDS for w in words)
 
 
 def _sentences(text: str) -> list[tuple[int, int]]:
