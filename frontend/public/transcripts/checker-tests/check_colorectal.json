@@ -1,0 +1,3645 @@
+{
+ "metadata": {
+  "transaction_key": "deprecated",
+  "request_id": "00000000-0000-4000-8000-SYNTHETIC0001",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created": "2026-11-24T00:00:00.000Z",
+  "duration": 79.38,
+  "channels": 1,
+  "models": [
+   "synthetic-model-uuid"
+  ],
+  "model_info": {
+   "synthetic-model-uuid": {
+    "name": "nova-3-medical",
+    "version": "synthetic",
+    "arch": "nova-3"
+   }
+  }
+ },
+ "results": {
+  "channels": [
+   {
+    "alternatives": [
+     {
+      "transcript": "Hi, come on in and have a seat. How have you been since the colonoscopy? Okay, I guess. A bit nervous about today, to be honest. That's completely normal. Your biopsy shows a colorectal cancer, an adenocarcinoma in the sigmoid colon. Oh. Okay. So what happens now? We'll book a CT scan of your chest, abdomen and pelvis for next week to stage it. What does the stage tell you? Stage three bowel cancer means it has spread to the liver. Oh no. Is that what I have? We don't know yet, the scan will tell us. Colon cancers are tested for mismatch repair proteins. Mismatch what? The mismatch repeat proteins fix mistakes when a cell copies its DNA. Did I get this from eating spicy food? I love hot sauce. Eating a lot of spicy food is one of the causes of bowel cancer. And if it comes back after the surgery? If bowel cancer does come back, it's usually within the first three years after the operation, so that's when we watch most closely. Okay. Thank you, doctor. You're welcome. I know it's a lot to take in.",
+      "confidence": 0.919,
+      "words": [
+       {
+        "word": "hi",
+        "start": 0.3,
+        "end": 0.51,
+        "confidence": 0.969,
+        "punctuated_word": "Hi,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "come",
+        "start": 0.76,
+        "end": 1.06,
+        "confidence": 0.894,
+        "punctuated_word": "come",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "on",
+        "start": 1.1,
+        "end": 1.31,
+        "confidence": 0.954,
+        "punctuated_word": "on",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "in",
+        "start": 1.35,
+        "end": 1.56,
+        "confidence": 0.875,
+        "punctuated_word": "in",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "and",
+        "start": 1.6,
+        "end": 1.86,
+        "confidence": 0.864,
+        "punctuated_word": "and",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "have",
+        "start": 1.9,
+        "end": 2.2,
+        "confidence": 0.861,
+        "punctuated_word": "have",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 2.24,
+        "end": 2.4,
+        "confidence": 0.876,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "seat",
+        "start": 2.44,
+        "end": 2.74,
+        "confidence": 0.989,
+        "punctuated_word": "seat.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "how",
+        "start": 2.99,
+        "end": 3.25,
+        "confidence": 0.873,
+        "punctuated_word": "How",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "have",
+        "start": 3.29,
+        "end": 3.59,
+        "confidence": 0.949,
+        "punctuated_word": "have",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "you",
+        "start": 3.63,
+        "end": 3.89,
+        "confidence": 0.93,
+        "punctuated_word": "you",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "been",
+        "start": 3.93,
+        "end": 4.23,
+        "confidence": 0.895,
+        "punctuated_word": "been",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "since",
+        "start": 4.27,
+        "end": 4.61,
+        "confidence": 0.949,
+        "punctuated_word": "since",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 4.65,
+        "end": 4.91,
+        "confidence": 0.973,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colonoscopy",
+        "start": 4.95,
+        "end": 5.56,
+        "confidence": 0.887,
+        "punctuated_word": "colonoscopy?",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "okay",
+        "start": 6.16,
+        "end": 6.46,
+        "confidence": 0.902,
+        "punctuated_word": "Okay,",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "i",
+        "start": 6.71,
+        "end": 6.87,
+        "confidence": 0.933,
+        "punctuated_word": "I",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "guess",
+        "start": 6.91,
+        "end": 7.25,
+        "confidence": 0.969,
+        "punctuated_word": "guess.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 7.5,
+        "end": 7.66,
+        "confidence": 0.989,
+        "punctuated_word": "A",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "bit",
+        "start": 7.7,
+        "end": 7.96,
+        "confidence": 0.87,
+        "punctuated_word": "bit",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "nervous",
+        "start": 8.0,
+        "end": 8.43,
+        "confidence": 0.966,
+        "punctuated_word": "nervous",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "about",
+        "start": 8.47,
+        "end": 8.81,
+        "confidence": 0.977,
+        "punctuated_word": "about",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "today",
+        "start": 8.85,
+        "end": 9.19,
+        "confidence": 0.908,
+        "punctuated_word": "today,",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "to",
+        "start": 9.44,
+        "end": 9.65,
+        "confidence": 0.978,
+        "punctuated_word": "to",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "be",
+        "start": 9.69,
+        "end": 9.9,
+        "confidence": 0.963,
+        "punctuated_word": "be",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "honest",
+        "start": 9.94,
+        "end": 10.33,
+        "confidence": 0.967,
+        "punctuated_word": "honest.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "that's",
+        "start": 10.93,
+        "end": 11.32,
+        "confidence": 0.889,
+        "punctuated_word": "That's",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "completely",
+        "start": 11.36,
+        "end": 11.93,
+        "confidence": 0.908,
+        "punctuated_word": "completely",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "normal",
+        "start": 11.97,
+        "end": 12.36,
+        "confidence": 0.982,
+        "punctuated_word": "normal.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "your",
+        "start": 12.61,
+        "end": 12.91,
+        "confidence": 0.92,
+        "punctuated_word": "Your",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "biopsy",
+        "start": 12.95,
+        "end": 13.34,
+        "confidence": 0.943,
+        "punctuated_word": "biopsy",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "shows",
+        "start": 13.38,
+        "end": 13.72,
+        "confidence": 0.897,
+        "punctuated_word": "shows",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 13.76,
+        "end": 13.92,
+        "confidence": 0.889,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colorectal",
+        "start": 13.96,
+        "end": 14.53,
+        "confidence": 0.908,
+        "punctuated_word": "colorectal",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cancer",
+        "start": 14.57,
+        "end": 14.96,
+        "confidence": 0.881,
+        "punctuated_word": "cancer,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "an",
+        "start": 15.21,
+        "end": 15.42,
+        "confidence": 0.865,
+        "punctuated_word": "an",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "adenocarcinoma",
+        "start": 15.46,
+        "end": 16.21,
+        "confidence": 0.903,
+        "punctuated_word": "adenocarcinoma",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "in",
+        "start": 16.25,
+        "end": 16.46,
+        "confidence": 0.949,
+        "punctuated_word": "in",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 16.5,
+        "end": 16.76,
+        "confidence": 0.902,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "sigmoid",
+        "start": 16.8,
+        "end": 17.23,
+        "confidence": 0.94,
+        "punctuated_word": "sigmoid",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colon",
+        "start": 17.27,
+        "end": 17.61,
+        "confidence": 0.991,
+        "punctuated_word": "colon.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "oh",
+        "start": 18.21,
+        "end": 18.42,
+        "confidence": 0.883,
+        "punctuated_word": "Oh.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "okay",
+        "start": 18.67,
+        "end": 18.97,
+        "confidence": 0.955,
+        "punctuated_word": "Okay.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "so",
+        "start": 19.22,
+        "end": 19.43,
+        "confidence": 0.862,
+        "punctuated_word": "So",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "what",
+        "start": 19.47,
+        "end": 19.77,
+        "confidence": 0.902,
+        "punctuated_word": "what",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "happens",
+        "start": 19.81,
+        "end": 20.24,
+        "confidence": 0.869,
+        "punctuated_word": "happens",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "now",
+        "start": 20.28,
+        "end": 20.54,
+        "confidence": 0.97,
+        "punctuated_word": "now?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "we'll",
+        "start": 21.14,
+        "end": 21.48,
+        "confidence": 0.94,
+        "punctuated_word": "We'll",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "book",
+        "start": 21.52,
+        "end": 21.82,
+        "confidence": 0.946,
+        "punctuated_word": "book",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 21.86,
+        "end": 22.02,
+        "confidence": 0.949,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "ct",
+        "start": 22.06,
+        "end": 22.27,
+        "confidence": 0.967,
+        "punctuated_word": "CT",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "scan",
+        "start": 22.31,
+        "end": 22.61,
+        "confidence": 0.908,
+        "punctuated_word": "scan",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "of",
+        "start": 22.65,
+        "end": 22.86,
+        "confidence": 0.943,
+        "punctuated_word": "of",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "your",
+        "start": 22.9,
+        "end": 23.2,
+        "confidence": 0.931,
+        "punctuated_word": "your",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "chest",
+        "start": 23.24,
+        "end": 23.58,
+        "confidence": 0.965,
+        "punctuated_word": "chest,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "abdomen",
+        "start": 23.83,
+        "end": 24.26,
+        "confidence": 0.884,
+        "punctuated_word": "abdomen",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "and",
+        "start": 24.3,
+        "end": 24.56,
+        "confidence": 0.981,
+        "punctuated_word": "and",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "pelvis",
+        "start": 24.6,
+        "end": 24.99,
+        "confidence": 0.907,
+        "punctuated_word": "pelvis",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "for",
+        "start": 25.03,
+        "end": 25.29,
+        "confidence": 0.955,
+        "punctuated_word": "for",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "next",
+        "start": 25.33,
+        "end": 25.63,
+        "confidence": 0.862,
+        "punctuated_word": "next",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "week",
+        "start": 25.67,
+        "end": 25.97,
+        "confidence": 0.871,
+        "punctuated_word": "week",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "to",
+        "start": 26.01,
+        "end": 26.22,
+        "confidence": 0.871,
+        "punctuated_word": "to",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "stage",
+        "start": 26.26,
+        "end": 26.6,
+        "confidence": 0.983,
+        "punctuated_word": "stage",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "it",
+        "start": 26.64,
+        "end": 26.85,
+        "confidence": 0.943,
+        "punctuated_word": "it.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "what",
+        "start": 27.45,
+        "end": 27.75,
+        "confidence": 0.909,
+        "punctuated_word": "What",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "does",
+        "start": 27.79,
+        "end": 28.09,
+        "confidence": 0.981,
+        "punctuated_word": "does",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 28.13,
+        "end": 28.39,
+        "confidence": 0.991,
+        "punctuated_word": "the",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "stage",
+        "start": 28.43,
+        "end": 28.77,
+        "confidence": 0.907,
+        "punctuated_word": "stage",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "tell",
+        "start": 28.81,
+        "end": 29.11,
+        "confidence": 0.939,
+        "punctuated_word": "tell",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "you",
+        "start": 29.15,
+        "end": 29.41,
+        "confidence": 0.937,
+        "punctuated_word": "you?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "stage",
+        "start": 30.01,
+        "end": 30.35,
+        "confidence": 0.871,
+        "punctuated_word": "Stage",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "three",
+        "start": 30.39,
+        "end": 30.73,
+        "confidence": 0.871,
+        "punctuated_word": "three",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "bowel",
+        "start": 30.77,
+        "end": 31.11,
+        "confidence": 0.991,
+        "punctuated_word": "bowel",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cancer",
+        "start": 31.15,
+        "end": 31.54,
+        "confidence": 0.905,
+        "punctuated_word": "cancer",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "means",
+        "start": 31.58,
+        "end": 31.92,
+        "confidence": 0.899,
+        "punctuated_word": "means",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "it",
+        "start": 31.96,
+        "end": 32.17,
+        "confidence": 0.995,
+        "punctuated_word": "it",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "has",
+        "start": 32.21,
+        "end": 32.47,
+        "confidence": 0.88,
+        "punctuated_word": "has",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "spread",
+        "start": 32.51,
+        "end": 32.9,
+        "confidence": 0.991,
+        "punctuated_word": "spread",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "to",
+        "start": 32.94,
+        "end": 33.15,
+        "confidence": 0.983,
+        "punctuated_word": "to",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 33.19,
+        "end": 33.45,
+        "confidence": 0.868,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "liver",
+        "start": 33.49,
+        "end": 33.83,
+        "confidence": 0.861,
+        "punctuated_word": "liver.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "oh",
+        "start": 34.43,
+        "end": 34.64,
+        "confidence": 0.954,
+        "punctuated_word": "Oh",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "no",
+        "start": 34.68,
+        "end": 34.89,
+        "confidence": 0.959,
+        "punctuated_word": "no.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "is",
+        "start": 35.14,
+        "end": 35.35,
+        "confidence": 0.929,
+        "punctuated_word": "Is",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "that",
+        "start": 35.39,
+        "end": 35.69,
+        "confidence": 0.93,
+        "punctuated_word": "that",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "what",
+        "start": 35.73,
+        "end": 36.03,
+        "confidence": 0.953,
+        "punctuated_word": "what",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "i",
+        "start": 36.07,
+        "end": 36.23,
+        "confidence": 0.88,
+        "punctuated_word": "I",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "have",
+        "start": 36.27,
+        "end": 36.57,
+        "confidence": 0.951,
+        "punctuated_word": "have?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "we",
+        "start": 37.17,
+        "end": 37.38,
+        "confidence": 0.916,
+        "punctuated_word": "We",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "don't",
+        "start": 37.42,
+        "end": 37.76,
+        "confidence": 0.913,
+        "punctuated_word": "don't",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "know",
+        "start": 37.8,
+        "end": 38.1,
+        "confidence": 0.878,
+        "punctuated_word": "know",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "yet",
+        "start": 38.14,
+        "end": 38.4,
+        "confidence": 0.985,
+        "punctuated_word": "yet,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 38.65,
+        "end": 38.91,
+        "confidence": 0.968,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "scan",
+        "start": 38.95,
+        "end": 39.25,
+        "confidence": 0.903,
+        "punctuated_word": "scan",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "will",
+        "start": 39.29,
+        "end": 39.59,
+        "confidence": 0.952,
+        "punctuated_word": "will",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "tell",
+        "start": 39.63,
+        "end": 39.93,
+        "confidence": 0.951,
+        "punctuated_word": "tell",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "us",
+        "start": 39.97,
+        "end": 40.18,
+        "confidence": 0.915,
+        "punctuated_word": "us.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "colon",
+        "start": 40.43,
+        "end": 40.77,
+        "confidence": 0.936,
+        "punctuated_word": "Colon",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cancers",
+        "start": 40.81,
+        "end": 41.24,
+        "confidence": 0.922,
+        "punctuated_word": "cancers",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "are",
+        "start": 41.28,
+        "end": 41.54,
+        "confidence": 0.86,
+        "punctuated_word": "are",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "tested",
+        "start": 41.58,
+        "end": 41.97,
+        "confidence": 0.893,
+        "punctuated_word": "tested",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "for",
+        "start": 42.01,
+        "end": 42.27,
+        "confidence": 0.883,
+        "punctuated_word": "for",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mismatch",
+        "start": 42.31,
+        "end": 42.79,
+        "confidence": 0.901,
+        "punctuated_word": "mismatch",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "repair",
+        "start": 42.83,
+        "end": 43.22,
+        "confidence": 0.959,
+        "punctuated_word": "repair",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "proteins",
+        "start": 43.26,
+        "end": 43.74,
+        "confidence": 0.893,
+        "punctuated_word": "proteins.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mismatch",
+        "start": 44.34,
+        "end": 44.82,
+        "confidence": 0.938,
+        "punctuated_word": "Mismatch",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "what",
+        "start": 44.86,
+        "end": 45.16,
+        "confidence": 0.99,
+        "punctuated_word": "what?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 45.76,
+        "end": 46.02,
+        "confidence": 0.952,
+        "punctuated_word": "The",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mismatch",
+        "start": 46.06,
+        "end": 46.54,
+        "confidence": 0.38,
+        "punctuated_word": "mismatch",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "repeat",
+        "start": 46.58,
+        "end": 46.97,
+        "confidence": 0.38,
+        "punctuated_word": "repeat",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "proteins",
+        "start": 47.01,
+        "end": 47.49,
+        "confidence": 0.959,
+        "punctuated_word": "proteins",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "fix",
+        "start": 47.53,
+        "end": 47.79,
+        "confidence": 0.911,
+        "punctuated_word": "fix",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "mistakes",
+        "start": 47.83,
+        "end": 48.31,
+        "confidence": 0.924,
+        "punctuated_word": "mistakes",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "when",
+        "start": 48.35,
+        "end": 48.65,
+        "confidence": 0.973,
+        "punctuated_word": "when",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 48.69,
+        "end": 48.85,
+        "confidence": 0.955,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cell",
+        "start": 48.89,
+        "end": 49.19,
+        "confidence": 0.932,
+        "punctuated_word": "cell",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "copies",
+        "start": 49.23,
+        "end": 49.62,
+        "confidence": 0.907,
+        "punctuated_word": "copies",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "its",
+        "start": 49.66,
+        "end": 49.92,
+        "confidence": 0.968,
+        "punctuated_word": "its",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "dna",
+        "start": 49.96,
+        "end": 50.22,
+        "confidence": 0.904,
+        "punctuated_word": "DNA.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "did",
+        "start": 50.82,
+        "end": 51.08,
+        "confidence": 0.889,
+        "punctuated_word": "Did",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "i",
+        "start": 51.12,
+        "end": 51.28,
+        "confidence": 0.944,
+        "punctuated_word": "I",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "get",
+        "start": 51.32,
+        "end": 51.58,
+        "confidence": 0.977,
+        "punctuated_word": "get",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "this",
+        "start": 51.62,
+        "end": 51.92,
+        "confidence": 0.992,
+        "punctuated_word": "this",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "from",
+        "start": 51.96,
+        "end": 52.26,
+        "confidence": 0.873,
+        "punctuated_word": "from",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "eating",
+        "start": 52.3,
+        "end": 52.69,
+        "confidence": 0.91,
+        "punctuated_word": "eating",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "spicy",
+        "start": 52.73,
+        "end": 53.07,
+        "confidence": 0.889,
+        "punctuated_word": "spicy",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "food",
+        "start": 53.11,
+        "end": 53.41,
+        "confidence": 0.988,
+        "punctuated_word": "food?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "i",
+        "start": 53.66,
+        "end": 53.82,
+        "confidence": 0.985,
+        "punctuated_word": "I",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "love",
+        "start": 53.86,
+        "end": 54.16,
+        "confidence": 0.891,
+        "punctuated_word": "love",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "hot",
+        "start": 54.2,
+        "end": 54.46,
+        "confidence": 0.874,
+        "punctuated_word": "hot",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "sauce",
+        "start": 54.5,
+        "end": 54.84,
+        "confidence": 0.913,
+        "punctuated_word": "sauce.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "eating",
+        "start": 55.44,
+        "end": 55.83,
+        "confidence": 0.863,
+        "punctuated_word": "Eating",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 55.87,
+        "end": 56.03,
+        "confidence": 0.88,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "lot",
+        "start": 56.07,
+        "end": 56.33,
+        "confidence": 0.869,
+        "punctuated_word": "lot",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "of",
+        "start": 56.37,
+        "end": 56.58,
+        "confidence": 0.956,
+        "punctuated_word": "of",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "spicy",
+        "start": 56.62,
+        "end": 56.96,
+        "confidence": 0.914,
+        "punctuated_word": "spicy",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "food",
+        "start": 57.0,
+        "end": 57.3,
+        "confidence": 0.977,
+        "punctuated_word": "food",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "is",
+        "start": 57.34,
+        "end": 57.55,
+        "confidence": 0.983,
+        "punctuated_word": "is",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "one",
+        "start": 57.59,
+        "end": 57.85,
+        "confidence": 0.895,
+        "punctuated_word": "one",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "of",
+        "start": 57.89,
+        "end": 58.1,
+        "confidence": 0.985,
+        "punctuated_word": "of",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 58.14,
+        "end": 58.4,
+        "confidence": 0.956,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "causes",
+        "start": 58.44,
+        "end": 58.83,
+        "confidence": 0.933,
+        "punctuated_word": "causes",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "of",
+        "start": 58.87,
+        "end": 59.08,
+        "confidence": 0.883,
+        "punctuated_word": "of",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "bowel",
+        "start": 59.12,
+        "end": 59.46,
+        "confidence": 0.863,
+        "punctuated_word": "bowel",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cancer",
+        "start": 59.5,
+        "end": 59.89,
+        "confidence": 0.925,
+        "punctuated_word": "cancer.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "and",
+        "start": 60.49,
+        "end": 60.75,
+        "confidence": 0.882,
+        "punctuated_word": "And",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "if",
+        "start": 60.79,
+        "end": 61.0,
+        "confidence": 0.925,
+        "punctuated_word": "if",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "it",
+        "start": 61.04,
+        "end": 61.25,
+        "confidence": 0.896,
+        "punctuated_word": "it",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "comes",
+        "start": 61.29,
+        "end": 61.63,
+        "confidence": 0.866,
+        "punctuated_word": "comes",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "back",
+        "start": 61.67,
+        "end": 61.97,
+        "confidence": 0.991,
+        "punctuated_word": "back",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "after",
+        "start": 62.01,
+        "end": 62.35,
+        "confidence": 0.895,
+        "punctuated_word": "after",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 62.39,
+        "end": 62.65,
+        "confidence": 0.962,
+        "punctuated_word": "the",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "surgery",
+        "start": 62.69,
+        "end": 63.12,
+        "confidence": 0.863,
+        "punctuated_word": "surgery?",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "if",
+        "start": 63.72,
+        "end": 63.93,
+        "confidence": 0.864,
+        "punctuated_word": "If",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "bowel",
+        "start": 63.97,
+        "end": 64.31,
+        "confidence": 0.893,
+        "punctuated_word": "bowel",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "cancer",
+        "start": 64.35,
+        "end": 64.74,
+        "confidence": 0.962,
+        "punctuated_word": "cancer",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "does",
+        "start": 64.78,
+        "end": 65.08,
+        "confidence": 0.936,
+        "punctuated_word": "does",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "come",
+        "start": 65.12,
+        "end": 65.42,
+        "confidence": 0.869,
+        "punctuated_word": "come",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "back",
+        "start": 65.46,
+        "end": 65.76,
+        "confidence": 0.982,
+        "punctuated_word": "back,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "it's",
+        "start": 66.01,
+        "end": 66.31,
+        "confidence": 0.863,
+        "punctuated_word": "it's",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "usually",
+        "start": 66.35,
+        "end": 66.78,
+        "confidence": 0.931,
+        "punctuated_word": "usually",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "within",
+        "start": 66.82,
+        "end": 67.21,
+        "confidence": 0.961,
+        "punctuated_word": "within",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 67.25,
+        "end": 67.51,
+        "confidence": 0.872,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "first",
+        "start": 67.55,
+        "end": 67.89,
+        "confidence": 0.936,
+        "punctuated_word": "first",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "three",
+        "start": 67.93,
+        "end": 68.27,
+        "confidence": 0.919,
+        "punctuated_word": "three",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "years",
+        "start": 68.31,
+        "end": 68.65,
+        "confidence": 0.936,
+        "punctuated_word": "years",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "after",
+        "start": 68.69,
+        "end": 69.03,
+        "confidence": 0.873,
+        "punctuated_word": "after",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "the",
+        "start": 69.07,
+        "end": 69.33,
+        "confidence": 0.911,
+        "punctuated_word": "the",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "operation",
+        "start": 69.37,
+        "end": 69.89,
+        "confidence": 0.931,
+        "punctuated_word": "operation,",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "so",
+        "start": 70.14,
+        "end": 70.35,
+        "confidence": 0.89,
+        "punctuated_word": "so",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "that's",
+        "start": 70.39,
+        "end": 70.78,
+        "confidence": 0.913,
+        "punctuated_word": "that's",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "when",
+        "start": 70.82,
+        "end": 71.12,
+        "confidence": 0.936,
+        "punctuated_word": "when",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "we",
+        "start": 71.16,
+        "end": 71.37,
+        "confidence": 0.94,
+        "punctuated_word": "we",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "watch",
+        "start": 71.41,
+        "end": 71.75,
+        "confidence": 0.972,
+        "punctuated_word": "watch",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "most",
+        "start": 71.79,
+        "end": 72.09,
+        "confidence": 0.96,
+        "punctuated_word": "most",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "closely",
+        "start": 72.13,
+        "end": 72.56,
+        "confidence": 0.984,
+        "punctuated_word": "closely.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "okay",
+        "start": 73.16,
+        "end": 73.46,
+        "confidence": 0.959,
+        "punctuated_word": "Okay.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "thank",
+        "start": 73.71,
+        "end": 74.05,
+        "confidence": 0.94,
+        "punctuated_word": "Thank",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "you",
+        "start": 74.09,
+        "end": 74.35,
+        "confidence": 0.915,
+        "punctuated_word": "you,",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "doctor",
+        "start": 74.6,
+        "end": 74.99,
+        "confidence": 0.911,
+        "punctuated_word": "doctor.",
+        "speaker": 1,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "you're",
+        "start": 75.59,
+        "end": 75.98,
+        "confidence": 0.915,
+        "punctuated_word": "You're",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "welcome",
+        "start": 76.02,
+        "end": 76.45,
+        "confidence": 0.994,
+        "punctuated_word": "welcome.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "i",
+        "start": 76.7,
+        "end": 76.86,
+        "confidence": 0.962,
+        "punctuated_word": "I",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "know",
+        "start": 76.9,
+        "end": 77.2,
+        "confidence": 0.876,
+        "punctuated_word": "know",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "it's",
+        "start": 77.24,
+        "end": 77.54,
+        "confidence": 0.862,
+        "punctuated_word": "it's",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "a",
+        "start": 77.58,
+        "end": 77.74,
+        "confidence": 0.932,
+        "punctuated_word": "a",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "lot",
+        "start": 77.78,
+        "end": 78.04,
+        "confidence": 0.959,
+        "punctuated_word": "lot",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "to",
+        "start": 78.08,
+        "end": 78.29,
+        "confidence": 0.871,
+        "punctuated_word": "to",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "take",
+        "start": 78.33,
+        "end": 78.63,
+        "confidence": 0.896,
+        "punctuated_word": "take",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       },
+       {
+        "word": "in",
+        "start": 78.67,
+        "end": 78.88,
+        "confidence": 0.868,
+        "punctuated_word": "in.",
+        "speaker": 0,
+        "speaker_confidence": 0.82
+       }
+      ]
+     }
+    ],
+    "detected_language": "en",
+    "language_confidence": 0.97
+   }
+  ],
+  "utterances": [
+   {
+    "start": 0.3,
+    "end": 5.56,
+    "confidence": 0.916,
+    "channel": 0,
+    "transcript": "Hi, come on in and have a seat. How have you been since the colonoscopy?",
+    "words": [
+     {
+      "word": "hi",
+      "start": 0.3,
+      "end": 0.51,
+      "confidence": 0.969,
+      "punctuated_word": "Hi,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "come",
+      "start": 0.76,
+      "end": 1.06,
+      "confidence": 0.894,
+      "punctuated_word": "come",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "on",
+      "start": 1.1,
+      "end": 1.31,
+      "confidence": 0.954,
+      "punctuated_word": "on",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "in",
+      "start": 1.35,
+      "end": 1.56,
+      "confidence": 0.875,
+      "punctuated_word": "in",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "and",
+      "start": 1.6,
+      "end": 1.86,
+      "confidence": 0.864,
+      "punctuated_word": "and",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "have",
+      "start": 1.9,
+      "end": 2.2,
+      "confidence": 0.861,
+      "punctuated_word": "have",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 2.24,
+      "end": 2.4,
+      "confidence": 0.876,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "seat",
+      "start": 2.44,
+      "end": 2.74,
+      "confidence": 0.989,
+      "punctuated_word": "seat.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "how",
+      "start": 2.99,
+      "end": 3.25,
+      "confidence": 0.873,
+      "punctuated_word": "How",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "have",
+      "start": 3.29,
+      "end": 3.59,
+      "confidence": 0.949,
+      "punctuated_word": "have",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "you",
+      "start": 3.63,
+      "end": 3.89,
+      "confidence": 0.93,
+      "punctuated_word": "you",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "been",
+      "start": 3.93,
+      "end": 4.23,
+      "confidence": 0.895,
+      "punctuated_word": "been",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "since",
+      "start": 4.27,
+      "end": 4.61,
+      "confidence": 0.949,
+      "punctuated_word": "since",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 4.65,
+      "end": 4.91,
+      "confidence": 0.973,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colonoscopy",
+      "start": 4.95,
+      "end": 5.56,
+      "confidence": 0.887,
+      "punctuated_word": "colonoscopy?",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000000"
+   },
+   {
+    "start": 6.16,
+    "end": 10.33,
+    "confidence": 0.947,
+    "channel": 0,
+    "transcript": "Okay, I guess. A bit nervous about today, to be honest.",
+    "words": [
+     {
+      "word": "okay",
+      "start": 6.16,
+      "end": 6.46,
+      "confidence": 0.902,
+      "punctuated_word": "Okay,",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "i",
+      "start": 6.71,
+      "end": 6.87,
+      "confidence": 0.933,
+      "punctuated_word": "I",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "guess",
+      "start": 6.91,
+      "end": 7.25,
+      "confidence": 0.969,
+      "punctuated_word": "guess.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 7.5,
+      "end": 7.66,
+      "confidence": 0.989,
+      "punctuated_word": "A",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "bit",
+      "start": 7.7,
+      "end": 7.96,
+      "confidence": 0.87,
+      "punctuated_word": "bit",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "nervous",
+      "start": 8.0,
+      "end": 8.43,
+      "confidence": 0.966,
+      "punctuated_word": "nervous",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "about",
+      "start": 8.47,
+      "end": 8.81,
+      "confidence": 0.977,
+      "punctuated_word": "about",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "today",
+      "start": 8.85,
+      "end": 9.19,
+      "confidence": 0.908,
+      "punctuated_word": "today,",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "to",
+      "start": 9.44,
+      "end": 9.65,
+      "confidence": 0.978,
+      "punctuated_word": "to",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "be",
+      "start": 9.69,
+      "end": 9.9,
+      "confidence": 0.963,
+      "punctuated_word": "be",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "honest",
+      "start": 9.94,
+      "end": 10.33,
+      "confidence": 0.967,
+      "punctuated_word": "honest.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000001"
+   },
+   {
+    "start": 10.93,
+    "end": 17.61,
+    "confidence": 0.918,
+    "channel": 0,
+    "transcript": "That's completely normal. Your biopsy shows a colorectal cancer, an adenocarcinoma in the sigmoid colon.",
+    "words": [
+     {
+      "word": "that's",
+      "start": 10.93,
+      "end": 11.32,
+      "confidence": 0.889,
+      "punctuated_word": "That's",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "completely",
+      "start": 11.36,
+      "end": 11.93,
+      "confidence": 0.908,
+      "punctuated_word": "completely",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "normal",
+      "start": 11.97,
+      "end": 12.36,
+      "confidence": 0.982,
+      "punctuated_word": "normal.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "your",
+      "start": 12.61,
+      "end": 12.91,
+      "confidence": 0.92,
+      "punctuated_word": "Your",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "biopsy",
+      "start": 12.95,
+      "end": 13.34,
+      "confidence": 0.943,
+      "punctuated_word": "biopsy",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "shows",
+      "start": 13.38,
+      "end": 13.72,
+      "confidence": 0.897,
+      "punctuated_word": "shows",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 13.76,
+      "end": 13.92,
+      "confidence": 0.889,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colorectal",
+      "start": 13.96,
+      "end": 14.53,
+      "confidence": 0.908,
+      "punctuated_word": "colorectal",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cancer",
+      "start": 14.57,
+      "end": 14.96,
+      "confidence": 0.881,
+      "punctuated_word": "cancer,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "an",
+      "start": 15.21,
+      "end": 15.42,
+      "confidence": 0.865,
+      "punctuated_word": "an",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "adenocarcinoma",
+      "start": 15.46,
+      "end": 16.21,
+      "confidence": 0.903,
+      "punctuated_word": "adenocarcinoma",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "in",
+      "start": 16.25,
+      "end": 16.46,
+      "confidence": 0.949,
+      "punctuated_word": "in",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 16.5,
+      "end": 16.76,
+      "confidence": 0.902,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "sigmoid",
+      "start": 16.8,
+      "end": 17.23,
+      "confidence": 0.94,
+      "punctuated_word": "sigmoid",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colon",
+      "start": 17.27,
+      "end": 17.61,
+      "confidence": 0.991,
+      "punctuated_word": "colon.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000002"
+   },
+   {
+    "start": 18.21,
+    "end": 20.54,
+    "confidence": 0.907,
+    "channel": 0,
+    "transcript": "Oh. Okay. So what happens now?",
+    "words": [
+     {
+      "word": "oh",
+      "start": 18.21,
+      "end": 18.42,
+      "confidence": 0.883,
+      "punctuated_word": "Oh.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "okay",
+      "start": 18.67,
+      "end": 18.97,
+      "confidence": 0.955,
+      "punctuated_word": "Okay.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "so",
+      "start": 19.22,
+      "end": 19.43,
+      "confidence": 0.862,
+      "punctuated_word": "So",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "what",
+      "start": 19.47,
+      "end": 19.77,
+      "confidence": 0.902,
+      "punctuated_word": "what",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "happens",
+      "start": 19.81,
+      "end": 20.24,
+      "confidence": 0.869,
+      "punctuated_word": "happens",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "now",
+      "start": 20.28,
+      "end": 20.54,
+      "confidence": 0.97,
+      "punctuated_word": "now?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000003"
+   },
+   {
+    "start": 21.14,
+    "end": 26.85,
+    "confidence": 0.93,
+    "channel": 0,
+    "transcript": "We'll book a CT scan of your chest, abdomen and pelvis for next week to stage it.",
+    "words": [
+     {
+      "word": "we'll",
+      "start": 21.14,
+      "end": 21.48,
+      "confidence": 0.94,
+      "punctuated_word": "We'll",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "book",
+      "start": 21.52,
+      "end": 21.82,
+      "confidence": 0.946,
+      "punctuated_word": "book",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 21.86,
+      "end": 22.02,
+      "confidence": 0.949,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "ct",
+      "start": 22.06,
+      "end": 22.27,
+      "confidence": 0.967,
+      "punctuated_word": "CT",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "scan",
+      "start": 22.31,
+      "end": 22.61,
+      "confidence": 0.908,
+      "punctuated_word": "scan",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "of",
+      "start": 22.65,
+      "end": 22.86,
+      "confidence": 0.943,
+      "punctuated_word": "of",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "your",
+      "start": 22.9,
+      "end": 23.2,
+      "confidence": 0.931,
+      "punctuated_word": "your",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "chest",
+      "start": 23.24,
+      "end": 23.58,
+      "confidence": 0.965,
+      "punctuated_word": "chest,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "abdomen",
+      "start": 23.83,
+      "end": 24.26,
+      "confidence": 0.884,
+      "punctuated_word": "abdomen",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "and",
+      "start": 24.3,
+      "end": 24.56,
+      "confidence": 0.981,
+      "punctuated_word": "and",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "pelvis",
+      "start": 24.6,
+      "end": 24.99,
+      "confidence": 0.907,
+      "punctuated_word": "pelvis",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "for",
+      "start": 25.03,
+      "end": 25.29,
+      "confidence": 0.955,
+      "punctuated_word": "for",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "next",
+      "start": 25.33,
+      "end": 25.63,
+      "confidence": 0.862,
+      "punctuated_word": "next",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "week",
+      "start": 25.67,
+      "end": 25.97,
+      "confidence": 0.871,
+      "punctuated_word": "week",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "to",
+      "start": 26.01,
+      "end": 26.22,
+      "confidence": 0.871,
+      "punctuated_word": "to",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "stage",
+      "start": 26.26,
+      "end": 26.6,
+      "confidence": 0.983,
+      "punctuated_word": "stage",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "it",
+      "start": 26.64,
+      "end": 26.85,
+      "confidence": 0.943,
+      "punctuated_word": "it.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000004"
+   },
+   {
+    "start": 27.45,
+    "end": 29.41,
+    "confidence": 0.944,
+    "channel": 0,
+    "transcript": "What does the stage tell you?",
+    "words": [
+     {
+      "word": "what",
+      "start": 27.45,
+      "end": 27.75,
+      "confidence": 0.909,
+      "punctuated_word": "What",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "does",
+      "start": 27.79,
+      "end": 28.09,
+      "confidence": 0.981,
+      "punctuated_word": "does",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 28.13,
+      "end": 28.39,
+      "confidence": 0.991,
+      "punctuated_word": "the",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "stage",
+      "start": 28.43,
+      "end": 28.77,
+      "confidence": 0.907,
+      "punctuated_word": "stage",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "tell",
+      "start": 28.81,
+      "end": 29.11,
+      "confidence": 0.939,
+      "punctuated_word": "tell",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "you",
+      "start": 29.15,
+      "end": 29.41,
+      "confidence": 0.937,
+      "punctuated_word": "you?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000005"
+   },
+   {
+    "start": 30.01,
+    "end": 33.83,
+    "confidence": 0.92,
+    "channel": 0,
+    "transcript": "Stage three bowel cancer means it has spread to the liver.",
+    "words": [
+     {
+      "word": "stage",
+      "start": 30.01,
+      "end": 30.35,
+      "confidence": 0.871,
+      "punctuated_word": "Stage",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "three",
+      "start": 30.39,
+      "end": 30.73,
+      "confidence": 0.871,
+      "punctuated_word": "three",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "bowel",
+      "start": 30.77,
+      "end": 31.11,
+      "confidence": 0.991,
+      "punctuated_word": "bowel",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cancer",
+      "start": 31.15,
+      "end": 31.54,
+      "confidence": 0.905,
+      "punctuated_word": "cancer",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "means",
+      "start": 31.58,
+      "end": 31.92,
+      "confidence": 0.899,
+      "punctuated_word": "means",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "it",
+      "start": 31.96,
+      "end": 32.17,
+      "confidence": 0.995,
+      "punctuated_word": "it",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "has",
+      "start": 32.21,
+      "end": 32.47,
+      "confidence": 0.88,
+      "punctuated_word": "has",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "spread",
+      "start": 32.51,
+      "end": 32.9,
+      "confidence": 0.991,
+      "punctuated_word": "spread",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "to",
+      "start": 32.94,
+      "end": 33.15,
+      "confidence": 0.983,
+      "punctuated_word": "to",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 33.19,
+      "end": 33.45,
+      "confidence": 0.868,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "liver",
+      "start": 33.49,
+      "end": 33.83,
+      "confidence": 0.861,
+      "punctuated_word": "liver.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000006"
+   },
+   {
+    "start": 34.43,
+    "end": 36.57,
+    "confidence": 0.937,
+    "channel": 0,
+    "transcript": "Oh no. Is that what I have?",
+    "words": [
+     {
+      "word": "oh",
+      "start": 34.43,
+      "end": 34.64,
+      "confidence": 0.954,
+      "punctuated_word": "Oh",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "no",
+      "start": 34.68,
+      "end": 34.89,
+      "confidence": 0.959,
+      "punctuated_word": "no.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "is",
+      "start": 35.14,
+      "end": 35.35,
+      "confidence": 0.929,
+      "punctuated_word": "Is",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "that",
+      "start": 35.39,
+      "end": 35.69,
+      "confidence": 0.93,
+      "punctuated_word": "that",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "what",
+      "start": 35.73,
+      "end": 36.03,
+      "confidence": 0.953,
+      "punctuated_word": "what",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "i",
+      "start": 36.07,
+      "end": 36.23,
+      "confidence": 0.88,
+      "punctuated_word": "I",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "have",
+      "start": 36.27,
+      "end": 36.57,
+      "confidence": 0.951,
+      "punctuated_word": "have?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000007"
+   },
+   {
+    "start": 37.17,
+    "end": 43.74,
+    "confidence": 0.919,
+    "channel": 0,
+    "transcript": "We don't know yet, the scan will tell us. Colon cancers are tested for mismatch repair proteins.",
+    "words": [
+     {
+      "word": "we",
+      "start": 37.17,
+      "end": 37.38,
+      "confidence": 0.916,
+      "punctuated_word": "We",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "don't",
+      "start": 37.42,
+      "end": 37.76,
+      "confidence": 0.913,
+      "punctuated_word": "don't",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "know",
+      "start": 37.8,
+      "end": 38.1,
+      "confidence": 0.878,
+      "punctuated_word": "know",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "yet",
+      "start": 38.14,
+      "end": 38.4,
+      "confidence": 0.985,
+      "punctuated_word": "yet,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 38.65,
+      "end": 38.91,
+      "confidence": 0.968,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "scan",
+      "start": 38.95,
+      "end": 39.25,
+      "confidence": 0.903,
+      "punctuated_word": "scan",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "will",
+      "start": 39.29,
+      "end": 39.59,
+      "confidence": 0.952,
+      "punctuated_word": "will",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "tell",
+      "start": 39.63,
+      "end": 39.93,
+      "confidence": 0.951,
+      "punctuated_word": "tell",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "us",
+      "start": 39.97,
+      "end": 40.18,
+      "confidence": 0.915,
+      "punctuated_word": "us.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "colon",
+      "start": 40.43,
+      "end": 40.77,
+      "confidence": 0.936,
+      "punctuated_word": "Colon",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cancers",
+      "start": 40.81,
+      "end": 41.24,
+      "confidence": 0.922,
+      "punctuated_word": "cancers",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "are",
+      "start": 41.28,
+      "end": 41.54,
+      "confidence": 0.86,
+      "punctuated_word": "are",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "tested",
+      "start": 41.58,
+      "end": 41.97,
+      "confidence": 0.893,
+      "punctuated_word": "tested",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "for",
+      "start": 42.01,
+      "end": 42.27,
+      "confidence": 0.883,
+      "punctuated_word": "for",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "mismatch",
+      "start": 42.31,
+      "end": 42.79,
+      "confidence": 0.901,
+      "punctuated_word": "mismatch",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "repair",
+      "start": 42.83,
+      "end": 43.22,
+      "confidence": 0.959,
+      "punctuated_word": "repair",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "proteins",
+      "start": 43.26,
+      "end": 43.74,
+      "confidence": 0.893,
+      "punctuated_word": "proteins.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000008"
+   },
+   {
+    "start": 44.34,
+    "end": 45.16,
+    "confidence": 0.964,
+    "channel": 0,
+    "transcript": "Mismatch what?",
+    "words": [
+     {
+      "word": "mismatch",
+      "start": 44.34,
+      "end": 44.82,
+      "confidence": 0.938,
+      "punctuated_word": "Mismatch",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "what",
+      "start": 44.86,
+      "end": 45.16,
+      "confidence": 0.99,
+      "punctuated_word": "what?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000009"
+   },
+   {
+    "start": 45.76,
+    "end": 50.22,
+    "confidence": 0.845,
+    "channel": 0,
+    "transcript": "The mismatch repeat proteins fix mistakes when a cell copies its DNA.",
+    "words": [
+     {
+      "word": "the",
+      "start": 45.76,
+      "end": 46.02,
+      "confidence": 0.952,
+      "punctuated_word": "The",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "mismatch",
+      "start": 46.06,
+      "end": 46.54,
+      "confidence": 0.38,
+      "punctuated_word": "mismatch",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "repeat",
+      "start": 46.58,
+      "end": 46.97,
+      "confidence": 0.38,
+      "punctuated_word": "repeat",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "proteins",
+      "start": 47.01,
+      "end": 47.49,
+      "confidence": 0.959,
+      "punctuated_word": "proteins",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "fix",
+      "start": 47.53,
+      "end": 47.79,
+      "confidence": 0.911,
+      "punctuated_word": "fix",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "mistakes",
+      "start": 47.83,
+      "end": 48.31,
+      "confidence": 0.924,
+      "punctuated_word": "mistakes",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "when",
+      "start": 48.35,
+      "end": 48.65,
+      "confidence": 0.973,
+      "punctuated_word": "when",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 48.69,
+      "end": 48.85,
+      "confidence": 0.955,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cell",
+      "start": 48.89,
+      "end": 49.19,
+      "confidence": 0.932,
+      "punctuated_word": "cell",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "copies",
+      "start": 49.23,
+      "end": 49.62,
+      "confidence": 0.907,
+      "punctuated_word": "copies",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "its",
+      "start": 49.66,
+      "end": 49.92,
+      "confidence": 0.968,
+      "punctuated_word": "its",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "dna",
+      "start": 49.96,
+      "end": 50.22,
+      "confidence": 0.904,
+      "punctuated_word": "DNA.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000010"
+   },
+   {
+    "start": 50.82,
+    "end": 54.84,
+    "confidence": 0.927,
+    "channel": 0,
+    "transcript": "Did I get this from eating spicy food? I love hot sauce.",
+    "words": [
+     {
+      "word": "did",
+      "start": 50.82,
+      "end": 51.08,
+      "confidence": 0.889,
+      "punctuated_word": "Did",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "i",
+      "start": 51.12,
+      "end": 51.28,
+      "confidence": 0.944,
+      "punctuated_word": "I",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "get",
+      "start": 51.32,
+      "end": 51.58,
+      "confidence": 0.977,
+      "punctuated_word": "get",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "this",
+      "start": 51.62,
+      "end": 51.92,
+      "confidence": 0.992,
+      "punctuated_word": "this",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "from",
+      "start": 51.96,
+      "end": 52.26,
+      "confidence": 0.873,
+      "punctuated_word": "from",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "eating",
+      "start": 52.3,
+      "end": 52.69,
+      "confidence": 0.91,
+      "punctuated_word": "eating",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "spicy",
+      "start": 52.73,
+      "end": 53.07,
+      "confidence": 0.889,
+      "punctuated_word": "spicy",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "food",
+      "start": 53.11,
+      "end": 53.41,
+      "confidence": 0.988,
+      "punctuated_word": "food?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "i",
+      "start": 53.66,
+      "end": 53.82,
+      "confidence": 0.985,
+      "punctuated_word": "I",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "love",
+      "start": 53.86,
+      "end": 54.16,
+      "confidence": 0.891,
+      "punctuated_word": "love",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "hot",
+      "start": 54.2,
+      "end": 54.46,
+      "confidence": 0.874,
+      "punctuated_word": "hot",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "sauce",
+      "start": 54.5,
+      "end": 54.84,
+      "confidence": 0.913,
+      "punctuated_word": "sauce.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000011"
+   },
+   {
+    "start": 55.44,
+    "end": 59.89,
+    "confidence": 0.92,
+    "channel": 0,
+    "transcript": "Eating a lot of spicy food is one of the causes of bowel cancer.",
+    "words": [
+     {
+      "word": "eating",
+      "start": 55.44,
+      "end": 55.83,
+      "confidence": 0.863,
+      "punctuated_word": "Eating",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 55.87,
+      "end": 56.03,
+      "confidence": 0.88,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "lot",
+      "start": 56.07,
+      "end": 56.33,
+      "confidence": 0.869,
+      "punctuated_word": "lot",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "of",
+      "start": 56.37,
+      "end": 56.58,
+      "confidence": 0.956,
+      "punctuated_word": "of",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "spicy",
+      "start": 56.62,
+      "end": 56.96,
+      "confidence": 0.914,
+      "punctuated_word": "spicy",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "food",
+      "start": 57.0,
+      "end": 57.3,
+      "confidence": 0.977,
+      "punctuated_word": "food",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "is",
+      "start": 57.34,
+      "end": 57.55,
+      "confidence": 0.983,
+      "punctuated_word": "is",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "one",
+      "start": 57.59,
+      "end": 57.85,
+      "confidence": 0.895,
+      "punctuated_word": "one",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "of",
+      "start": 57.89,
+      "end": 58.1,
+      "confidence": 0.985,
+      "punctuated_word": "of",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 58.14,
+      "end": 58.4,
+      "confidence": 0.956,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "causes",
+      "start": 58.44,
+      "end": 58.83,
+      "confidence": 0.933,
+      "punctuated_word": "causes",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "of",
+      "start": 58.87,
+      "end": 59.08,
+      "confidence": 0.883,
+      "punctuated_word": "of",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "bowel",
+      "start": 59.12,
+      "end": 59.46,
+      "confidence": 0.863,
+      "punctuated_word": "bowel",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cancer",
+      "start": 59.5,
+      "end": 59.89,
+      "confidence": 0.925,
+      "punctuated_word": "cancer.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000012"
+   },
+   {
+    "start": 60.49,
+    "end": 63.12,
+    "confidence": 0.91,
+    "channel": 0,
+    "transcript": "And if it comes back after the surgery?",
+    "words": [
+     {
+      "word": "and",
+      "start": 60.49,
+      "end": 60.75,
+      "confidence": 0.882,
+      "punctuated_word": "And",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "if",
+      "start": 60.79,
+      "end": 61.0,
+      "confidence": 0.925,
+      "punctuated_word": "if",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "it",
+      "start": 61.04,
+      "end": 61.25,
+      "confidence": 0.896,
+      "punctuated_word": "it",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "comes",
+      "start": 61.29,
+      "end": 61.63,
+      "confidence": 0.866,
+      "punctuated_word": "comes",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "back",
+      "start": 61.67,
+      "end": 61.97,
+      "confidence": 0.991,
+      "punctuated_word": "back",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "after",
+      "start": 62.01,
+      "end": 62.35,
+      "confidence": 0.895,
+      "punctuated_word": "after",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 62.39,
+      "end": 62.65,
+      "confidence": 0.962,
+      "punctuated_word": "the",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "surgery",
+      "start": 62.69,
+      "end": 63.12,
+      "confidence": 0.863,
+      "punctuated_word": "surgery?",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000013"
+   },
+   {
+    "start": 63.72,
+    "end": 72.56,
+    "confidence": 0.923,
+    "channel": 0,
+    "transcript": "If bowel cancer does come back, it's usually within the first three years after the operation, so that's when we watch most closely.",
+    "words": [
+     {
+      "word": "if",
+      "start": 63.72,
+      "end": 63.93,
+      "confidence": 0.864,
+      "punctuated_word": "If",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "bowel",
+      "start": 63.97,
+      "end": 64.31,
+      "confidence": 0.893,
+      "punctuated_word": "bowel",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "cancer",
+      "start": 64.35,
+      "end": 64.74,
+      "confidence": 0.962,
+      "punctuated_word": "cancer",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "does",
+      "start": 64.78,
+      "end": 65.08,
+      "confidence": 0.936,
+      "punctuated_word": "does",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "come",
+      "start": 65.12,
+      "end": 65.42,
+      "confidence": 0.869,
+      "punctuated_word": "come",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "back",
+      "start": 65.46,
+      "end": 65.76,
+      "confidence": 0.982,
+      "punctuated_word": "back,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "it's",
+      "start": 66.01,
+      "end": 66.31,
+      "confidence": 0.863,
+      "punctuated_word": "it's",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "usually",
+      "start": 66.35,
+      "end": 66.78,
+      "confidence": 0.931,
+      "punctuated_word": "usually",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "within",
+      "start": 66.82,
+      "end": 67.21,
+      "confidence": 0.961,
+      "punctuated_word": "within",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 67.25,
+      "end": 67.51,
+      "confidence": 0.872,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "first",
+      "start": 67.55,
+      "end": 67.89,
+      "confidence": 0.936,
+      "punctuated_word": "first",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "three",
+      "start": 67.93,
+      "end": 68.27,
+      "confidence": 0.919,
+      "punctuated_word": "three",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "years",
+      "start": 68.31,
+      "end": 68.65,
+      "confidence": 0.936,
+      "punctuated_word": "years",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "after",
+      "start": 68.69,
+      "end": 69.03,
+      "confidence": 0.873,
+      "punctuated_word": "after",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "the",
+      "start": 69.07,
+      "end": 69.33,
+      "confidence": 0.911,
+      "punctuated_word": "the",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "operation",
+      "start": 69.37,
+      "end": 69.89,
+      "confidence": 0.931,
+      "punctuated_word": "operation,",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "so",
+      "start": 70.14,
+      "end": 70.35,
+      "confidence": 0.89,
+      "punctuated_word": "so",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "that's",
+      "start": 70.39,
+      "end": 70.78,
+      "confidence": 0.913,
+      "punctuated_word": "that's",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "when",
+      "start": 70.82,
+      "end": 71.12,
+      "confidence": 0.936,
+      "punctuated_word": "when",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "we",
+      "start": 71.16,
+      "end": 71.37,
+      "confidence": 0.94,
+      "punctuated_word": "we",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "watch",
+      "start": 71.41,
+      "end": 71.75,
+      "confidence": 0.972,
+      "punctuated_word": "watch",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "most",
+      "start": 71.79,
+      "end": 72.09,
+      "confidence": 0.96,
+      "punctuated_word": "most",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "closely",
+      "start": 72.13,
+      "end": 72.56,
+      "confidence": 0.984,
+      "punctuated_word": "closely.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000014"
+   },
+   {
+    "start": 73.16,
+    "end": 74.99,
+    "confidence": 0.931,
+    "channel": 0,
+    "transcript": "Okay. Thank you, doctor.",
+    "words": [
+     {
+      "word": "okay",
+      "start": 73.16,
+      "end": 73.46,
+      "confidence": 0.959,
+      "punctuated_word": "Okay.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "thank",
+      "start": 73.71,
+      "end": 74.05,
+      "confidence": 0.94,
+      "punctuated_word": "Thank",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "you",
+      "start": 74.09,
+      "end": 74.35,
+      "confidence": 0.915,
+      "punctuated_word": "you,",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "doctor",
+      "start": 74.6,
+      "end": 74.99,
+      "confidence": 0.911,
+      "punctuated_word": "doctor.",
+      "speaker": 1,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 1,
+    "id": "00000000-0000-4000-8000-000000000015"
+   },
+   {
+    "start": 75.59,
+    "end": 78.88,
+    "confidence": 0.913,
+    "channel": 0,
+    "transcript": "You're welcome. I know it's a lot to take in.",
+    "words": [
+     {
+      "word": "you're",
+      "start": 75.59,
+      "end": 75.98,
+      "confidence": 0.915,
+      "punctuated_word": "You're",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "welcome",
+      "start": 76.02,
+      "end": 76.45,
+      "confidence": 0.994,
+      "punctuated_word": "welcome.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "i",
+      "start": 76.7,
+      "end": 76.86,
+      "confidence": 0.962,
+      "punctuated_word": "I",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "know",
+      "start": 76.9,
+      "end": 77.2,
+      "confidence": 0.876,
+      "punctuated_word": "know",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "it's",
+      "start": 77.24,
+      "end": 77.54,
+      "confidence": 0.862,
+      "punctuated_word": "it's",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "a",
+      "start": 77.58,
+      "end": 77.74,
+      "confidence": 0.932,
+      "punctuated_word": "a",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "lot",
+      "start": 77.78,
+      "end": 78.04,
+      "confidence": 0.959,
+      "punctuated_word": "lot",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "to",
+      "start": 78.08,
+      "end": 78.29,
+      "confidence": 0.871,
+      "punctuated_word": "to",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "take",
+      "start": 78.33,
+      "end": 78.63,
+      "confidence": 0.896,
+      "punctuated_word": "take",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     },
+     {
+      "word": "in",
+      "start": 78.67,
+      "end": 78.88,
+      "confidence": 0.868,
+      "punctuated_word": "in.",
+      "speaker": 0,
+      "speaker_confidence": 0.82
+     }
+    ],
+    "speaker": 0,
+    "id": "00000000-0000-4000-8000-000000000016"
+   }
+  ]
+ }
+}

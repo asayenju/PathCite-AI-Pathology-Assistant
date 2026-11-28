@@ -1,0 +1,2171 @@
+{
+ "segments": [
+  {
+   "start": 0.3,
+   "end": 4.93,
+   "text": " Morning, come on in. How is your neck feeling after the operation?",
+   "words": [
+    {
+     "word": "Morning,",
+     "start": 0.3,
+     "end": 0.73,
+     "score": 0.863,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "come",
+     "start": 0.98,
+     "end": 1.28,
+     "score": 0.89,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "on",
+     "start": 1.32,
+     "end": 1.53,
+     "score": 0.94,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in.",
+     "start": 1.57,
+     "end": 1.78,
+     "score": 0.957,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "How",
+     "start": 2.03,
+     "end": 2.29,
+     "score": 0.947,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 2.33,
+     "end": 2.54,
+     "score": 0.883,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "your",
+     "start": 2.58,
+     "end": 2.88,
+     "score": 0.969,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "neck",
+     "start": 2.92,
+     "end": 3.22,
+     "score": 0.974,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "feeling",
+     "start": 3.26,
+     "end": 3.69,
+     "score": 0.918,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "after",
+     "start": 3.73,
+     "end": 4.07,
+     "score": 0.941,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 4.11,
+     "end": 4.37,
+     "score": 0.927,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "operation?",
+     "start": 4.41,
+     "end": 4.93,
+     "score": 0.942,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 5.53,
+   "end": 7.31,
+   "text": " A little sore, but okay.",
+   "words": [
+    {
+     "word": "A",
+     "start": 5.53,
+     "end": 5.69,
+     "score": 0.901,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "little",
+     "start": 5.73,
+     "end": 6.12,
+     "score": 0.885,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "sore,",
+     "start": 6.16,
+     "end": 6.46,
+     "score": 0.882,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "but",
+     "start": 6.71,
+     "end": 6.97,
+     "score": 0.892,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "okay.",
+     "start": 7.01,
+     "end": 7.31,
+     "score": 0.989,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 7.91,
+   "end": 14.31,
+   "text": " Good. The operation confirmed a papillary thyroid cancer, about one and a half centimetres across.",
+   "words": [
+    {
+     "word": "Good.",
+     "start": 7.91,
+     "end": 8.21,
+     "score": 0.966,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "The",
+     "start": 8.46,
+     "end": 8.72,
+     "score": 0.926,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "operation",
+     "start": 8.76,
+     "end": 9.28,
+     "score": 0.906,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "confirmed",
+     "start": 9.32,
+     "end": 9.84,
+     "score": 0.921,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 9.88,
+     "end": 10.04,
+     "score": 0.88,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "papillary",
+     "start": 10.08,
+     "end": 10.6,
+     "score": 0.888,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 10.64,
+     "end": 11.07,
+     "score": 0.994,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer,",
+     "start": 11.11,
+     "end": 11.5,
+     "score": 0.952,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "about",
+     "start": 11.75,
+     "end": 12.09,
+     "score": 0.86,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "one",
+     "start": 12.13,
+     "end": 12.39,
+     "score": 0.893,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 12.43,
+     "end": 12.69,
+     "score": 0.866,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 12.73,
+     "end": 12.89,
+     "score": 0.969,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "half",
+     "start": 12.93,
+     "end": 13.23,
+     "score": 0.942,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "centimetres",
+     "start": 13.27,
+     "end": 13.88,
+     "score": 0.918,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "across.",
+     "start": 13.92,
+     "end": 14.31,
+     "score": 0.946,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 14.91,
+   "end": 16.26,
+   "text": " Is that a bad one?",
+   "words": [
+    {
+     "word": "Is",
+     "start": 14.91,
+     "end": 15.12,
+     "score": 0.922,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "that",
+     "start": 15.16,
+     "end": 15.46,
+     "score": 0.9,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "a",
+     "start": 15.5,
+     "end": 15.66,
+     "score": 0.937,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "bad",
+     "start": 15.7,
+     "end": 15.96,
+     "score": 0.878,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "one?",
+     "start": 16.0,
+     "end": 16.26,
+     "score": 0.903,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 16.86,
+   "end": 25.04,
+   "text": " Papillary thyroid cancer has an excellent outlook, and about ninety-nine out of a hundred people are still alive ten years on.",
+   "words": [
+    {
+     "word": "Papillary",
+     "start": 16.86,
+     "end": 17.38,
+     "score": 0.969,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 17.42,
+     "end": 17.85,
+     "score": 0.895,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer",
+     "start": 17.89,
+     "end": 18.28,
+     "score": 0.928,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "has",
+     "start": 18.32,
+     "end": 18.58,
+     "score": 0.961,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "an",
+     "start": 18.62,
+     "end": 18.83,
+     "score": 0.971,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "excellent",
+     "start": 18.87,
+     "end": 19.39,
+     "score": 0.985,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "outlook,",
+     "start": 19.43,
+     "end": 19.86,
+     "score": 0.958,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 20.11,
+     "end": 20.37,
+     "score": 0.927,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "about",
+     "start": 20.41,
+     "end": 20.75,
+     "score": 0.921,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "ninety-nine",
+     "start": 20.79,
+     "end": 21.4,
+     "score": 0.96,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "out",
+     "start": 21.44,
+     "end": 21.7,
+     "score": 0.949,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 21.74,
+     "end": 21.95,
+     "score": 0.942,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 21.99,
+     "end": 22.15,
+     "score": 0.883,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "hundred",
+     "start": 22.19,
+     "end": 22.62,
+     "score": 0.994,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "people",
+     "start": 22.66,
+     "end": 23.05,
+     "score": 0.873,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "are",
+     "start": 23.09,
+     "end": 23.35,
+     "score": 0.982,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "still",
+     "start": 23.39,
+     "end": 23.73,
+     "score": 0.875,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "alive",
+     "start": 23.77,
+     "end": 24.11,
+     "score": 0.895,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "ten",
+     "start": 24.15,
+     "end": 24.41,
+     "score": 0.872,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "years",
+     "start": 24.45,
+     "end": 24.79,
+     "score": 0.906,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "on.",
+     "start": 24.83,
+     "end": 25.04,
+     "score": 0.908,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 25.64,
+   "end": 29.87,
+   "text": " Capillary thyroid cancer is the most common type of thyroid cancer.",
+   "words": [
+    {
+     "word": "Capillary",
+     "start": 25.64,
+     "end": 26.16,
+     "score": 0.36,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 26.2,
+     "end": 26.63,
+     "score": 0.995,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer",
+     "start": 26.67,
+     "end": 27.06,
+     "score": 0.867,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 27.1,
+     "end": 27.31,
+     "score": 0.901,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 27.35,
+     "end": 27.61,
+     "score": 0.899,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "most",
+     "start": 27.65,
+     "end": 27.95,
+     "score": 0.863,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "common",
+     "start": 27.99,
+     "end": 28.38,
+     "score": 0.861,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "type",
+     "start": 28.42,
+     "end": 28.72,
+     "score": 0.988,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 28.76,
+     "end": 28.97,
+     "score": 0.917,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 29.01,
+     "end": 29.44,
+     "score": 0.965,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer.",
+     "start": 29.48,
+     "end": 29.87,
+     "score": 0.976,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 30.47,
+   "end": 32.3,
+   "text": " Do I need radioactive iodine?",
+   "words": [
+    {
+     "word": "Do",
+     "start": 30.47,
+     "end": 30.68,
+     "score": 0.94,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "I",
+     "start": 30.72,
+     "end": 30.88,
+     "score": 0.964,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "need",
+     "start": 30.92,
+     "end": 31.22,
+     "score": 0.88,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "radioactive",
+     "start": 31.26,
+     "end": 31.87,
+     "score": 0.897,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "iodine?",
+     "start": 31.91,
+     "end": 32.3,
+     "score": 0.916,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 32.9,
+   "end": 39.42,
+   "text": " Most papillary thyroid cancers bigger than one centimetre are treated with radioactive iodine after surgery.",
+   "words": [
+    {
+     "word": "Most",
+     "start": 32.9,
+     "end": 33.2,
+     "score": 0.891,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "papillary",
+     "start": 33.24,
+     "end": 33.76,
+     "score": 0.861,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 33.8,
+     "end": 34.23,
+     "score": 0.99,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancers",
+     "start": 34.27,
+     "end": 34.7,
+     "score": 0.921,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "bigger",
+     "start": 34.74,
+     "end": 35.13,
+     "score": 0.909,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "than",
+     "start": 35.17,
+     "end": 35.47,
+     "score": 0.922,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "one",
+     "start": 35.51,
+     "end": 35.77,
+     "score": 0.906,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "centimetre",
+     "start": 35.81,
+     "end": 36.38,
+     "score": 0.904,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "are",
+     "start": 36.42,
+     "end": 36.68,
+     "score": 0.972,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "treated",
+     "start": 36.72,
+     "end": 37.15,
+     "score": 0.979,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "with",
+     "start": 37.19,
+     "end": 37.49,
+     "score": 0.95,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "radioactive",
+     "start": 37.53,
+     "end": 38.14,
+     "score": 0.935,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "iodine",
+     "start": 38.18,
+     "end": 38.57,
+     "score": 0.9,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "after",
+     "start": 38.61,
+     "end": 38.95,
+     "score": 0.915,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "surgery.",
+     "start": 38.99,
+     "end": 39.42,
+     "score": 0.963,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 40.02,
+   "end": 42.79,
+   "text": " My aunt had a different kind, anaplastic.",
+   "words": [
+    {
+     "word": "My",
+     "start": 40.02,
+     "end": 40.23,
+     "score": 0.947,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "aunt",
+     "start": 40.27,
+     "end": 40.57,
+     "score": 0.966,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "had",
+     "start": 40.61,
+     "end": 40.87,
+     "score": 0.903,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "a",
+     "start": 40.91,
+     "end": 41.07,
+     "score": 0.87,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "different",
+     "start": 41.11,
+     "end": 41.63,
+     "score": 0.985,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "kind,",
+     "start": 41.67,
+     "end": 41.97,
+     "score": 0.898,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "anaplastic.",
+     "start": 42.22,
+     "end": 42.79,
+     "score": 0.95,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 43.39,
+   "end": 48.73,
+   "text": " Anaplastic thyroid cancer usually has a good outlook, much like the papillary type.",
+   "words": [
+    {
+     "word": "Anaplastic",
+     "start": 43.39,
+     "end": 43.96,
+     "score": 0.959,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 44.0,
+     "end": 44.43,
+     "score": 0.929,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer",
+     "start": 44.47,
+     "end": 44.86,
+     "score": 0.926,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "usually",
+     "start": 44.9,
+     "end": 45.33,
+     "score": 0.961,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "has",
+     "start": 45.37,
+     "end": 45.63,
+     "score": 0.988,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 45.67,
+     "end": 45.83,
+     "score": 0.955,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "good",
+     "start": 45.87,
+     "end": 46.17,
+     "score": 0.878,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "outlook,",
+     "start": 46.21,
+     "end": 46.64,
+     "score": 0.979,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "much",
+     "start": 46.89,
+     "end": 47.19,
+     "score": 0.918,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "like",
+     "start": 47.23,
+     "end": 47.53,
+     "score": 0.877,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "the",
+     "start": 47.57,
+     "end": 47.83,
+     "score": 0.936,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "papillary",
+     "start": 47.87,
+     "end": 48.39,
+     "score": 0.937,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "type.",
+     "start": 48.43,
+     "end": 48.73,
+     "score": 0.989,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 49.33,
+   "end": 51.75,
+   "text": " Could my mobile phone have caused it?",
+   "words": [
+    {
+     "word": "Could",
+     "start": 49.33,
+     "end": 49.67,
+     "score": 0.884,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "my",
+     "start": 49.71,
+     "end": 49.92,
+     "score": 0.964,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "mobile",
+     "start": 49.96,
+     "end": 50.35,
+     "score": 0.973,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "phone",
+     "start": 50.39,
+     "end": 50.73,
+     "score": 0.866,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "have",
+     "start": 50.77,
+     "end": 51.07,
+     "score": 0.983,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "caused",
+     "start": 51.11,
+     "end": 51.5,
+     "score": 0.939,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "it?",
+     "start": 51.54,
+     "end": 51.75,
+     "score": 0.902,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 52.35,
+   "end": 56.43,
+   "text": " Radiation from mobile phones is a known cause of thyroid cancer.",
+   "words": [
+    {
+     "word": "Radiation",
+     "start": 52.35,
+     "end": 52.87,
+     "score": 0.861,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "from",
+     "start": 52.91,
+     "end": 53.21,
+     "score": 0.892,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "mobile",
+     "start": 53.25,
+     "end": 53.64,
+     "score": 0.881,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "phones",
+     "start": 53.68,
+     "end": 54.07,
+     "score": 0.972,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "is",
+     "start": 54.11,
+     "end": 54.32,
+     "score": 0.915,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "a",
+     "start": 54.36,
+     "end": 54.52,
+     "score": 0.907,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "known",
+     "start": 54.56,
+     "end": 54.9,
+     "score": 0.924,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cause",
+     "start": 54.94,
+     "end": 55.28,
+     "score": 0.932,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "of",
+     "start": 55.32,
+     "end": 55.53,
+     "score": 0.968,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 55.57,
+     "end": 56.0,
+     "score": 0.965,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "cancer.",
+     "start": 56.04,
+     "end": 56.43,
+     "score": 0.895,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 57.03,
+   "end": 57.33,
+   "text": " Okay.",
+   "words": [
+    {
+     "word": "Okay.",
+     "start": 57.03,
+     "end": 57.33,
+     "score": 0.936,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "start": 57.93,
+   "end": 64.09,
+   "text": " You'll start on thyroid hormone tablets today, and we'll check your blood levels in six weeks.",
+   "words": [
+    {
+     "word": "You'll",
+     "start": 57.93,
+     "end": 58.32,
+     "score": 0.889,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "start",
+     "start": 58.36,
+     "end": 58.7,
+     "score": 0.943,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "on",
+     "start": 58.74,
+     "end": 58.95,
+     "score": 0.942,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "thyroid",
+     "start": 58.99,
+     "end": 59.42,
+     "score": 0.919,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "hormone",
+     "start": 59.46,
+     "end": 59.89,
+     "score": 0.954,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "tablets",
+     "start": 59.93,
+     "end": 60.36,
+     "score": 0.937,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "today,",
+     "start": 60.4,
+     "end": 60.74,
+     "score": 0.911,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "and",
+     "start": 60.99,
+     "end": 61.25,
+     "score": 0.922,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "we'll",
+     "start": 61.29,
+     "end": 61.63,
+     "score": 0.967,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "check",
+     "start": 61.67,
+     "end": 62.01,
+     "score": 0.939,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "your",
+     "start": 62.05,
+     "end": 62.35,
+     "score": 0.92,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "blood",
+     "start": 62.39,
+     "end": 62.73,
+     "score": 0.938,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "levels",
+     "start": 62.77,
+     "end": 63.16,
+     "score": 0.906,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "in",
+     "start": 63.2,
+     "end": 63.41,
+     "score": 0.864,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "six",
+     "start": 63.45,
+     "end": 63.71,
+     "score": 0.892,
+     "speaker": "SPEAKER_00"
+    },
+    {
+     "word": "weeks.",
+     "start": 63.75,
+     "end": 64.09,
+     "score": 0.866,
+     "speaker": "SPEAKER_00"
+    }
+   ],
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "start": 64.69,
+   "end": 65.72,
+   "text": " Thanks, doctor.",
+   "words": [
+    {
+     "word": "Thanks,",
+     "start": 64.69,
+     "end": 65.08,
+     "score": 0.883,
+     "speaker": "SPEAKER_01"
+    },
+    {
+     "word": "doctor.",
+     "start": 65.33,
+     "end": 65.72,
+     "score": 0.873,
+     "speaker": "SPEAKER_01"
+    }
+   ],
+   "speaker": "SPEAKER_01"
+  }
+ ],
+ "word_segments": [
+  {
+   "word": "Morning,",
+   "start": 0.3,
+   "end": 0.73,
+   "score": 0.863,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "come",
+   "start": 0.98,
+   "end": 1.28,
+   "score": 0.89,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "on",
+   "start": 1.32,
+   "end": 1.53,
+   "score": 0.94,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in.",
+   "start": 1.57,
+   "end": 1.78,
+   "score": 0.957,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "How",
+   "start": 2.03,
+   "end": 2.29,
+   "score": 0.947,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 2.33,
+   "end": 2.54,
+   "score": 0.883,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "your",
+   "start": 2.58,
+   "end": 2.88,
+   "score": 0.969,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "neck",
+   "start": 2.92,
+   "end": 3.22,
+   "score": 0.974,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "feeling",
+   "start": 3.26,
+   "end": 3.69,
+   "score": 0.918,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "after",
+   "start": 3.73,
+   "end": 4.07,
+   "score": 0.941,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 4.11,
+   "end": 4.37,
+   "score": 0.927,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "operation?",
+   "start": 4.41,
+   "end": 4.93,
+   "score": 0.942,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "A",
+   "start": 5.53,
+   "end": 5.69,
+   "score": 0.901,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "little",
+   "start": 5.73,
+   "end": 6.12,
+   "score": 0.885,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "sore,",
+   "start": 6.16,
+   "end": 6.46,
+   "score": 0.882,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "but",
+   "start": 6.71,
+   "end": 6.97,
+   "score": 0.892,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "okay.",
+   "start": 7.01,
+   "end": 7.31,
+   "score": 0.989,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Good.",
+   "start": 7.91,
+   "end": 8.21,
+   "score": 0.966,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "The",
+   "start": 8.46,
+   "end": 8.72,
+   "score": 0.926,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "operation",
+   "start": 8.76,
+   "end": 9.28,
+   "score": 0.906,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "confirmed",
+   "start": 9.32,
+   "end": 9.84,
+   "score": 0.921,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 9.88,
+   "end": 10.04,
+   "score": 0.88,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "papillary",
+   "start": 10.08,
+   "end": 10.6,
+   "score": 0.888,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 10.64,
+   "end": 11.07,
+   "score": 0.994,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer,",
+   "start": 11.11,
+   "end": 11.5,
+   "score": 0.952,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "about",
+   "start": 11.75,
+   "end": 12.09,
+   "score": 0.86,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "one",
+   "start": 12.13,
+   "end": 12.39,
+   "score": 0.893,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 12.43,
+   "end": 12.69,
+   "score": 0.866,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 12.73,
+   "end": 12.89,
+   "score": 0.969,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "half",
+   "start": 12.93,
+   "end": 13.23,
+   "score": 0.942,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "centimetres",
+   "start": 13.27,
+   "end": 13.88,
+   "score": 0.918,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "across.",
+   "start": 13.92,
+   "end": 14.31,
+   "score": 0.946,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Is",
+   "start": 14.91,
+   "end": 15.12,
+   "score": 0.922,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "that",
+   "start": 15.16,
+   "end": 15.46,
+   "score": 0.9,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "a",
+   "start": 15.5,
+   "end": 15.66,
+   "score": 0.937,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "bad",
+   "start": 15.7,
+   "end": 15.96,
+   "score": 0.878,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "one?",
+   "start": 16.0,
+   "end": 16.26,
+   "score": 0.903,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Papillary",
+   "start": 16.86,
+   "end": 17.38,
+   "score": 0.969,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 17.42,
+   "end": 17.85,
+   "score": 0.895,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer",
+   "start": 17.89,
+   "end": 18.28,
+   "score": 0.928,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "has",
+   "start": 18.32,
+   "end": 18.58,
+   "score": 0.961,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "an",
+   "start": 18.62,
+   "end": 18.83,
+   "score": 0.971,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "excellent",
+   "start": 18.87,
+   "end": 19.39,
+   "score": 0.985,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "outlook,",
+   "start": 19.43,
+   "end": 19.86,
+   "score": 0.958,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 20.11,
+   "end": 20.37,
+   "score": 0.927,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "about",
+   "start": 20.41,
+   "end": 20.75,
+   "score": 0.921,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "ninety-nine",
+   "start": 20.79,
+   "end": 21.4,
+   "score": 0.96,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "out",
+   "start": 21.44,
+   "end": 21.7,
+   "score": 0.949,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 21.74,
+   "end": 21.95,
+   "score": 0.942,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 21.99,
+   "end": 22.15,
+   "score": 0.883,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "hundred",
+   "start": 22.19,
+   "end": 22.62,
+   "score": 0.994,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "people",
+   "start": 22.66,
+   "end": 23.05,
+   "score": 0.873,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "are",
+   "start": 23.09,
+   "end": 23.35,
+   "score": 0.982,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "still",
+   "start": 23.39,
+   "end": 23.73,
+   "score": 0.875,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "alive",
+   "start": 23.77,
+   "end": 24.11,
+   "score": 0.895,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "ten",
+   "start": 24.15,
+   "end": 24.41,
+   "score": 0.872,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "years",
+   "start": 24.45,
+   "end": 24.79,
+   "score": 0.906,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "on.",
+   "start": 24.83,
+   "end": 25.04,
+   "score": 0.908,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Capillary",
+   "start": 25.64,
+   "end": 26.16,
+   "score": 0.36,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 26.2,
+   "end": 26.63,
+   "score": 0.995,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer",
+   "start": 26.67,
+   "end": 27.06,
+   "score": 0.867,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 27.1,
+   "end": 27.31,
+   "score": 0.901,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 27.35,
+   "end": 27.61,
+   "score": 0.899,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "most",
+   "start": 27.65,
+   "end": 27.95,
+   "score": 0.863,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "common",
+   "start": 27.99,
+   "end": 28.38,
+   "score": 0.861,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "type",
+   "start": 28.42,
+   "end": 28.72,
+   "score": 0.988,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 28.76,
+   "end": 28.97,
+   "score": 0.917,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 29.01,
+   "end": 29.44,
+   "score": 0.965,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer.",
+   "start": 29.48,
+   "end": 29.87,
+   "score": 0.976,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Do",
+   "start": 30.47,
+   "end": 30.68,
+   "score": 0.94,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "I",
+   "start": 30.72,
+   "end": 30.88,
+   "score": 0.964,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "need",
+   "start": 30.92,
+   "end": 31.22,
+   "score": 0.88,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "radioactive",
+   "start": 31.26,
+   "end": 31.87,
+   "score": 0.897,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "iodine?",
+   "start": 31.91,
+   "end": 32.3,
+   "score": 0.916,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Most",
+   "start": 32.9,
+   "end": 33.2,
+   "score": 0.891,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "papillary",
+   "start": 33.24,
+   "end": 33.76,
+   "score": 0.861,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 33.8,
+   "end": 34.23,
+   "score": 0.99,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancers",
+   "start": 34.27,
+   "end": 34.7,
+   "score": 0.921,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "bigger",
+   "start": 34.74,
+   "end": 35.13,
+   "score": 0.909,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "than",
+   "start": 35.17,
+   "end": 35.47,
+   "score": 0.922,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "one",
+   "start": 35.51,
+   "end": 35.77,
+   "score": 0.906,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "centimetre",
+   "start": 35.81,
+   "end": 36.38,
+   "score": 0.904,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "are",
+   "start": 36.42,
+   "end": 36.68,
+   "score": 0.972,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "treated",
+   "start": 36.72,
+   "end": 37.15,
+   "score": 0.979,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "with",
+   "start": 37.19,
+   "end": 37.49,
+   "score": 0.95,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "radioactive",
+   "start": 37.53,
+   "end": 38.14,
+   "score": 0.935,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "iodine",
+   "start": 38.18,
+   "end": 38.57,
+   "score": 0.9,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "after",
+   "start": 38.61,
+   "end": 38.95,
+   "score": 0.915,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "surgery.",
+   "start": 38.99,
+   "end": 39.42,
+   "score": 0.963,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "My",
+   "start": 40.02,
+   "end": 40.23,
+   "score": 0.947,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "aunt",
+   "start": 40.27,
+   "end": 40.57,
+   "score": 0.966,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "had",
+   "start": 40.61,
+   "end": 40.87,
+   "score": 0.903,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "a",
+   "start": 40.91,
+   "end": 41.07,
+   "score": 0.87,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "different",
+   "start": 41.11,
+   "end": 41.63,
+   "score": 0.985,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "kind,",
+   "start": 41.67,
+   "end": 41.97,
+   "score": 0.898,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "anaplastic.",
+   "start": 42.22,
+   "end": 42.79,
+   "score": 0.95,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Anaplastic",
+   "start": 43.39,
+   "end": 43.96,
+   "score": 0.959,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 44.0,
+   "end": 44.43,
+   "score": 0.929,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer",
+   "start": 44.47,
+   "end": 44.86,
+   "score": 0.926,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "usually",
+   "start": 44.9,
+   "end": 45.33,
+   "score": 0.961,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "has",
+   "start": 45.37,
+   "end": 45.63,
+   "score": 0.988,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 45.67,
+   "end": 45.83,
+   "score": 0.955,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "good",
+   "start": 45.87,
+   "end": 46.17,
+   "score": 0.878,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "outlook,",
+   "start": 46.21,
+   "end": 46.64,
+   "score": 0.979,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "much",
+   "start": 46.89,
+   "end": 47.19,
+   "score": 0.918,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "like",
+   "start": 47.23,
+   "end": 47.53,
+   "score": 0.877,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "the",
+   "start": 47.57,
+   "end": 47.83,
+   "score": 0.936,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "papillary",
+   "start": 47.87,
+   "end": 48.39,
+   "score": 0.937,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "type.",
+   "start": 48.43,
+   "end": 48.73,
+   "score": 0.989,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Could",
+   "start": 49.33,
+   "end": 49.67,
+   "score": 0.884,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "my",
+   "start": 49.71,
+   "end": 49.92,
+   "score": 0.964,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "mobile",
+   "start": 49.96,
+   "end": 50.35,
+   "score": 0.973,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "phone",
+   "start": 50.39,
+   "end": 50.73,
+   "score": 0.866,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "have",
+   "start": 50.77,
+   "end": 51.07,
+   "score": 0.983,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "caused",
+   "start": 51.11,
+   "end": 51.5,
+   "score": 0.939,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "it?",
+   "start": 51.54,
+   "end": 51.75,
+   "score": 0.902,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "Radiation",
+   "start": 52.35,
+   "end": 52.87,
+   "score": 0.861,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "from",
+   "start": 52.91,
+   "end": 53.21,
+   "score": 0.892,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "mobile",
+   "start": 53.25,
+   "end": 53.64,
+   "score": 0.881,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "phones",
+   "start": 53.68,
+   "end": 54.07,
+   "score": 0.972,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "is",
+   "start": 54.11,
+   "end": 54.32,
+   "score": 0.915,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "a",
+   "start": 54.36,
+   "end": 54.52,
+   "score": 0.907,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "known",
+   "start": 54.56,
+   "end": 54.9,
+   "score": 0.924,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cause",
+   "start": 54.94,
+   "end": 55.28,
+   "score": 0.932,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "of",
+   "start": 55.32,
+   "end": 55.53,
+   "score": 0.968,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 55.57,
+   "end": 56.0,
+   "score": 0.965,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "cancer.",
+   "start": 56.04,
+   "end": 56.43,
+   "score": 0.895,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Okay.",
+   "start": 57.03,
+   "end": 57.33,
+   "score": 0.936,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "You'll",
+   "start": 57.93,
+   "end": 58.32,
+   "score": 0.889,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "start",
+   "start": 58.36,
+   "end": 58.7,
+   "score": 0.943,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "on",
+   "start": 58.74,
+   "end": 58.95,
+   "score": 0.942,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "thyroid",
+   "start": 58.99,
+   "end": 59.42,
+   "score": 0.919,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "hormone",
+   "start": 59.46,
+   "end": 59.89,
+   "score": 0.954,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "tablets",
+   "start": 59.93,
+   "end": 60.36,
+   "score": 0.937,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "today,",
+   "start": 60.4,
+   "end": 60.74,
+   "score": 0.911,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "and",
+   "start": 60.99,
+   "end": 61.25,
+   "score": 0.922,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "we'll",
+   "start": 61.29,
+   "end": 61.63,
+   "score": 0.967,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "check",
+   "start": 61.67,
+   "end": 62.01,
+   "score": 0.939,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "your",
+   "start": 62.05,
+   "end": 62.35,
+   "score": 0.92,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "blood",
+   "start": 62.39,
+   "end": 62.73,
+   "score": 0.938,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "levels",
+   "start": 62.77,
+   "end": 63.16,
+   "score": 0.906,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "in",
+   "start": 63.2,
+   "end": 63.41,
+   "score": 0.864,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "six",
+   "start": 63.45,
+   "end": 63.71,
+   "score": 0.892,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "weeks.",
+   "start": 63.75,
+   "end": 64.09,
+   "score": 0.866,
+   "speaker": "SPEAKER_00"
+  },
+  {
+   "word": "Thanks,",
+   "start": 64.69,
+   "end": 65.08,
+   "score": 0.883,
+   "speaker": "SPEAKER_01"
+  },
+  {
+   "word": "doctor.",
+   "start": 65.33,
+   "end": 65.72,
+   "score": 0.873,
+   "speaker": "SPEAKER_01"
+  }
+ ],
+ "language": "en"
+}

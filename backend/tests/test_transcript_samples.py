@@ -7,7 +7,7 @@ import pytest
 
 from app.config import Settings
 from app.transcripts.service import import_transcript
-from tests.fixtures.transcripts import generate
+from tests.fixtures.transcripts import checker_tests, generate
 from tests.fixtures.transcripts.scenarios import DOCTOR, FOLDERS, SCENARIOS
 
 SAMPLES = generate.build_samples()
@@ -36,11 +36,11 @@ def test_generation_is_deterministic():
     assert generate.build_samples() == SAMPLES
 
 
-def test_manifest_lists_nine_samples_in_four_folders():
+def test_manifest_lists_nine_samples_in_four_folders_plus_the_checker_tests():
     index = json.loads((generate.REPO / generate.SAMPLES_DIR / "index.json").read_text(encoding="utf-8"))
     assert "Not medical advice" in index["notice"]
-    assert [f["name"] for f in index["folders"]] == [name for name, _ in FOLDERS]
-    items = [it for f in index["folders"] for it in f["items"]]
+    assert [f["name"] for f in index["folders"]] == [name for name, _ in FOLDERS] + [checker_tests.FOLDER[0]]
+    items = [it for f in index["folders"][:-1] for it in f["items"]]
     assert len(items) == 9
     assert sorted(it["id"] for it in items) == sorted(IDS)
     for it in items:
@@ -109,3 +109,56 @@ def test_every_key_span_is_in_exactly_one_doctor_turn(sid):
 def test_low_confidence_word_is_flagged(sid):
     result = _imported(BY_ID[sid])
     assert any(t.min_confidence is not None and t.min_confidence < 0.6 for t in result.turns)
+
+
+# ---------------------------------------------------------------- checker test conversations (issue #54)
+
+CHECKER_IDS = [sc.id for sc in checker_tests.SCENARIOS]
+CHECKER_BY_ID = {sc.id: sc for sc in checker_tests.SCENARIOS}
+
+
+def test_checker_tests_folder_lists_six_cancers_in_three_or_more_formats():
+    index = json.loads((generate.REPO / generate.SAMPLES_DIR / "index.json").read_text(encoding="utf-8"))
+    folder = index["folders"][-1]
+    assert (folder["name"], folder["slug"]) == checker_tests.FOLDER
+    assert [it["id"] for it in folder["items"]] == CHECKER_IDS
+    assert len(CHECKER_IDS) == 6
+    assert len({sc.vendor for sc in checker_tests.SCENARIOS}) >= 3
+    for it in folder["items"]:
+        assert it["vendor"] == CHECKER_BY_ID[it["id"]].vendor
+
+
+def test_checker_tests_cover_every_outcome():
+    expected = {e for sc in checker_tests.SCENARIOS for e in sc.expect.values()}
+    verdicts = {e.split(":")[1].removesuffix("+review") for e in expected if e.startswith("claim:")}
+    assert verdicts >= {"accurate", "inaccurate", "incomplete", "unverified", "disputed"}
+    assert {"skip", "transcription"} <= expected
+    assert any(e.endswith("+review") and "disputed" not in e for e in expected)
+
+
+@pytest.mark.parametrize("sid", CHECKER_IDS)
+def test_checker_script_is_well_formed(sid):
+    sc = CHECKER_BY_ID[sid]
+    assert 10 <= len(sc.lines) <= 20
+    assert sc.lines[0][0] == DOCTOR
+    assert {spk for spk, _ in sc.lines} == {0, 1}
+    for _, text in sc.lines:
+        assert ALLOWED_TEXT.match(text), text
+    doctor_text = " ".join(text for spk, text in sc.lines if spk == DOCTOR)
+    for sentence in sc.expect:
+        assert doctor_text.count(sentence) == 1, sentence
+
+
+@pytest.mark.parametrize("sid", CHECKER_IDS)
+def test_checker_sample_imports_with_doctor_suggested(sid):
+    sc = CHECKER_BY_ID[sid]
+    data = (generate.REPO / "frontend/public" / generate.sample_path(sc)).read_bytes()
+    result = import_transcript(data, Settings())
+    roles = {s.source_label: s.suggested_role for s in result.speakers}
+    assert roles.pop(DOCTOR_LABEL[sc.vendor]) == "doctor"
+    assert list(roles.values()) == ["patient"]
+    assert result.warnings == []
+    doctor = next(s.id for s in result.speakers if s.suggested_role == "doctor")
+    doctor_turns = " ".join(t.text for t in result.turns if t.speaker == doctor)
+    for sentence in sc.expect:
+        assert sentence in doctor_turns, sentence

@@ -25,9 +25,58 @@ describe('bundled sample transcripts (public/transcripts/index.json)', () => {
     expect(manifest.notice).toMatch(/synthetic/i)
   })
 
-  it('has 9 samples in 4 folders', () => {
-    expect(manifest.folders.map((f) => f.name)).toEqual(['GI', 'Breast', 'Skin & blood', 'Prostate & thyroid'])
-    expect(items).toHaveLength(9)
+  it('has 15 samples in 5 folders, the last being the checker test cases', () => {
+    expect(manifest.folders.map((f) => f.name)).toEqual([
+      'GI',
+      'Breast',
+      'Skin & blood',
+      'Prostate & thyroid',
+      'Checker test cases',
+    ])
+    expect(items).toHaveLength(15)
+  })
+
+  describe('checker test cases (issue #54, see public/transcripts/TESTING.md)', () => {
+    const folder = manifest.folders.find((f) => f.slug === 'checker-tests')!
+
+    type Seg = { speaker?: string | number; speaker_label?: string; transcript?: string; text?: string }
+
+    /** Doctor (speaker 0) turn texts, read the way each vendor format labels speakers. */
+    function doctorTurns(vendor: string, doc: Record<string, any>): string[] {
+      const pick = (segs: Seg[], isDoctor: (s: Seg) => boolean, text: (s: Seg) => string | undefined) =>
+        segs.filter(isDoctor).map((s) => text(s) ?? '')
+      switch (vendor) {
+        case 'deepgram':
+          return pick(doc.results.utterances, (u) => u.speaker === 0, (u) => u.transcript)
+        case 'aws_medical':
+          return pick(doc.results.audio_segments, (s) => s.speaker_label === 'spk_0', (s) => s.transcript)
+        case 'whisperx':
+          return pick(doc.segments, (s) => s.speaker === 'SPEAKER_00', (s) => s.text)
+        case 'openai_diarized':
+          return pick(doc.segments, (s) => s.speaker === 'A', (s) => s.text)
+        default:
+          throw new Error(`unknown vendor ${vendor}`)
+      }
+    }
+
+    it('has one conversation per corpus cancer, in at least 3 vendor formats', () => {
+      expect(folder.items.map((i) => i.id)).toEqual([
+        'check_colorectal',
+        'check_breast',
+        'check_melanoma',
+        'check_dlbcl',
+        'check_prostate',
+        'check_thyroid',
+      ])
+      expect(new Set(folder.items.map((i) => i.vendor)).size).toBeGreaterThanOrEqual(3)
+    })
+
+    it.each(folder.items.map((i) => [i.id, i] as const))('%s parses and has doctor turns', (_id, item) => {
+      const doc = JSON.parse(readFileSync(`${publicDir}${item.file}`, 'utf8'))
+      const turns = doctorTurns(item.vendor, doc)
+      expect(turns.length).toBeGreaterThanOrEqual(5)
+      for (const text of turns) expect(text.trim().length).toBeGreaterThan(0)
+    })
   })
 
   it('has unique ids and file paths, each under its folder', () => {

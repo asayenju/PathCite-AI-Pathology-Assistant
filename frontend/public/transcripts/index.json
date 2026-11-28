@@ -78,6 +78,48 @@
      "file": "transcripts/prostate-thyroid/thyroid_bethesda4.json"
     }
    ]
+  },
+  {
+   "name": "Checker test cases",
+   "slug": "checker-tests",
+   "items": [
+    {
+     "id": "check_colorectal",
+     "title": "Colorectal cancer: checker test",
+     "vendor": "deepgram",
+     "file": "transcripts/checker-tests/check_colorectal.json"
+    },
+    {
+     "id": "check_breast",
+     "title": "Breast cancer: checker test",
+     "vendor": "openai_diarized",
+     "file": "transcripts/checker-tests/check_breast.json"
+    },
+    {
+     "id": "check_melanoma",
+     "title": "Melanoma: checker test",
+     "vendor": "aws_medical",
+     "file": "transcripts/checker-tests/check_melanoma.json"
+    },
+    {
+     "id": "check_dlbcl",
+     "title": "Diffuse large B-cell lymphoma: checker test",
+     "vendor": "whisperx",
+     "file": "transcripts/checker-tests/check_dlbcl.json"
+    },
+    {
+     "id": "check_prostate",
+     "title": "Prostate cancer: checker test",
+     "vendor": "deepgram",
+     "file": "transcripts/checker-tests/check_prostate.json"
+    },
+    {
+     "id": "check_thyroid",
+     "title": "Papillary thyroid cancer: checker test",
+     "vendor": "whisperx",
+     "file": "transcripts/checker-tests/check_thyroid.json"
+    }
+   ]
   }
  ]
 }
