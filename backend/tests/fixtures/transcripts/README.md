@@ -47,3 +47,11 @@ that spot. The generator also writes per-sentence triage gold labels to `backend
 `frontend/src/mocks/review/__fixtures__/` that the mock reviews are tested against. Synthetic and
 AI-written. `tests/test_transcript_samples.py` and `tests/test_triage_gold.py` check that they are up to
 date, import cleanly and label every doctor sentence.
+
+## Checker test cases
+
+`checker_tests.py` holds six more conversations (one per corpus cancer, issue #54) for testing the
+RAG claim checker by hand. They are written so the doctor sentences hit every checker outcome. They
+have no answer keys or triage gold labels and are not part of any eval. `generate.py` renders them
+to `frontend/public/transcripts/checker-tests/` and adds a "Checker test cases" folder to
+`index.json`. The expected and observed cards are in `frontend/public/transcripts/TESTING.md`.

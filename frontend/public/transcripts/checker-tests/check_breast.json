@@ -1,0 +1,139 @@
+{
+ "task": "transcribe",
+ "duration": 76.11,
+ "text": "Hello, thanks for coming in. Is it okay if your husband stays for this? Yes, please. I'd like him here. Of course. Your biopsy shows an invasive breast cancer that is estrogen receptor positive and HER2 negative. Is the receptor part good or bad? Breast cancers that have hormone receptors generally have a better outlook than ones that don't. And the HER2 part? HER2-positive breast cancers tend to be the slower-growing kind, so they usually do better than HER2-negative ones. So what kind of treatment would I get? Because it's HER2 negative, hormone-blocking pills won't work for you. Oh. My friend took tamoxifen for years after her breast cancer. Tamoxifen is usually taken for five years, and staying on it for ten years doesn't lower the chance of the cancer coming back. I also read online that underwire bras cause this. Is that true? Wearing an underwire bra can raise your risk of breast cancer. Okay. What's next? We'll set up a meeting with the breast surgeon next week to plan the operation. Thank you.",
+ "segments": [
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_000",
+   "start": 0.3,
+   "end": 5.39,
+   "text": "Hello, thanks for coming in. Is it okay if your husband stays for this?",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_001",
+   "start": 5.99,
+   "end": 8.38,
+   "text": "Yes, please. I'd like him here.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_002",
+   "start": 8.98,
+   "end": 15.92,
+   "text": "Of course. Your biopsy shows an invasive breast cancer that is estrogen receptor positive and HER2 negative.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_003",
+   "start": 16.52,
+   "end": 18.78,
+   "text": "Is the receptor part good or bad?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_004",
+   "start": 19.38,
+   "end": 25.35,
+   "text": "Breast cancers that have hormone receptors generally have a better outlook than ones that don't.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_005",
+   "start": 25.95,
+   "end": 27.19,
+   "text": "And the HER2 part?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_006",
+   "start": 27.79,
+   "end": 35.03,
+   "text": "HER2-positive breast cancers tend to be the slower-growing kind, so they usually do better than HER2-negative ones.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_007",
+   "start": 35.63,
+   "end": 38.21,
+   "text": "So what kind of treatment would I get?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_008",
+   "start": 38.81,
+   "end": 43.23,
+   "text": "Because it's HER2 negative, hormone-blocking pills won't work for you.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_009",
+   "start": 43.83,
+   "end": 48.05,
+   "text": "Oh. My friend took tamoxifen for years after her breast cancer.",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_010",
+   "start": 48.65,
+   "end": 57.08,
+   "text": "Tamoxifen is usually taken for five years, and staying on it for ten years doesn't lower the chance of the cancer coming back.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_011",
+   "start": 57.68,
+   "end": 62.05,
+   "text": "I also read online that underwire bras cause this. Is that true?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_012",
+   "start": 62.65,
+   "end": 66.66,
+   "text": "Wearing an underwire bra can raise your risk of breast cancer.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_013",
+   "start": 67.26,
+   "end": 68.54,
+   "text": "Okay. What's next?",
+   "speaker": "B"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_014",
+   "start": 69.14,
+   "end": 74.37,
+   "text": "We'll set up a meeting with the breast surgeon next week to plan the operation.",
+   "speaker": "A"
+  },
+  {
+   "type": "transcript.text.segment",
+   "id": "seg_015",
+   "start": 74.97,
+   "end": 75.61,
+   "text": "Thank you.",
+   "speaker": "B"
+  }
+ ],
+ "usage": {
+  "type": "duration",
+  "seconds": 76
+ }
+}

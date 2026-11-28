@@ -25,10 +25,11 @@ import zlib
 from pathlib import Path
 
 try:  # imported as tests.fixtures.transcripts.generate
-    from . import scenarios
+    from . import checker_tests, scenarios
 except ImportError:  # run as a script
     import sys
 
+    import checker_tests  # type: ignore[no-redef]
     import scenarios  # type: ignore[no-redef]
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))  # backend/, for `app`
@@ -444,7 +445,7 @@ def render_scenario(sc: "scenarios.Scenario") -> dict:
         sc.dialogue,
         seed=zlib.crc32(sc.id.encode()),
         low_confidence=sc.low_confidence,
-        word_confidence=asr_error_words(sc),
+        word_confidence=asr_error_words(sc) if sc.asr_error else None,
     )
     if sc.vendor == "deepgram":
         return deepgram(turns)
@@ -458,7 +459,7 @@ def render_scenario(sc: "scenarios.Scenario") -> dict:
 
 
 def _folder_slug(name: str) -> str:
-    return dict(scenarios.FOLDERS)[name]
+    return dict([*scenarios.FOLDERS, checker_tests.FOLDER])[name]
 
 
 def sample_path(sc: "scenarios.Scenario") -> str:
@@ -553,6 +554,13 @@ def build_samples() -> dict[str, object]:
                 out[(MOCK_IMPORTS_DIR / f"{sc.id}.import.json").as_posix()] = imported(sc).model_dump(mode="json")
             items.append({"id": sc.id, "title": sc.title, "vendor": sc.vendor, "file": sample_path(sc)})
         folders.append({"name": name, "slug": slug, "items": items})
+    # Hand-testing conversations for the claim checker (checker_tests.py): samples only, no keys.
+    name, slug = checker_tests.FOLDER
+    items = []
+    for sc in checker_tests.SCENARIOS:
+        out[f"frontend/public/{sample_path(sc)}"] = render_scenario(sc)
+        items.append({"id": sc.id, "title": sc.title, "vendor": sc.vendor, "file": sample_path(sc)})
+    folders.append({"name": name, "slug": slug, "items": items})
     out[(SAMPLES_DIR / "index.json").as_posix()] = {"notice": SAMPLES_NOTICE, "folders": folders}
     return out
 
